@@ -1,0 +1,309 @@
+/* === Menu === */
+
+.sg-menu {
+  margin: 0;
+  padding: var(--sg-padding-xs) 0;
+  list-style: none;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  background: var(--sg-color-bg-container);
+  border-right: 1px solid var(--sg-color-border-secondary);
+  outline: none;
+}
+
+.sg-menu ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Modes --- */
+
+.sg-menu-horizontal {
+  display: flex;
+  flex-direction: row;
+  border-right: none;
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+  padding: 0;
+}
+
+.sg-menu-vertical {
+  display: flex;
+  flex-direction: column;
+}
+
+.sg-menu-inline {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Theme ---
+ *
+ * `.sg-menu-dark` is a self-contained dark variant: it must look right on
+ * any host surface (light app theme, dark app theme, custom wrapper),
+ * because `theme="dark"` is a per-menu flag, not an app theme switch. So
+ * the dark variant uses explicit dark colours and white-alpha overlays
+ * instead of semantic tokens — the latter cascade with the app theme
+ * and break the "always-dark menu" contract.
+ */
+
+.sg-menu-dark {
+  background: var(--sg-gray-10);
+  color: rgba(255, 255, 255, 0.65);
+  border-color: transparent;
+}
+
+.sg-menu-dark .sg-menu-item {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.sg-menu-dark .sg-menu-item:hover {
+  color: rgba(255, 255, 255, 0.88);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sg-menu-dark .sg-menu-item-selected,
+.sg-menu-dark .sg-menu-item-selected:hover {
+  color: #fff;
+  background: var(--sg-color-primary);
+}
+
+.sg-menu-dark .sg-menu-item-disabled,
+.sg-menu-dark .sg-menu-item-disabled:hover {
+  color: rgba(255, 255, 255, 0.25);
+  background: transparent;
+}
+
+.sg-menu-dark .sg-menu-divider {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.sg-menu-dark .sg-menu-group-title {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* --- Collapsed --- */
+
+.sg-menu-collapsed {
+  width: 56px;
+}
+
+.sg-menu-collapsed .sg-menu-item {
+  justify-content: center;
+  padding: var(--sg-padding-sm);
+}
+
+.sg-menu-collapsed .sg-menu-submenu-arrow {
+  display: none;
+}
+
+/* --- Menu item --- */
+
+.sg-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-xs) var(--sg-padding-lg);
+  cursor: pointer;
+  color: var(--sg-color-text);
+  line-height: var(--sg-line-height);
+  min-height: var(--sg-height-md);
+  transition:
+    background var(--sg-transition-duration) var(--sg-transition-timing),
+    color var(--sg-transition-duration) var(--sg-transition-timing);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sg-menu-item:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-menu-item-selected {
+  color: var(--sg-color-primary);
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-menu-item-disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-menu-item-disabled:hover {
+  background: none;
+}
+
+.sg-menu-item-danger {
+  color: var(--sg-color-error);
+}
+
+.sg-menu-item-danger:hover {
+  background: var(--sg-color-error-bg);
+}
+
+/* --- Icon & label --- */
+
+.sg-menu-item-icon {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--sg-font-size-lg);
+  flex-shrink: 0;
+}
+
+.sg-menu-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Submenu arrow --- */
+
+.sg-menu-submenu-arrow {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-left: auto;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sg-menu-submenu-arrow::before,
+.sg-menu-submenu-arrow::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 1.5px;
+  background: currentColor;
+  border-radius: 1px;
+  transition: transform var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-menu-submenu-arrow::before {
+  transform: rotate(45deg) translateX(2px);
+  top: 4px;
+  left: 0;
+}
+
+.sg-menu-submenu-arrow::after {
+  transform: rotate(-45deg) translateX(-2px);
+  top: 4px;
+  left: 0;
+}
+
+.sg-menu-submenu-arrow-open::before {
+  transform: rotate(-45deg) translateX(2px);
+}
+
+.sg-menu-submenu-arrow-open::after {
+  transform: rotate(45deg) translateX(-2px);
+}
+
+/* Horizontal mode arrow points down */
+.sg-menu-horizontal .sg-menu-submenu-arrow::before {
+  transform: rotate(45deg) translateY(0);
+  top: 3px;
+  left: 0;
+}
+
+.sg-menu-horizontal .sg-menu-submenu-arrow::after {
+  transform: rotate(-45deg) translateY(0);
+  top: 3px;
+  left: 3px;
+}
+
+/* --- Inline submenu --- */
+
+.sg-menu-inline-sub {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s var(--sg-transition-timing);
+}
+
+.sg-menu-inline-sub-open {
+  max-height: 500px;
+}
+
+/* --- Popup submenu (vertical / horizontal) --- */
+
+.sg-menu-submenu-wrapper {
+  position: relative;
+}
+
+.sg-menu-popup {
+  position: absolute;
+  z-index: var(--sg-z-dropdown);
+  min-width: 160px;
+  padding: var(--sg-padding-xs) 0;
+  background: var(--sg-color-bg-elevated);
+  border-radius: var(--sg-border-radius-lg);
+  box-shadow: var(--sg-shadow-lg);
+  border: 1px solid var(--sg-color-border-secondary);
+  list-style: none;
+  animation: sg-menu-popup-in var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-menu-vertical .sg-menu-popup {
+  left: 100%;
+  top: 0;
+}
+
+.sg-menu-horizontal > li > .sg-menu-popup {
+  left: 0;
+  top: 100%;
+}
+
+@keyframes sg-menu-popup-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* --- Divider --- */
+
+.sg-menu-divider {
+  height: 1px;
+  margin: var(--sg-margin-xs) var(--sg-padding-md);
+  background: var(--sg-color-border-secondary);
+  list-style: none;
+}
+
+/* --- Group --- */
+
+.sg-menu-group {
+  list-style: none;
+}
+
+.sg-menu-group-title {
+  padding: var(--sg-padding-xs) var(--sg-padding-lg);
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+  line-height: var(--sg-line-height);
+}
+
+.sg-menu-group-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* --- Horizontal item spacing --- */
+
+.sg-menu-horizontal > li > .sg-menu-item {
+  padding: var(--sg-padding-sm) var(--sg-padding-lg);
+  border-bottom: 2px solid transparent;
+}
+
+.sg-menu-horizontal > li > .sg-menu-item-selected {
+  border-bottom-color: var(--sg-color-primary);
+  background: none;
+}
+
+.sg-menu-horizontal > li > .sg-menu-item:hover {
+  border-bottom-color: var(--sg-color-primary-hover);
+  background: none;
+}

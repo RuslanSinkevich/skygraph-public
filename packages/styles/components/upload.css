@@ -1,0 +1,124 @@
+.sg-upload {
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}
+
+.sg-upload-list {
+  margin-top: var(--sg-margin-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-margin-xs);
+}
+
+.sg-upload-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius-sm);
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text);
+}
+
+.sg-upload-item-error {
+  border-color: var(--sg-color-error);
+  color: var(--sg-color-error);
+}
+
+.sg-upload-item-name {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-upload-item-remove {
+  cursor: pointer;
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size);
+  background: transparent;
+  border: none;
+  padding: 0 var(--sg-padding-xs);
+  line-height: 1;
+  border-radius: var(--sg-border-radius-sm);
+}
+
+.sg-upload-item-remove:hover {
+  color: var(--sg-color-error);
+}
+
+.sg-upload-item-remove:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 2px;
+}
+
+.sg-upload-item-progress {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Drag area (Vue-only — sister components in React do not ship a drag mode). */
+.sg-upload-drag-area {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sg-margin-xs);
+  padding: var(--sg-padding-lg);
+  border: 1px dashed var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  color: var(--sg-color-text-secondary);
+  background: var(--sg-color-bg-container);
+  cursor: pointer;
+  transition:
+    border-color var(--sg-transition-duration),
+    background var(--sg-transition-duration);
+  text-align: center;
+}
+
+.sg-upload-drag-area:hover,
+.sg-upload-dragging .sg-upload-drag-area {
+  border-color: var(--sg-color-primary);
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-upload-drag-icon {
+  font-size: 32px;
+  color: var(--sg-color-primary);
+  margin: 0;
+  line-height: 1;
+}
+
+.sg-upload-drag-text {
+  margin: 0;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+.sg-upload-disabled .sg-upload-drag-area {
+  cursor: not-allowed;
+  opacity: 0.6;
+  background: var(--sg-color-bg-disabled);
+}
+
+/* Picture-card layout (Vue-only — image-grid trigger like the AntD one). */
+.sg-upload-picture-card .sg-upload-list,
+.sg-upload-picture .sg-upload-list {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--sg-margin-sm);
+}
+
+.sg-upload-picture-card .sg-upload-item {
+  width: 96px;
+  height: 96px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: var(--sg-padding-xs);
+}
+
+.sg-upload-picture .sg-upload-item {
+  padding: var(--sg-padding-sm);
+}

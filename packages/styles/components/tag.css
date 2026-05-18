@@ -1,0 +1,61 @@
+.sg-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 var(--sg-padding-sm);
+  height: 22px;
+  font-size: var(--sg-font-size-sm);
+  line-height: 20px;
+  white-space: nowrap;
+  border-radius: var(--sg-border-radius-sm);
+  border: 1px solid var(--sg-color-border);
+  background: var(--sg-color-bg-secondary);
+  color: var(--sg-color-text);
+  transition: all var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-tag-borderless {
+  border-color: transparent;
+}
+
+.sg-tag-default {
+  background: var(--sg-color-bg-secondary);
+  border-color: var(--sg-color-border);
+  color: var(--sg-color-text);
+}
+
+.sg-tag-success {
+  background: var(--sg-color-success-bg);
+  border-color: var(--sg-color-success);
+  color: var(--sg-color-success);
+}
+
+.sg-tag-error {
+  background: var(--sg-color-error-bg);
+  border-color: var(--sg-color-error);
+  color: var(--sg-color-error);
+}
+
+.sg-tag-warning {
+  background: var(--sg-color-warning-bg);
+  border-color: var(--sg-color-warning);
+  color: var(--sg-color-warning);
+}
+
+.sg-tag-processing {
+  background: var(--sg-color-primary-bg);
+  border-color: var(--sg-color-primary);
+  color: var(--sg-color-primary);
+}
+
+.sg-tag-close {
+  cursor: pointer;
+  font-size: 10px;
+  color: inherit;
+  opacity: 0.6;
+  transition: opacity var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-tag-close:hover {
+  opacity: 1;
+}

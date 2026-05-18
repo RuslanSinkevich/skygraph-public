@@ -1,0 +1,17 @@
+/* SkyGraph -- Dark theme
+ *
+ * Convenience re-export of the full token set. Activate dark mode by setting
+ * `data-sg-theme="dark"` on `<html>` (or any wrapper). The dark semantic
+ * tokens kick in via the `[data-sg-theme="dark"]` selector inside `tokens.css`.
+ *
+ * NOTE: this file imports the SAME `tokens.css` as `default.css`. Both light
+ * and dark semantic tokens live there; importing only `dark.css` does NOT
+ * give you a "dark-only" stylesheet — the selector decides which set wins.
+ *
+ * Example:
+ *   import '@skygraph/styles/themes/dark'
+ *
+ *   <html data-sg-theme="dark"> ... </html>
+ */
+
+@import '../tokens.css';

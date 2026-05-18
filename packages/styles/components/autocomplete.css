@@ -1,0 +1,33 @@
+.sg-autocomplete {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.sg-autocomplete-loading {
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}
+
+.sg-autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  margin-top: 4px;
+  padding: var(--sg-padding-xs) 0;
+  background: var(--sg-color-bg-elevated);
+  border-radius: var(--sg-border-radius);
+  box-shadow: var(--sg-shadow-lg);
+  max-height: 256px;
+  overflow-y: auto;
+}
+
+.sg-autocomplete-option {
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+  cursor: pointer;
+  color: var(--sg-color-text);
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-autocomplete-option:hover { background: var(--sg-color-bg-hover); }

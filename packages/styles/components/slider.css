@@ -1,0 +1,51 @@
+.sg-slider {
+  /* Track children are positioned; intrinsic width collapses inside flex/grid.
+   * Width follows the container; floor scales with the global font-size token. */
+  --sg-slider-min-inline-size: calc(8 * var(--sg-font-size));
+  box-sizing: border-box;
+  width: 100%;
+  min-inline-size: var(--sg-slider-min-inline-size);
+  padding: var(--sg-padding-sm) 0;
+}
+
+.sg-slider-disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.sg-slider-track {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 4px;
+  background: var(--sg-color-border);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.sg-slider-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: var(--sg-color-primary);
+  border-radius: 2px;
+}
+
+.sg-slider-handle {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  margin-left: -7px;
+  background: var(--sg-color-white);
+  border: 2px solid var(--sg-color-primary);
+  border-radius: 50%;
+  cursor: grab;
+  transition: box-shadow var(--sg-transition-duration);
+}
+
+.sg-slider-handle:hover {
+  box-shadow: 0 0 0 4px var(--sg-color-primary-bg);
+}

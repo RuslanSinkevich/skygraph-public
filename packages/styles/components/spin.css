@@ -1,0 +1,86 @@
+/* === Spin circle — the core element === */
+.sg-spin {
+  --sg-spin-color: var(--sg-color-primary);
+  --sg-spin-overlay-bg: rgba(255, 255, 255, 0.65);
+  display: inline-block;
+  border: 3px solid var(--sg-spin-color);
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: sg-spin-rotate 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+/* Size variants */
+.sg-spin-small   { width: 12px; height: 12px; border-width: 1.5px; }
+.sg-spin-default { width: 24px; height: 24px; border-width: 3px; }
+.sg-spin-large   { width: 36px; height: 36px; border-width: 4px; }
+
+/* === Standalone (no children) === */
+.sg-spin-standalone {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sg-margin-sm);
+}
+
+/* === Container (wrapping children) === */
+.sg-spin-container {
+  position: relative;
+}
+
+.sg-spin-overlay {
+  --sg-spin-overlay-bg: rgba(255, 255, 255, 0.65);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sg-margin-sm);
+  z-index: var(--sg-z-loading);
+  background: var(--sg-spin-overlay-bg);
+  border-radius: var(--sg-border-radius);
+}
+
+[data-sg-theme="dark"] .sg-spin-overlay,
+[data-sg-theme="dark"] .sg-spin-fullscreen {
+  --sg-spin-overlay-bg: rgba(20, 20, 20, 0.65);
+}
+
+.sg-spin-blur {
+  pointer-events: none;
+  user-select: none;
+  opacity: 0.4;
+}
+
+/* === Fullscreen === */
+.sg-spin-fullscreen {
+  --sg-spin-overlay-bg: rgba(255, 255, 255, 0.65);
+  position: fixed;
+  inset: 0;
+  z-index: var(--sg-z-modal);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--sg-spin-overlay-bg);
+}
+
+.sg-spin-fullscreen-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sg-margin-sm);
+}
+
+/* === Tip text === */
+.sg-spin-tip {
+  color: var(--sg-color-primary);
+  font-size: var(--sg-font-size-sm);
+}
+
+@keyframes sg-spin-rotate {
+  to { transform: rotate(360deg); }
+}

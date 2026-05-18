@@ -1,0 +1,88 @@
+/* SkyGraph — общие правила для @media print.
+ *
+ * Подключается из styles/index.css. Все переопределения сидят строго внутри
+ * @media print, поэтому экранный рендеринг не затронут. `!important`
+ * сознательно используется ради побеждания inline-стилей (которые JS-код
+ * применяет на скрол-контейнерах, тенях, transform-ах для пана/зума) — это
+ * стандартный print-CSS паттерн и разрешён в check-no-important media-allowlist.
+ *
+ * Дополнительные компонент-специфичные блоки (например `.sg-table-toolbar`,
+ * `.sg-table-pagination`) живут рядом со своим компонентом
+ * (см. components/table.css). Этот файл — общий слой.
+ */
+
+@media print {
+  /* Универсальная маркировка "не печатать" — ставится JS-кодом на тулбары,
+   * fab-кнопки, hover-overlay и т.п. */
+  .sg-no-print {
+    display: none !important;
+  }
+
+  /* Принудительный page-break после блока. Используется data-атрибутом
+   * вместо класса, чтобы не конфликтовать с пользовательскими CSS-классами. */
+  [data-sg-page-break] {
+    page-break-after: always;
+    break-after: page;
+  }
+
+  [data-sg-page-break-before] {
+    page-break-before: always;
+    break-before: page;
+  }
+
+  /* Корневая обёртка popup-окна — добавляется printElement(). Ничего
+   * лишнего, только сброс отступов и прозрачный фон под печать. */
+  .sg-print-root {
+    background: #fff;
+    color: #000;
+  }
+
+  /* На случай корпоративных принтеров: убрать тяжёлые тени и transform —
+   * современные браузеры в большинстве случаев игнорируют CSS-анимации в
+   * print-mode, но `transform` (используется панами / зумами Diagram-а)
+   * сохраняется и ломает раскладку, если не сбросить. */
+  .sg-print-root [class*="sg-"][style*="transform"] {
+    /* Сбрасывается JS-side в Diagram через специальный data-атрибут
+     * (см. ниже), чтобы пан/зум не уезжал в печать. */
+  }
+
+  /* Раскрыть скролл-контейнеры — иначе печатается только видимое окно. */
+  .sg-table-wrapper,
+  .sg-table-scroll,
+  .sg-diagram,
+  .sg-chart-wrapper {
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* Diagram: при печати сбрасываем pan/zoom transform на canvas-обёртке.
+   * Координата `data-pan-*` остаётся атрибутом — это диагностика, не CSS. */
+  .sg-diagram-canvas {
+    transform: none !important;
+  }
+
+  /* Таблица — каждую строку держим вместе. */
+  .sg-table-row,
+  .sg-table-tr,
+  .sg-datagrid-row {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* Charts — скрыть hover crosshair и brushing, если они оказались
+   * закрашены на момент печати (selection rect остаётся в DOM). */
+  .sg-chart-crosshair,
+  .sg-chart-brush-overlay {
+    display: none !important;
+  }
+
+  /* Diagram — спрятать тулбары / минимапы. Стандартного minimap-классa у
+   * SkyGraph пока нет, но префикс зарезервирован — пусть пользователь
+   * добавит `.sg-no-print` или дочерний класс из этого списка. */
+  .sg-diagram-toolbar,
+  .sg-diagram-minimap,
+  .sg-diagram-controls {
+    display: none !important;
+  }
+}

@@ -1,0 +1,34 @@
+.sg-rate {
+  /* Component-local variable: empty (inactive) symbol opacity. Colour
+   * emoji ignore CSS `color`, so opacity is the only signal that
+   * separates active vs inactive characters. Override globally for
+   * monochrome glyphs by setting it to `1`. */
+  --sg-rate-symbol-empty-opacity: 0.42;
+
+  display: inline-flex;
+  gap: var(--sg-padding-xs);
+  font-size: var(--sg-font-size-xl);
+}
+
+.sg-rate-disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.sg-rate-star {
+  cursor: pointer;
+  color: var(--sg-color-border);
+  opacity: var(--sg-rate-symbol-empty-opacity);
+  transition:
+    color var(--sg-transition-duration),
+    opacity var(--sg-transition-duration),
+    transform var(--sg-transition-duration);
+  user-select: none;
+}
+
+.sg-rate-star:hover { transform: scale(1.15); }
+.sg-rate-star-full {
+  color: var(--sg-color-star);
+  opacity: 1;
+}
+.sg-rate-star-half { color: var(--sg-color-star); opacity: 0.5; }

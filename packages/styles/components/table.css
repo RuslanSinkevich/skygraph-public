@@ -1,0 +1,984 @@
+.sg-table-wrapper {
+  --sg-table-row-height: auto;
+  --sg-table-row-bg: transparent;
+  --sg-table-row-hover-bg: var(--sg-color-bg-hover);
+  --sg-table-header-bg: var(--sg-color-bg-secondary);
+  --sg-table-border-color: var(--sg-color-border);
+  --sg-table-border-color-secondary: var(--sg-color-border-secondary);
+  --sg-table-cell-padding: var(--sg-padding-sm) var(--sg-padding-md);
+  /* Opaque fallback used by fixed (sticky) cells so scrolling columns
+     don't bleed through. Override per instance for non-default backgrounds. */
+  --sg-table-cell-solid-bg: var(--sg-color-bg);
+  width: 100%;
+  /* Allow shrinking below intrinsic min-content inside flex/grid parents
+   * so the inner scroll container can actually overflow (or the table can
+   * flex under its natural column widths). */
+  min-width: 0;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+/* Toolbar */
+.sg-table-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  margin-bottom: var(--sg-margin-sm);
+  flex-wrap: wrap;
+}
+
+.sg-table-toolbar-right {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sg-table-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  background: var(--sg-color-bg);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius-sm);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all var(--sg-transition-duration);
+}
+
+.sg-table-toolbar-btn:hover {
+  color: var(--sg-color-primary);
+  border-color: var(--sg-color-primary);
+}
+
+.sg-table-toolbar-group {
+  display: flex;
+  gap: 4px;
+}
+
+/* Scroll container.
+ * `overflow-x` is set inline by `Table.tsx` only when the author passes
+ * `scroll.x` — otherwise the table flexes to fit its container and no
+ * scrollbar is needed. `min-width: 0` unblocks horizontal shrinking in
+ * nested flex/grid contexts. */
+.sg-table-scroll {
+  width: 100%;
+  min-width: 0;
+  position: relative;
+}
+
+/* Grid base.
+ * The grid carries a solid base background so body cells (transparent by
+ * default) and fixed-sticky cells draw over the same colour. Without this,
+ * fixed columns look like "floating white rectangles" when the table sits
+ * on a coloured surface (e.g. a DemoBox with a tinted fill).
+ */
+.sg-table-grid {
+  display: grid;
+  /* Fluid mode: stretch to fill the scroll container. Overridden below
+   * when the author opts into horizontal scroll via `scroll.x`. */
+  min-width: 100%;
+  background: var(--sg-table-cell-solid-bg);
+}
+
+/* Horizontal-scroll mode: the grid keeps its declared `scroll.x` width
+ * (set inline as `min-width`) and does NOT stretch to fill the scroll
+ * container. This lets fixed columns sit flush against the right edge
+ * of the actual content instead of floating in empty space. */
+.sg-table-scroll-x .sg-table-grid,
+.sg-table-scroll-x .sg-table-pinned-top,
+.sg-table-scroll-x .sg-table-pinned-bottom {
+  min-width: 0;
+  width: max-content;
+}
+
+/* ---- Header ---- */
+.sg-table-th {
+  position: relative;
+  padding: var(--sg-table-cell-padding);
+  font-weight: 600;
+  color: var(--sg-color-text);
+  background: var(--sg-table-header-bg);
+  border-bottom: 1px solid var(--sg-table-border-color);
+  user-select: none;
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  white-space: nowrap;
+}
+
+.sg-table-th-content {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-table-th-sortable {
+  cursor: pointer;
+}
+
+.sg-table-th-sortable:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+/* Sort arrows */
+.sg-table-sort-arrows {
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+  gap: 0;
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+.sg-table-sort-asc,
+.sg-table-sort-desc {
+  font-size: 8px;
+  line-height: 8px;
+  color: var(--sg-color-text-quaternary, var(--sg-color-text-tertiary));
+  transition: color var(--sg-transition-duration);
+}
+
+.sg-table-sort-current {
+  color: var(--sg-color-primary);
+}
+
+.sg-table-th-sortable:hover .sg-table-sort-asc,
+.sg-table-th-sortable:hover .sg-table-sort-desc {
+  color: var(--sg-color-text-tertiary);
+}
+
+.sg-table-th-sortable:hover .sg-table-sort-current {
+  color: var(--sg-color-primary);
+}
+
+.sg-table-sort-index {
+  font-size: 9px;
+  color: var(--sg-color-primary);
+  font-weight: 700;
+  margin-left: 1px;
+}
+
+/* Drag over */
+.sg-table-th-drag-over {
+  background: var(--sg-color-primary-bg);
+  box-shadow: inset 2px 0 0 var(--sg-color-primary);
+}
+
+/* Fixed cell — legacy selector kept for non-td/th elements (group headers etc).
+   Opaque body/header overrides live at the end of the file where they can
+   win the cascade against .sg-table-td / .sg-table-th. */
+.sg-table-cell-fixed {
+  background: var(--sg-table-cell-solid-bg);
+}
+
+/* Sticky header */
+.sg-table-sticky .sg-table-th {
+  position: sticky;
+  top: 0;
+  z-index: var(--sg-z-sticky);
+}
+
+.sg-table-sticky .sg-table-cell-fixed.sg-table-th {
+  z-index: var(--sg-z-sticky-fixed);
+}
+
+/* ---- Body cells ---- */
+.sg-table-td {
+  padding: var(--sg-table-cell-padding);
+  min-height: var(--sg-table-row-height);
+  background: var(--sg-table-row-bg);
+  border-bottom: 1px solid var(--sg-table-border-color-secondary);
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-table-hoverable .sg-table-row:hover .sg-table-td {
+  background: var(--sg-table-row-hover-bg);
+}
+
+.sg-table-row-selected .sg-table-td {
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-table-row-selected:hover .sg-table-td {
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-table-row-clickable .sg-table-td {
+  cursor: pointer;
+}
+
+/* Fixed-cell hover/selected overrides live in the dedicated block at the end
+   of the file so they can beat `.sg-table-td { background }`. */
+
+/* Cell content wrapper */
+.sg-table-cell-content {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ---- Selection / Expand cells ---- */
+.sg-table-cell-selection,
+.sg-table-cell-expand {
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* ---- Row number ---- */
+.sg-table-cell-row-number {
+  justify-content: center;
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Expand button ---- */
+.sg-table-expand-btn {
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--sg-color-text-secondary);
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--sg-transition-duration) var(--sg-transition-timing);
+  transform: rotate(0deg);
+}
+
+.sg-table-expand-open {
+  transform: rotate(90deg);
+}
+
+.sg-table-expand-btn:hover {
+  color: var(--sg-color-primary);
+}
+
+/* ---- Expanded row ---- */
+.sg-table-expanded-row {
+  padding: var(--sg-padding-md) var(--sg-padding-lg);
+  background: var(--sg-color-bg-secondary);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+/* ---- Empty ---- */
+.sg-table-empty {
+  padding: var(--sg-padding-xl);
+  text-align: center;
+  color: var(--sg-color-text-tertiary);
+}
+
+/* ---- Editable ---- */
+.sg-table-td-editable {
+  cursor: text;
+}
+
+.sg-table-edit-input {
+  width: 100%;
+  border: 1px solid var(--sg-color-primary);
+  border-radius: var(--sg-border-radius-sm);
+  padding: 2px var(--sg-padding-xs);
+  font-size: inherit;
+  font-family: inherit;
+  color: var(--sg-color-text);
+  background: var(--sg-color-bg);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+/* ---- Resize handle ---- */
+.sg-table-resize-handle {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 4px;
+  cursor: col-resize;
+  z-index: var(--sg-z-base);
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-table-resize-handle:hover,
+.sg-table-resize-handle:active {
+  background: var(--sg-color-primary);
+}
+
+/* ---- Filter ---- */
+.sg-table-filter-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-tertiary);
+  padding: 2px 4px;
+  border-radius: var(--sg-border-radius-sm);
+  transition:
+    color var(--sg-transition-duration),
+    background-color var(--sg-transition-duration);
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.sg-table-filter-trigger > svg {
+  display: block;
+}
+
+.sg-table-filter-trigger:hover {
+  color: var(--sg-color-primary);
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-table-filter-active {
+  color: var(--sg-color-primary);
+}
+
+.sg-table-filter-portal > .sg-table-filter-dropdown {
+  position: static;
+}
+
+.sg-table-filter-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: var(--sg-z-dropdown);
+  min-width: 140px;
+  background: var(--sg-color-bg-elevated);
+  border-radius: var(--sg-border-radius-lg);
+  box-shadow: var(--sg-shadow-lg);
+  border: 1px solid var(--sg-color-border-secondary);
+  padding: var(--sg-padding-sm);
+  animation: sg-table-filter-in var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+@keyframes sg-table-filter-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+.sg-table-filter-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-padding-xs);
+  max-height: 200px;
+  overflow-y: auto;
+  margin-bottom: var(--sg-padding-sm);
+}
+
+.sg-table-filter-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  font-size: var(--sg-font-size-sm);
+  font-weight: 400;
+  cursor: pointer;
+  padding: 2px 0;
+}
+
+.sg-table-filter-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--sg-padding-xs);
+  border-top: 1px solid var(--sg-color-border-secondary);
+  padding-top: var(--sg-padding-sm);
+}
+
+.sg-table-filter-search {
+  margin-bottom: var(--sg-padding-sm);
+}
+
+.sg-table-filter-search-mode {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-padding-sm);
+  min-width: 180px;
+}
+
+.sg-table-filter-item input[type='radio'] {
+  accent-color: var(--sg-color-primary);
+  margin: 0;
+}
+
+.sg-table-filter-empty {
+  padding: var(--sg-padding-sm);
+  text-align: center;
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+}
+
+/* ---- Filter (advanced mode) ---- */
+.sg-table-filter-advanced-mode {
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-padding-sm);
+}
+
+.sg-table-filter-advanced-row {
+  display: flex;
+  width: 100%;
+}
+
+.sg-table-filter-advanced-row > * {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Базовый вид нативного <select> внутри любого filter-dropdown
+   (advanced-режим + пользовательские filterDropdown). :where() даёт нулевую
+   specificity, поэтому кастомный класс/inline-style легко перебивает. */
+:where(.sg-table-filter-dropdown select) {
+  width: 100%;
+  height: 28px;
+  padding: 0 28px 0 var(--sg-padding-sm);
+  font-family: inherit;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text);
+  background-color: var(--sg-color-bg);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius-sm);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 16 16' fill='none' stroke='%238c8c8c' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 10px 10px;
+  transition:
+    border-color var(--sg-transition-duration),
+    box-shadow var(--sg-transition-duration);
+}
+
+:where(.sg-table-filter-dropdown select):hover {
+  border-color: var(--sg-color-primary);
+}
+
+:where(.sg-table-filter-dropdown select):focus,
+:where(.sg-table-filter-dropdown select):focus-visible {
+  outline: none;
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg, rgba(24, 144, 255, 0.15));
+}
+
+/* ---- Summary ---- */
+.sg-table-summary-cell {
+  font-weight: 600;
+  background: var(--sg-color-bg-secondary);
+  border-top: 2px solid var(--sg-color-border);
+}
+
+/* ---- Pagination ---- */
+.sg-table-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sg-padding-md) 0;
+}
+
+.sg-table-pagination-total {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+}
+
+.sg-table-pagination-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-table-pagination-page {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  font-variant-numeric: tabular-nums;
+  min-width: 56px;
+  text-align: center;
+}
+
+.sg-table-pagination-prev,
+.sg-table-pagination-next {
+  padding: 2px 10px;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.sg-table-pagination-prev:disabled,
+.sg-table-pagination-next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Sizes ---- */
+.sg-table-small .sg-table-th,
+.sg-table-small .sg-table-td {
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-table-large .sg-table-th,
+.sg-table-large .sg-table-td {
+  padding: var(--sg-padding-md) var(--sg-padding-lg);
+}
+
+/* ---- Bordered ---- */
+.sg-table-bordered .sg-table-th,
+.sg-table-bordered .sg-table-td {
+  border-right: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-table-bordered .sg-table-th:last-child,
+.sg-table-bordered .sg-table-td:last-child {
+  border-right: none;
+}
+
+.sg-table-bordered .sg-table-grid {
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  overflow: hidden;
+}
+
+/* ---- Loading ---- */
+.sg-table-loading {
+  position: relative;
+}
+
+.sg-table-loading .sg-table-scroll {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity var(--sg-transition-duration);
+}
+
+.sg-table-loading-mask {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: var(--sg-z-loading);
+  pointer-events: none;
+}
+
+/* ---- Column group header ---- */
+.sg-table-th-group {
+  justify-content: center;
+  text-align: center;
+  border-bottom: 1px solid var(--sg-color-border);
+}
+
+/* ---- Tree indent ---- */
+.sg-table-td .sg-table-expand-btn {
+  flex-shrink: 0;
+}
+
+/* ---- Scroll Y ---- */
+.sg-table-scroll {
+  position: relative;
+}
+
+/* ---- Virtualization, fixed-height mode ----
+ *
+ * When the engine has been told `rowHeight: <number>` (no measurement
+ * estimate), it computes scroll math assuming each row is exactly that
+ * tall. Natural cell height (padding + line-height + border) usually
+ * differs by 1–4px per row, which makes the effective DOM `scrollHeight`
+ * drift away from the engine's `totalHeight` as the visible window
+ * changes — that drift is what shows up as the scrollbar thumb lagging
+ * behind the cursor while the user drags it. Locking visible row cells to
+ * the configured `rowHeight` removes the mismatch entirely. */
+.sg-table-grid-virtual-fixed .sg-table-row[data-sg-virtual-row-index] > .sg-table-td {
+  height: var(--sg-virtual-row-height);
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ---- Span cells ---- */
+.sg-table-td[style*='grid-row'] {
+  align-items: flex-start;
+  padding-top: var(--sg-padding-sm);
+}
+
+.sg-table-td[style*='grid-column'] {
+  border-right: none;
+}
+
+/* ---- Zebra striping ---- */
+.sg-table-row-striped .sg-table-td {
+  background: color-mix(in srgb, var(--sg-color-text) 2%, transparent);
+}
+
+.sg-table-hoverable .sg-table-row-striped:hover .sg-table-td {
+  background: var(--sg-color-bg-hover);
+}
+
+/* ---- Row warning (custom rowClassName example) ---- */
+.sg-table-row-warning .sg-table-td {
+  background: color-mix(in srgb, var(--sg-color-warning) 8%, transparent);
+}
+
+/* ---- Row drag over ---- */
+.sg-table-row-drag-over .sg-table-td {
+  box-shadow: inset 0 -2px 0 var(--sg-color-primary);
+}
+
+/* ---- Drag handle ---- */
+.sg-table-cell-drag-handle {
+  color: var(--sg-color-text-tertiary);
+  font-size: 16px;
+}
+
+.sg-table-cell-drag-handle:hover {
+  color: var(--sg-color-text-secondary);
+}
+
+/* ---- Selection bar ---- */
+.sg-table-selection-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+  background: var(--sg-color-primary-bg);
+  border-radius: var(--sg-border-radius-sm);
+  margin-bottom: var(--sg-margin-sm);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-table-selection-count {
+  font-weight: 600;
+  color: var(--sg-color-primary);
+}
+
+.sg-table-selection-action {
+  padding: 2px 8px;
+  font-size: var(--sg-font-size-sm);
+  background: none;
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius-sm);
+  cursor: pointer;
+  color: var(--sg-color-text);
+  transition: all var(--sg-transition-duration);
+}
+
+.sg-table-selection-action:hover {
+  border-color: var(--sg-color-primary);
+  color: var(--sg-color-primary);
+}
+
+.sg-table-selection-action-danger {
+  color: var(--sg-color-error);
+  border-color: var(--sg-color-error);
+}
+
+.sg-table-selection-clear {
+  margin-left: auto;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sg-color-text-tertiary);
+  font-size: 16px;
+  padding: 0 4px;
+}
+
+.sg-table-selection-clear:hover {
+  color: var(--sg-color-text);
+}
+
+/* ---- Fullscreen ---- */
+.sg-table-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  background: var(--sg-color-bg);
+  padding: var(--sg-padding-lg);
+  overflow: auto;
+}
+
+/* ---- Column visibility dropdown ---- */
+.sg-table-col-visibility-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1040;
+  background: var(--sg-color-bg-elevated, var(--sg-color-bg-container));
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  box-shadow: var(--sg-shadow-lg, 0 6px 16px rgba(0, 0, 0, 0.08));
+  padding: 8px 0;
+  min-width: 160px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.sg-table-col-visibility-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: var(--sg-font-size-sm);
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-table-col-visibility-item:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+/* ---- Density dropdown ---- */
+.sg-table-density-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 1040;
+  background: var(--sg-color-bg-elevated, var(--sg-color-bg-container));
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  box-shadow: var(--sg-shadow-lg, 0 6px 16px rgba(0, 0, 0, 0.08));
+  padding: 4px 0;
+  min-width: 120px;
+}
+
+.sg-table-density-option {
+  display: block;
+  width: 100%;
+  padding: 6px 12px;
+  font-size: var(--sg-font-size-sm);
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sg-color-text);
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-table-density-option:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-table-density-active {
+  color: var(--sg-color-primary);
+  font-weight: 600;
+}
+
+/* ---- Group rows ---- */
+.sg-table-group-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+  background: var(--sg-color-bg-secondary);
+  border-bottom: 1px solid var(--sg-color-border);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-table-group-cell:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-table-group-title {
+  flex-shrink: 0;
+}
+
+.sg-table-group-count {
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-table-group-aggregates {
+  display: flex;
+  gap: var(--sg-padding-md);
+  margin-left: auto;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+}
+
+.sg-table-group-agg-item {
+  white-space: nowrap;
+}
+
+/* ---- Aggregation footer ---- */
+.sg-table-footer-cell {
+  font-weight: 600;
+  background: var(--sg-color-bg-secondary);
+  border-top: 2px solid var(--sg-color-border);
+}
+
+.sg-table-aggregate-value {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+}
+
+.sg-table-aggregate-label {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-tertiary);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ---- Keyboard navigation focus ---- */
+.sg-table-cell-focused {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+/* ---- Cell copy ---- */
+.sg-table-cell-copyable {
+  position: relative;
+}
+
+.sg-table-copy-btn {
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  transform: translateY(-50%);
+  border: none;
+  background: var(--sg-color-bg-elevated, var(--sg-color-bg-container));
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  border-radius: var(--sg-border-radius-sm);
+  cursor: pointer;
+  font-size: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sg-color-text-secondary);
+  transition:
+    opacity var(--sg-transition-duration),
+    color var(--sg-transition-duration);
+}
+
+.sg-table-cell-copyable:hover .sg-table-copy-btn {
+  opacity: 1;
+}
+
+.sg-table-copy-btn:hover {
+  color: var(--sg-color-primary);
+}
+
+.sg-table-cell-copied .sg-table-copy-btn {
+  opacity: 1;
+  color: var(--sg-color-success);
+}
+
+/* ---- Column header tooltip ---- */
+.sg-table-th-tooltip {
+  font-size: 12px;
+  color: var(--sg-color-text-tertiary);
+  cursor: help;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.sg-table-th-tooltip:hover {
+  color: var(--sg-color-primary);
+}
+
+/* ---- Pinned rows ---- */
+.sg-table-pinned-top,
+.sg-table-pinned-bottom {
+  display: grid;
+}
+
+.sg-table-pinned-top {
+  border-bottom: 2px solid var(--sg-color-primary);
+}
+
+.sg-table-pinned-bottom {
+  border-top: 2px solid var(--sg-color-primary);
+}
+
+.sg-table-row-pinned .sg-table-td {
+  background: color-mix(in srgb, var(--sg-color-primary) 4%, var(--sg-color-bg-container));
+}
+
+/* ---- Fixed cells: opaque backgrounds ------------------------------------
+ *
+ * Fixed (sticky) columns need a solid background, otherwise content from
+ * the scrolling columns bleeds through them. These rules are placed last
+ * so their specificity (0,2,0) beats the plain `.sg-table-td` /
+ * `.sg-table-th` rules (0,1,0) that reset background for stripes / theme.
+ *
+ * Order: default → hover → selected → striped (least → most specific).
+ * Each variant keeps the fixed column visually in sync with the rest of
+ * the row, so the "floating" effect disappears entirely.
+ */
+.sg-table-td.sg-table-cell-fixed {
+  background: var(--sg-table-cell-solid-bg);
+}
+
+.sg-table-th.sg-table-cell-fixed {
+  background: var(--sg-table-header-bg);
+}
+
+.sg-table-hoverable .sg-table-row:hover .sg-table-td.sg-table-cell-fixed {
+  background: var(--sg-table-row-hover-bg);
+}
+
+.sg-table-row-selected .sg-table-td.sg-table-cell-fixed,
+.sg-table-row-selected:hover .sg-table-td.sg-table-cell-fixed {
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-table-row-striped .sg-table-td.sg-table-cell-fixed {
+  background: color-mix(in srgb, var(--sg-color-text) 2%, var(--sg-table-cell-solid-bg));
+}
+
+.sg-table-hoverable .sg-table-row-striped:hover .sg-table-td.sg-table-cell-fixed {
+  background: var(--sg-table-row-hover-bg);
+}
+
+/* Subtle shadow on the inner edge so the fixed column visually detaches
+   from the scrolling body. Keeps the table readable when columns collide. */
+.sg-table-td.sg-table-cell-fixed-left,
+.sg-table-th.sg-table-cell-fixed-left {
+  box-shadow: 2px 0 4px -2px color-mix(in srgb, black 12%, transparent);
+}
+
+.sg-table-td.sg-table-cell-fixed-right,
+.sg-table-th.sg-table-cell-fixed-right {
+  box-shadow: -2px 0 4px -2px color-mix(in srgb, black 12%, transparent);
+}
+
+/* ---- Print ---- */
+@media print {
+  .sg-table-toolbar,
+  .sg-table-pagination,
+  .sg-table-selection-bar {
+    display: none !important;
+  }
+  .sg-table-wrapper {
+    overflow: visible !important;
+  }
+  .sg-table-scroll {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+  .sg-table-fullscreen {
+    position: static !important;
+    padding: 0 !important;
+  }
+}

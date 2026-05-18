@@ -1,0 +1,115 @@
+.sg-form {
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+/* Layouts */
+.sg-form-vertical .sg-field {
+  margin-bottom: var(--sg-margin-md);
+}
+
+.sg-form-horizontal .sg-field {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: var(--sg-margin-md);
+}
+
+.sg-form-horizontal .sg-field-label {
+  flex-shrink: 0;
+  min-width: 80px;
+  padding-top: 5px;
+  padding-right: var(--sg-padding-md);
+  text-align: right;
+}
+
+.sg-form-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sg-margin-md);
+}
+
+.sg-form-inline .sg-field {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+}
+
+/* Sizes */
+.sg-form-small {
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-form-large {
+  font-size: var(--sg-font-size-lg);
+}
+
+/* Disabled */
+.sg-form-disabled {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+/* Field label */
+.sg-field-label {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 500;
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size);
+  line-height: 1.5;
+}
+
+.sg-field-required {
+  color: var(--sg-color-error);
+  margin-left: 2px;
+}
+
+.sg-field-optional {
+  color: var(--sg-color-text-tertiary);
+  font-weight: 400;
+  font-size: 0.85em;
+  margin-left: 4px;
+}
+
+/* Field error */
+.sg-field-error {
+  color: var(--sg-color-error);
+  font-size: var(--sg-font-size-sm);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.sg-field-has-error .sg-input,
+.sg-field-has-error .sg-textarea,
+.sg-field-has-error .sg-select-trigger,
+.sg-field-has-error .sg-input-number-input {
+  border-color: var(--sg-color-error);
+}
+
+.sg-field-has-error .sg-input:focus,
+.sg-field-has-error .sg-textarea:focus {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--sg-color-error) 10%, transparent);
+}
+
+/* Field help */
+.sg-field-help {
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm, 12px);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Field extra */
+.sg-field-extra {
+  color: var(--sg-color-text-secondary);
+  font-size: var(--sg-font-size-sm, 12px);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* Horizontal layout label/control wrappers — width and text-align come
+ * from the React component as inline overrides (computed from `labelCol`
+ * / `wrapperCol` props), so this rule only locks down the static parts. */
+.sg-field-label-wrap {
+  flex-shrink: 0;
+}

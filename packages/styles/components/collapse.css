@@ -1,0 +1,166 @@
+/* === Collapse === */
+
+.sg-collapse {
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  line-height: var(--sg-line-height);
+}
+
+/* --- Bordered --- */
+
+.sg-collapse-bordered {
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius-lg);
+  overflow: hidden;
+}
+
+.sg-collapse-bordered .sg-collapse-panel + .sg-collapse-panel {
+  border-top: 1px solid var(--sg-color-border-secondary);
+}
+
+/* --- Ghost --- */
+
+.sg-collapse-ghost {
+  background: transparent;
+  border: none;
+}
+
+.sg-collapse-ghost .sg-collapse-header {
+  background: transparent;
+}
+
+.sg-collapse-ghost .sg-collapse-panel + .sg-collapse-panel {
+  border-top: none;
+}
+
+/* --- Sizes --- */
+
+.sg-collapse-small .sg-collapse-header {
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  min-height: var(--sg-height-sm);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-collapse-small .sg-collapse-content-inner {
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+}
+
+.sg-collapse-middle .sg-collapse-header {
+  padding: var(--sg-padding-sm) var(--sg-padding-lg);
+  min-height: var(--sg-height-md);
+}
+
+.sg-collapse-middle .sg-collapse-content-inner {
+  padding: var(--sg-padding-sm) var(--sg-padding-lg);
+}
+
+.sg-collapse-large .sg-collapse-header {
+  padding: var(--sg-padding-md) var(--sg-padding-xl);
+  min-height: var(--sg-height-lg);
+  font-size: var(--sg-font-size-lg);
+}
+
+.sg-collapse-large .sg-collapse-content-inner {
+  padding: var(--sg-padding-md) var(--sg-padding-xl);
+}
+
+/* --- Panel --- */
+
+.sg-collapse-panel {
+  background: var(--sg-color-bg-container);
+}
+
+.sg-collapse-panel-disabled {
+  opacity: 0.5;
+}
+
+.sg-collapse-panel-disabled .sg-collapse-header {
+  cursor: not-allowed;
+}
+
+/* --- Header --- */
+
+.sg-collapse-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  cursor: pointer;
+  background: var(--sg-color-bg-secondary);
+  font-weight: 500;
+  user-select: none;
+  transition: background var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-collapse-header:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-collapse-panel-disabled .sg-collapse-header:hover {
+  background: var(--sg-color-bg-secondary);
+}
+
+.sg-collapse-header:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: -2px;
+}
+
+.sg-collapse-header-text {
+  flex: 1;
+}
+
+.sg-collapse-extra {
+  margin-left: auto;
+  color: var(--sg-color-text-secondary);
+}
+
+/* --- Arrow --- */
+
+.sg-collapse-arrow {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  position: relative;
+  transition: transform var(--sg-transition-duration) var(--sg-transition-timing);
+  transform: rotate(0deg);
+}
+
+.sg-collapse-arrow::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-collapse-arrow-open {
+  transform: rotate(90deg);
+}
+
+/* --- Content --- */
+
+.sg-collapse-content {
+  /* Dynamic max-height is set via the `--sg-collapse-content-max-height`
+   * CSS variable, so the React component no longer has to emit an inline
+   * `overflow: hidden` either. Default `0px` keeps the content collapsed
+   * before the React state is initialised. */
+  --sg-collapse-content-max-height: 0px;
+
+  transition: max-height 0.3s var(--sg-transition-timing);
+  max-height: var(--sg-collapse-content-max-height);
+  overflow: hidden;
+}
+
+.sg-collapse-content-inner {
+  color: var(--sg-color-text);
+  border-top: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-collapse-ghost .sg-collapse-content-inner {
+  border-top: none;
+}

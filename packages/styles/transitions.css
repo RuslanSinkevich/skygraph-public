@@ -1,0 +1,158 @@
+/* ============================
+   SkyGraph Transitions
+   ============================ */
+
+/* --- Fade --- */
+.sg-fade-enter-from,
+.sg-fade-leave-to {
+  opacity: 0;
+}
+
+.sg-fade-enter-to,
+.sg-fade-leave-from {
+  opacity: 1;
+}
+
+.sg-fade-enter-active,
+.sg-fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+/* --- Slide Up --- */
+.sg-slide-up-enter-from,
+.sg-slide-up-leave-to {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.sg-slide-up-enter-to,
+.sg-slide-up-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sg-slide-up-enter-active,
+.sg-slide-up-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* --- Slide Down --- */
+.sg-slide-down-enter-from,
+.sg-slide-down-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+.sg-slide-down-enter-to,
+.sg-slide-down-leave-from {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sg-slide-down-enter-active,
+.sg-slide-down-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* --- Slide Left --- */
+.sg-slide-left-enter-from,
+.sg-slide-left-leave-to {
+  opacity: 0;
+  transform: translateX(-100%);
+}
+
+.sg-slide-left-enter-to,
+.sg-slide-left-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sg-slide-left-enter-active,
+.sg-slide-left-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* --- Slide Right --- */
+.sg-slide-right-enter-from,
+.sg-slide-right-leave-to {
+  opacity: 0;
+  transform: translateX(100%);
+}
+
+.sg-slide-right-enter-to,
+.sg-slide-right-leave-from {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sg-slide-right-enter-active,
+.sg-slide-right-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+/* --- Zoom --- */
+.sg-zoom-enter-from,
+.sg-zoom-leave-to {
+  opacity: 0;
+  transform: scale(0.85);
+}
+
+.sg-zoom-enter-to,
+.sg-zoom-leave-from {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.sg-zoom-enter-active,
+.sg-zoom-leave-active {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* --- Collapse --- */
+.sg-collapse-enter-from,
+.sg-collapse-leave-to {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+}
+
+.sg-collapse-enter-to,
+.sg-collapse-leave-from {
+  max-height: 1000px;
+  overflow: hidden;
+  opacity: 1;
+}
+
+.sg-collapse-enter-active,
+.sg-collapse-leave-active {
+  transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .sg-fade-enter-active,
+  .sg-fade-leave-active,
+  .sg-slide-up-enter-active,
+  .sg-slide-up-leave-active,
+  .sg-slide-down-enter-active,
+  .sg-slide-down-leave-active,
+  .sg-slide-left-enter-active,
+  .sg-slide-left-leave-active,
+  .sg-slide-right-enter-active,
+  .sg-slide-right-leave-active,
+  .sg-zoom-enter-active,
+  .sg-zoom-leave-active,
+  .sg-collapse-enter-active,
+  .sg-collapse-leave-active {
+    transition-duration: 0.01ms !important;
+  }
+
+  .sg-spin,
+  .sg-skeleton-active .sg-skeleton-avatar,
+  .sg-skeleton-active .sg-skeleton-title,
+  .sg-skeleton-active .sg-skeleton-paragraph li,
+  .sg-badge-status-processing {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

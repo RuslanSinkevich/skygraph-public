@@ -1,0 +1,38 @@
+.sg-radio-group {
+  display: flex;
+  gap: var(--sg-padding-md);
+}
+
+.sg-radio-group-vertical {
+  flex-direction: column;
+}
+
+.sg-radio {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  cursor: pointer;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+.sg-radio-disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-radio-input {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--sg-color-primary);
+  cursor: inherit;
+}
+
+.sg-radio-label {
+  user-select: none;
+}
+
+.sg-radio-group-loading {
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}

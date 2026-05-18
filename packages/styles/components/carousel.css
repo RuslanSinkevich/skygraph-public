@@ -1,0 +1,102 @@
+.sg-carousel {
+  position: relative;
+  font-size: var(--sg-font-size);
+}
+
+.sg-carousel-vertical {
+  display: flex;
+}
+
+.sg-carousel-container {
+  position: relative;
+  overflow: hidden;
+  flex: 1;
+}
+
+.sg-carousel-track {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Slide */
+.sg-carousel-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.sg-carousel-slide-active {
+  position: relative;
+}
+
+/* Slide effect */
+.sg-carousel-effect-slide {
+  transition: transform var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+/* Fade effect */
+.sg-carousel-effect-fade {
+  opacity: 0;
+  transition: opacity var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-carousel-effect-fade.sg-carousel-slide-active {
+  opacity: 1;
+}
+
+/* Dots */
+.sg-carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--sg-padding-xs);
+  padding: var(--sg-padding-sm) 0;
+}
+
+.sg-carousel-dots-vertical {
+  flex-direction: column;
+  align-items: center;
+  padding: 0 var(--sg-padding-sm);
+}
+
+/* Dot positions */
+.sg-carousel-dots-top > .sg-carousel-dots {
+  order: -1;
+}
+
+.sg-carousel-dots-left {
+  flex-direction: row-reverse;
+}
+
+.sg-carousel-dot {
+  width: 16px;
+  height: 3px;
+  border: none;
+  padding: 0;
+  border-radius: 1px;
+  background: var(--sg-color-text-disabled);
+  cursor: pointer;
+  transition: all var(--sg-transition-duration) var(--sg-transition-timing);
+  outline: none;
+}
+
+.sg-carousel-dots-vertical .sg-carousel-dot {
+  width: 3px;
+  height: 16px;
+}
+
+.sg-carousel-dot:hover {
+  background: var(--sg-color-text-tertiary);
+}
+
+.sg-carousel-dot-active {
+  width: 24px;
+  background: var(--sg-color-primary);
+}
+
+.sg-carousel-dots-vertical .sg-carousel-dot-active {
+  width: 3px;
+  height: 24px;
+}

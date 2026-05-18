@@ -1,0 +1,252 @@
+/* === ColorPicker === */
+
+.sg-colorpicker-wrapper {
+  position: relative;
+  display: inline-block;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+.sg-colorpicker-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* --- Sizes --- */
+
+.sg-colorpicker-small .sg-colorpicker-trigger {
+  height: var(--sg-height-sm);
+  padding: 2px var(--sg-padding-xs);
+}
+
+.sg-colorpicker-small .sg-colorpicker-swatch {
+  width: 16px;
+  height: 16px;
+}
+
+.sg-colorpicker-middle .sg-colorpicker-trigger {
+  height: var(--sg-height-md);
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+}
+
+.sg-colorpicker-middle .sg-colorpicker-swatch {
+  width: 20px;
+  height: 20px;
+}
+
+.sg-colorpicker-large .sg-colorpicker-trigger {
+  height: var(--sg-height-lg);
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+}
+
+.sg-colorpicker-large .sg-colorpicker-swatch {
+  width: 24px;
+  height: 24px;
+}
+
+/* --- Trigger --- */
+
+.sg-colorpicker-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg-container);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition:
+    border-color var(--sg-transition-duration) var(--sg-transition-timing),
+    box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-colorpicker-trigger:disabled {
+  cursor: not-allowed;
+}
+
+.sg-colorpicker-trigger:hover {
+  border-color: var(--sg-color-primary-hover);
+}
+
+.sg-colorpicker-trigger:focus-visible {
+  outline: none;
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+/* --- Swatch --- */
+
+.sg-colorpicker-swatch {
+  display: inline-block;
+  border-radius: var(--sg-border-radius-sm);
+  border: 1px solid var(--sg-color-border-secondary);
+  flex-shrink: 0;
+}
+
+.sg-colorpicker-text {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  font-family: monospace;
+}
+
+/* --- Dropdown --- */
+
+.sg-colorpicker-dropdown {
+  position: absolute;
+  z-index: var(--sg-z-dropdown);
+  top: calc(100% + 4px);
+  left: 0;
+  width: 240px;
+  padding: var(--sg-padding-md);
+  background: var(--sg-color-bg-elevated);
+  border-radius: var(--sg-border-radius-lg);
+  box-shadow: var(--sg-shadow-lg);
+  border: 1px solid var(--sg-color-border-secondary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-padding-sm);
+  animation: sg-colorpicker-in var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+@keyframes sg-colorpicker-in {
+  from {
+    opacity: 0;
+    transform: scaleY(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+}
+
+/* --- Saturation panel --- */
+
+.sg-colorpicker-saturation {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  border-radius: var(--sg-border-radius-sm);
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-colorpicker-cursor {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* --- Hue bar --- */
+
+.sg-colorpicker-hue {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(
+    to right,
+    #f00 0%,
+    #ff0 17%,
+    #0f0 33%,
+    #0ff 50%,
+    #00f 67%,
+    #f0f 83%,
+    #f00 100%
+  );
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.sg-colorpicker-hue-cursor {
+  position: absolute;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  box-shadow: 0 0 2px rgba(0, 0, 0, 0.4);
+  background: transparent;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* --- Input row --- */
+
+.sg-colorpicker-input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+}
+
+.sg-colorpicker-preview {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--sg-border-radius-sm);
+  border: 1px solid var(--sg-color-border-secondary);
+  flex-shrink: 0;
+}
+
+.sg-colorpicker-input {
+  flex: 1;
+  min-width: 0;
+  height: var(--sg-height-sm);
+  padding: 0 var(--sg-padding-sm);
+  font-size: var(--sg-font-size-sm);
+  font-family: monospace;
+  color: var(--sg-color-text);
+  background: var(--sg-color-bg-container);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius-sm);
+  outline: none;
+  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-colorpicker-input:focus {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+/* --- Presets --- */
+
+.sg-colorpicker-preset-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-colorpicker-preset-label {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-tertiary);
+}
+
+.sg-colorpicker-preset-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-colorpicker-preset-color {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--sg-border-radius-sm);
+  border: 1px solid var(--sg-color-border-secondary);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform var(--sg-transition-duration) var(--sg-transition-timing),
+    box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-colorpicker-preset-color:hover {
+  transform: scale(1.2);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}

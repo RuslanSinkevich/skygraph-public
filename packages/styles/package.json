@@ -1,0 +1,103 @@
+{
+  "name": "@skygraph/styles",
+  "version": "0.1.0",
+  "description": "SkyGraph framework-agnostic CSS — tokens, themes, transitions, print and 60+ component stylesheets",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "main": "./index.css",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.css"
+    },
+    "./index.css": {
+      "types": "./index.d.ts",
+      "default": "./index.css"
+    },
+    "./tokens": {
+      "types": "./index.d.ts",
+      "default": "./tokens.css"
+    },
+    "./tokens.css": {
+      "types": "./index.d.ts",
+      "default": "./tokens.css"
+    },
+    "./reset": {
+      "types": "./index.d.ts",
+      "default": "./reset.css"
+    },
+    "./reset.css": {
+      "types": "./index.d.ts",
+      "default": "./reset.css"
+    },
+    "./transitions": {
+      "types": "./index.d.ts",
+      "default": "./transitions.css"
+    },
+    "./transitions.css": {
+      "types": "./index.d.ts",
+      "default": "./transitions.css"
+    },
+    "./print": {
+      "types": "./index.d.ts",
+      "default": "./print.css"
+    },
+    "./print.css": {
+      "types": "./index.d.ts",
+      "default": "./print.css"
+    },
+    "./themes/*": {
+      "types": "./index.d.ts",
+      "default": "./themes/*.css"
+    },
+    "./themes/*.css": {
+      "types": "./index.d.ts",
+      "default": "./themes/*.css"
+    },
+    "./components/*": {
+      "types": "./index.d.ts",
+      "default": "./components/*.css"
+    },
+    "./components/*.css": {
+      "types": "./index.d.ts",
+      "default": "./components/*.css"
+    }
+  },
+  "files": [
+    "index.css",
+    "index.d.ts",
+    "reset.css",
+    "tokens.css",
+    "transitions.css",
+    "print.css",
+    "themes",
+    "components",
+    "README.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Ruslan Sinkevich",
+  "homepage": "https://skygraph.ruslansinkevich.ru",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RuslanSinkevich/skygraph.git",
+    "directory": "packages/styles"
+  },
+  "bugs": {
+    "url": "https://github.com/RuslanSinkevich/skygraph/issues"
+  },
+  "keywords": [
+    "css",
+    "design-tokens",
+    "theme",
+    "skygraph",
+    "ui",
+    "framework-agnostic",
+    "design-system"
+  ]
+}

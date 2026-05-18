@@ -1,0 +1,422 @@
+/* Diagram — visual layer for GraphEngine.
+ *
+ * All chrome (canvas, grid, nodes, edges, lasso, hover toolbar) goes
+ * through `--sg-diagram-*` semantic tokens defined in `tokens.css`. Dark
+ * theme overrides those tokens, so every visual surface here re-themes
+ * automatically without per-rule duplication.
+ *
+ * Hover / selected / dragging states use existing `data-*` attributes
+ * emitted by `Diagram.tsx` (`data-selected`, `data-sg-dragging`,
+ * `data-selection-mode`). No new class names are introduced — the visual
+ * polish lives entirely in this file.
+ */
+
+.sg-diagram {
+  /*
+   * Component-local CSS variables. `<Diagram>` overrides `--sg-grid-size`
+   * via inline-style (`style={{ '--sg-grid-size': '20px' }}`) when
+   * snap-to-grid is active so the background pattern stays in sync with
+   * the snap step (and the current zoom). Defaults are declared here so
+   * `var()` always resolves to a real value — required by `check:tokens`.
+   */
+  --sg-grid-size: 20px;
+
+  /* Local aliases that delegate to the new semantic tokens. They keep
+   * back-compat for any consumer who pinned to the old name and let
+   * us redirect the visual treatment globally by overriding the
+   * semantic token only. */
+  --sg-diagram-shadow-md: var(--sg-diagram-node-shadow-hover);
+  --sg-diagram-edge-hover-stroke: var(--sg-diagram-edge-color-hover);
+  --sg-diagram-selected-ring: var(--sg-diagram-edge-color-selected);
+  --sg-diagram-lasso-bg: var(--sg-diagram-lasso-fill);
+  --sg-diagram-lasso-border: var(--sg-diagram-lasso-stroke);
+
+  position: relative;
+  background-color: var(--sg-diagram-canvas-bg);
+  /* Subtle dot-pattern that gives the empty canvas a sense of "infinite
+   * surface" without the noise of full grid lines. The strong-color dot
+   * sits at every 32px; combined with the grid overlay (`.sg-diagram-grid`)
+   * this creates a clean two-tier rhythm. We use radial-gradients so the
+   * pattern stays pin-sharp at any zoom and never bleeds onto nodes
+   * (nodes have their own opaque background). */
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    var(--sg-diagram-grid-line-color) 1px,
+    transparent 1.5px
+  );
+  background-size: 20px 20px;
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  /* Make selection feedback feel snappy but not jarring on dense graphs. */
+  transition: border-color var(--sg-transition-medium);
+}
+
+.sg-diagram:focus-within {
+  border-color: var(--sg-color-primary);
+}
+
+/* While the user is mid-lasso, hint that a multi-select is in progress
+ * by lifting the canvas border to the primary color. */
+.sg-diagram[data-selection-mode='lasso']:hover {
+  cursor: crosshair;
+}
+
+/* Suppress native scroll/pinch when lasso selection is active — the
+ * wrapper owns those gestures via Pointer Events. Single-selection
+ * canvases keep native scroll behaviour because they don't intercept
+ * empty-canvas drags. */
+.sg-diagram[data-selection-mode='lasso'],
+.sg-diagram[data-selection-mode='multi'] {
+  touch-action: none;
+}
+
+/* When the canvas accepts DnD drops (palette → canvas) and the user is
+ * mid-drag, highlight the border so the drop target is obvious. The
+ * `data-sg-drop="true"` attribute is set by `<Diagram>` whenever an
+ * `onDropNode` / `@drop-node` listener is attached.
+ *
+ * The wide outline uses the primary-token so dark mode inverts
+ * automatically. */
+.sg-diagram[data-sg-drop='true'] {
+  /* nothing extra in the rest state — keep the diagram looking calm */
+}
+
+.sg-diagram[data-sg-drop='true'].sg-diagram-drag-over,
+.sg-diagram[data-sg-drop='true']:has(.sg-diagram-drag-indicator) {
+  /* Reserved for future preview / drop indicator. */
+}
+
+/* Snap-to-grid hook — applied when `<Diagram snapToGrid={N}>` is set.
+ * The two-line gradient overlays the dot-pattern from `.sg-diagram` to
+ * give a proper grid reading. The strong color is used for "every Nth"
+ * line by relying on the larger background-size on the wrapper. */
+.sg-diagram-grid {
+  background-image:
+    linear-gradient(to right, var(--sg-diagram-grid-line-color-strong) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--sg-diagram-grid-line-color-strong) 1px, transparent 1px),
+    radial-gradient(circle at 1px 1px, var(--sg-diagram-grid-line-color) 1px, transparent 1.5px);
+  background-size:
+    var(--sg-grid-size) var(--sg-grid-size),
+    var(--sg-grid-size) var(--sg-grid-size),
+    calc(var(--sg-grid-size) / 2) calc(var(--sg-grid-size) / 2);
+}
+
+.sg-diagram-canvas {
+  /* Inner transform host — `<Diagram>` writes translate/scale here so
+   * pan + zoom are applied to nodes and edges as one unit. */
+  transform-origin: 0 0;
+}
+
+/* ─── Nodes ──────────────────────────────────────────────────────────── */
+
+.sg-diagram-node {
+  background: var(--sg-color-bg-elevated);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  box-shadow: var(--sg-diagram-node-shadow);
+  user-select: none;
+  /* `touch-action: none` is essential for Pointer Events + touch: it
+   * tells the browser to suppress the default scroll / pinch-zoom
+   * gesture on this element so our drag handler keeps receiving
+   * `pointermove` events past the first ~10 px. Without it touchscreens
+   * eat the drag the moment they decide it "looks like" a scroll. */
+  touch-action: none;
+  /* `transform` is animated for the dragging-lift effect; keep the
+   * box-shadow + border-color transitions in lock-step so the change
+   * feels like a single response rather than three discrete swaps. */
+  transition:
+    box-shadow var(--sg-transition-medium),
+    transform var(--sg-transition-medium),
+    border-color var(--sg-transition-medium);
+}
+
+.sg-diagram-node:hover {
+  border-color: var(--sg-color-text-secondary);
+  box-shadow: var(--sg-diagram-node-shadow-hover);
+  /* Tiny lift to convey interactivity without jumping the layout. */
+  transform: translateY(-1px);
+}
+
+.sg-diagram-node[data-sg-dragging='true'] {
+  box-shadow: var(--sg-diagram-node-shadow-dragging);
+  cursor: grabbing;
+  /* Pop further out of the canvas while moving. Combined with the
+   * heavier shadow this reads as "this node is now floating above
+   * the rest". */
+  transform: scale(1.04) translateY(-2px);
+  border-color: var(--sg-color-primary);
+}
+
+.sg-diagram-node-selected,
+.sg-diagram-node[data-selected='true'] {
+  border-color: var(--sg-diagram-selected-ring);
+  box-shadow: var(--sg-diagram-node-shadow-selected);
+}
+
+/* When a selected node is also being dragged, the dragging shadow wins
+ * (deeper elevation), but we keep the primary border so the selection
+ * is still legible on the moving copy. */
+.sg-diagram-node-selected[data-sg-dragging='true'],
+.sg-diagram-node[data-selected='true'][data-sg-dragging='true'] {
+  box-shadow: var(--sg-diagram-node-shadow-dragging);
+  border-color: var(--sg-color-primary);
+}
+
+.sg-diagram-node-rect {
+  /* default; nothing extra */
+}
+
+.sg-diagram-node-ellipse {
+  border-radius: 50%;
+}
+
+.sg-diagram-node-polygon,
+.sg-diagram-node-path {
+  /* For non-rect outlines the bbox-sized DIV is just a label container — the
+   * actual shape lives in the SVG overlay (or a custom renderer). */
+  background: transparent;
+  border: 1px dashed var(--sg-color-border);
+  box-shadow: none;
+}
+
+.sg-diagram-node-polygon:hover,
+.sg-diagram-node-path:hover {
+  /* The label container is purely decorative for non-rect shapes; the
+   * lift effect from the base rule would clip against the underlying
+   * SVG, so we suppress it. */
+  transform: none;
+  box-shadow: none;
+  border-color: var(--sg-color-text-secondary);
+}
+
+.sg-diagram-node-label {
+  padding: 0 var(--sg-padding-md);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-diagram-node-draggable {
+  /* legacy hook kept for tests + back-compat — visual transitions live on
+   * `.sg-diagram-node` itself now so they apply equally to non-draggable
+   * nodes that still get hover / selected feedback. */
+}
+
+.sg-diagram-node-draggable:active {
+  cursor: grabbing;
+}
+
+/* ─── Edges ──────────────────────────────────────────────────────────── */
+
+.sg-diagram-edges {
+  /* sits behind nodes; per-edge groups override pointer-events when
+   * interactivity is enabled. */
+}
+
+.sg-diagram-edge {
+  stroke: var(--sg-diagram-edge-color);
+  stroke-width: 1.75;
+  fill: none;
+  /* `linejoin` keeps orthogonal-routed edges crisp at corners; `linecap`
+   * rounds the start/end so an edge feels finished where it meets the
+   * node border instead of clipping abruptly. */
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  transition:
+    stroke var(--sg-transition-fast),
+    stroke-width var(--sg-transition-fast);
+}
+
+/* Bezier edges read better with a touch more weight — the curve
+ * naturally thins at the inflection point, which makes the same
+ * stroke-width look lighter than its orthogonal counterpart. */
+.sg-diagram-edge-bezier {
+  stroke-width: 2;
+}
+
+/* Dashed for manual-routed waypoints — visually distinguishes a hand-
+ * drawn polyline from auto-routed ones. */
+.sg-diagram-edge-manual {
+  stroke-dasharray: 6 4;
+}
+
+.sg-diagram-edge-hit:hover + .sg-diagram-edge,
+g[data-edge-id]:hover .sg-diagram-edge {
+  stroke: var(--sg-diagram-edge-hover-stroke);
+  stroke-width: 2.5;
+}
+
+/* Highlight edges connected to a selected node when the selection is
+ * driven via the data-attr API. The DOM doesn't tag edges by selection
+ * (they're SVG paths), so this is best-effort: we emphasise the
+ * `selected` color on `:focus-within` of the SVG group. */
+g[data-edge-id]:focus-within .sg-diagram-edge {
+  stroke: var(--sg-diagram-edge-color-selected);
+  stroke-width: 2.5;
+}
+
+/* ─── Arrow markers ─────────────────────────────────────────────────── */
+/*
+ * SVG markers don't inherit `stroke` from the path automatically — the
+ * `context-stroke` keyword in the marker `fill` solves it where
+ * supported, and the fallback below keeps Firefox / Safari < TP rendering
+ * the arrow in the right colour by using `currentColor`.
+ *
+ * `.sg-diagram-edges` carries `currentColor` from the token so the arrow
+ * inherits the default colour; per-state overrides (`:hover`) below adjust
+ * `currentColor` so the arrow lights up together with the line.
+ */
+.sg-diagram-edges {
+  color: var(--sg-diagram-edge-color);
+}
+
+.sg-diagram-arrow-fill {
+  fill: currentColor;
+}
+
+g[data-edge-id]:hover {
+  color: var(--sg-diagram-edge-hover-stroke);
+}
+
+/* ─── Hover mini-toolbar ─────────────────────────────────────────────── */
+
+.sg-diagram-hover-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  background: var(--sg-color-bg-elevated);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  box-shadow: var(--sg-shadow-lg);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+  /* Smooth opacity-in via the parent toolkit; transition lives here so
+   * appearance stays consistent across NodeHoverActions / EdgeHoverActions. */
+  transition: box-shadow var(--sg-transition-medium);
+}
+
+.sg-diagram-hover-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 var(--sg-padding-xs);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--sg-border-radius);
+  color: var(--sg-color-text);
+  font: inherit;
+  cursor: pointer;
+  transition:
+    background var(--sg-transition-fast),
+    border-color var(--sg-transition-fast),
+    color var(--sg-transition-fast);
+}
+
+.sg-diagram-hover-action:hover {
+  background: var(--sg-color-bg-hover);
+  border-color: var(--sg-color-border);
+}
+
+.sg-diagram-hover-action:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 1px;
+}
+
+.sg-diagram-hover-action:active {
+  background: var(--sg-color-bg-secondary);
+}
+
+/* ─── Palette items (optional consumer hook) ─────────────────────────── */
+
+/*
+ * `.sg-diagram-palette-item` is a reusable hook for "palette" entries
+ * that the consumer can drag onto the canvas (HTML5 DnD). The class is
+ * opt-in — `<Diagram>` itself doesn't render the palette, but consumers
+ * (`workflow-editor` showcase, etc.) can pick this up so the palette
+ * matches the diagram visual rhythm and behaves consistently.
+ *
+ * Combine with `draggable="true"` and `onDragStart` setting
+ * `dataTransfer.setData('application/x-sg-node', ...)` for the canvas
+ * to recognise the drop.
+ */
+.sg-diagram-palette {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-diagram-palette-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  width: 100%;
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg-elevated);
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size);
+  text-align: left;
+  cursor: grab;
+  user-select: none;
+  transition:
+    background var(--sg-transition-fast),
+    border-color var(--sg-transition-fast),
+    box-shadow var(--sg-transition-fast),
+    transform var(--sg-transition-fast);
+}
+
+.sg-diagram-palette-item:hover {
+  border-color: var(--sg-color-primary);
+  background: var(--sg-color-bg-hover);
+  box-shadow: var(--sg-diagram-node-shadow-hover);
+  transform: translateY(-1px);
+}
+
+.sg-diagram-palette-item:active {
+  cursor: grabbing;
+  transform: scale(0.98);
+}
+
+.sg-diagram-palette-item:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 2px;
+}
+
+/* Icon slot inside the palette item (emoji / SVG / character glyph). */
+.sg-diagram-palette-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  font-size: var(--sg-font-size-lg, 16px);
+  color: var(--sg-color-text-secondary);
+}
+
+/* ─── Lasso rubber-band ──────────────────────────────────────────────── */
+
+.sg-diagram-lasso {
+  background: var(--sg-diagram-lasso-bg);
+  border: 1px dashed var(--sg-diagram-lasso-border);
+  border-radius: 2px;
+  /* Backdrop blur on the lasso surface helps pick out which nodes fall
+   * inside on dense graphs (the desaturation gives a "cut-out" feel).
+   * `backdrop-filter` is gracefully ignored where unsupported — the
+   * dashed border + tinted fill remain the source of truth. */
+  backdrop-filter: saturate(0.85);
+  -webkit-backdrop-filter: saturate(0.85);
+  /* Inner glow + outer shadow add weight without hardcoding a colour:
+   * both reuse the primary-bg semantic token, so dark theme inverts
+   * automatically. */
+  box-shadow:
+    inset 0 0 0 1px var(--sg-color-primary-bg),
+    0 1px 4px var(--sg-color-primary-bg);
+}

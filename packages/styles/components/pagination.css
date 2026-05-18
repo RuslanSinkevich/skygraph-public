@@ -1,0 +1,162 @@
+/* inline-flex: shrink-wrap to content so wide parents (e.g. doc previews)
+   don't leave a dead zone to the right of the controls. */
+.sg-pagination {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sg-margin-xs);
+  row-gap: var(--sg-padding-sm);
+  font-size: var(--sg-font-size);
+  max-width: 100%;
+}
+
+.sg-pagination-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.sg-pagination-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Lock the cell to a square so 1-, 2- and 3-digit pages render at the
+   * same width — combined with the 7-slot `buildPages` shape this keeps
+   * the strip width identical on every page transition (no layout jump
+   * between page 1 → 8 → 50). */
+  min-width: var(--sg-height-md);
+  width: var(--sg-height-md);
+  height: var(--sg-height-md);
+  padding: 0 var(--sg-padding-xs);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg);
+  color: var(--sg-color-text);
+  cursor: pointer;
+  transition: all var(--sg-transition-duration) var(--sg-transition-timing);
+  font-size: var(--sg-font-size);
+  line-height: 1;
+}
+
+/* Prev/next still inherit the square base but auto-grow for wider arrow
+ * glyphs / labels on RTL locales. */
+.sg-pagination-prev,
+.sg-pagination-next {
+  width: auto;
+  min-width: var(--sg-height-md);
+}
+
+.sg-pagination-item:hover:not(:disabled) {
+  color: var(--sg-color-primary);
+  border-color: var(--sg-color-primary);
+}
+
+.sg-pagination-item:disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+  border-color: var(--sg-color-border);
+}
+
+.sg-pagination-item-active {
+  color: var(--sg-color-white, #fff);
+  background: var(--sg-color-primary);
+  border-color: var(--sg-color-primary);
+}
+
+.sg-pagination-item-active:hover:not(:disabled) {
+  color: var(--sg-color-white, #fff);
+  background: var(--sg-color-primary-hover);
+  border-color: var(--sg-color-primary-hover);
+}
+
+.sg-pagination-ellipsis {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: var(--sg-height-md);
+  height: var(--sg-height-md);
+  color: var(--sg-color-text-disabled);
+  letter-spacing: 2px;
+}
+
+.sg-pagination-total {
+  color: var(--sg-color-text-secondary);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+}
+
+.sg-pagination-size-changer {
+  height: var(--sg-height-md);
+  padding: 0 var(--sg-padding-sm);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg);
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size-sm);
+  font-family: inherit;
+  cursor: pointer;
+  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-pagination-size-changer:hover:not(:disabled) {
+  border-color: var(--sg-color-primary);
+}
+
+/* Native <select> draws its own focus ring — reset outline and use one
+   soft ring so we don't stack a second halo on top of the browser chrome. */
+.sg-pagination-size-changer:focus,
+.sg-pagination-size-changer:focus-visible {
+  outline: none;
+}
+
+.sg-pagination-size-changer:focus-visible {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-pagination-quick-jumper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  color: var(--sg-color-text-secondary);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+}
+
+.sg-pagination-jumper-input {
+  box-sizing: border-box;
+  width: 52px;
+  min-width: 52px;
+  height: var(--sg-height-md);
+  padding: 0 var(--sg-padding-xs);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg);
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size-sm);
+  font-family: inherit;
+  text-align: center;
+  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-pagination-jumper-input:hover:not(:disabled) {
+  border-color: var(--sg-color-primary);
+}
+
+.sg-pagination-jumper-input:focus,
+.sg-pagination-jumper-input:focus-visible {
+  outline: none;
+}
+
+.sg-pagination-jumper-input:focus-visible {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-pagination-simple {
+  gap: var(--sg-padding-sm);
+}
+
+.sg-pagination-simple-pager {
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size);
+}

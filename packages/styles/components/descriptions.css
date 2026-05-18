@@ -1,0 +1,82 @@
+.sg-descriptions {
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  width: 100%;
+}
+
+.sg-descriptions-title {
+  font-size: var(--sg-font-size-lg);
+  font-weight: 600;
+  color: var(--sg-color-text);
+  margin-bottom: var(--sg-margin-md);
+  line-height: var(--sg-line-height);
+}
+
+.sg-descriptions-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.sg-descriptions-row {
+  vertical-align: top;
+}
+
+.sg-descriptions-item-label {
+  font-weight: 500;
+  color: var(--sg-color-text-secondary);
+  white-space: nowrap;
+  text-align: left;
+  padding: var(--sg-padding-sm) var(--sg-padding-md) var(--sg-padding-sm) 0;
+  line-height: var(--sg-line-height);
+}
+
+.sg-descriptions-item-content {
+  color: var(--sg-color-text);
+  padding: var(--sg-padding-sm) var(--sg-padding-md) var(--sg-padding-sm) 0;
+  line-height: var(--sg-line-height);
+  word-break: break-word;
+}
+
+.sg-descriptions-colon {
+  margin-right: var(--sg-margin-sm);
+}
+
+/* Bordered */
+.sg-descriptions-bordered .sg-descriptions-table {
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius);
+}
+
+.sg-descriptions-bordered .sg-descriptions-item-label,
+.sg-descriptions-bordered .sg-descriptions-item-content {
+  padding: var(--sg-padding-sm) var(--sg-padding-lg);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-descriptions-bordered .sg-descriptions-item-label {
+  background: var(--sg-color-bg-secondary);
+  border-right: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-descriptions-bordered .sg-descriptions-row:last-child .sg-descriptions-item-label,
+.sg-descriptions-bordered .sg-descriptions-row:last-child .sg-descriptions-item-content {
+  border-bottom: none;
+}
+
+/* Sizes */
+.sg-descriptions-small .sg-descriptions-item-label,
+.sg-descriptions-small .sg-descriptions-item-content {
+  padding: var(--sg-padding-xs) var(--sg-padding-sm) var(--sg-padding-xs) 0;
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-descriptions-small.sg-descriptions-bordered .sg-descriptions-item-label,
+.sg-descriptions-small.sg-descriptions-bordered .sg-descriptions-item-content {
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+}
+
+.sg-descriptions-middle .sg-descriptions-item-label,
+.sg-descriptions-middle .sg-descriptions-item-content {
+  padding: var(--sg-padding-sm) var(--sg-padding-md) var(--sg-padding-sm) 0;
+}

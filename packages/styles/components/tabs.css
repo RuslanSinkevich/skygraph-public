@@ -1,0 +1,117 @@
+/* ── Shared ─────────────────────────────────────────────────────────── */
+
+.sg-tabs {
+  font-size: var(--sg-font-size);
+}
+
+.sg-tabs-tab-disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-tabs-tab-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}
+
+.sg-tabs-tab-loading.sg-tabs-tab-active {
+  --sg-spin-color: var(--sg-color-primary);
+}
+
+.sg-tabs-content {
+  color: var(--sg-color-text);
+}
+
+/* ── Line (minimal underline) ───────────────────────────────────────── */
+
+.sg-tabs-line .sg-tabs-nav {
+  display: flex;
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+  margin-bottom: var(--sg-margin-md);
+}
+
+.sg-tabs-line .sg-tabs-tab {
+  padding: var(--sg-padding-sm) var(--sg-padding-lg);
+  cursor: pointer;
+  color: var(--sg-color-text-secondary);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  transition: all var(--sg-transition-duration);
+  user-select: none;
+}
+
+.sg-tabs-line .sg-tabs-tab:hover {
+  color: var(--sg-color-primary-hover);
+}
+
+.sg-tabs-line .sg-tabs-tab-active {
+  color: var(--sg-color-primary);
+  border-bottom-color: var(--sg-color-primary);
+}
+
+/* ── Card (classic bordered tabs + panel) ─────────────────────────── */
+
+.sg-tabs-card {
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius);
+  overflow: hidden;
+  background: var(--sg-color-bg);
+}
+
+.sg-tabs-card .sg-tabs-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  margin: 0;
+  padding: 4px 4px 0;
+  background: var(--sg-color-bg-secondary);
+  border-bottom: none;
+}
+
+.sg-tabs-card .sg-tabs-tab {
+  /* Reserve the same vertical space for active and idle tabs so flipping
+   * between them never resizes the nav strip (no more 1px jitter on tab
+   * switch). The bottom border is always drawn but transparent until the
+   * tab becomes active. */
+  padding: var(--sg-padding-sm) var(--sg-padding-lg);
+  cursor: pointer;
+  margin: 0 2px -1px 0;
+  color: var(--sg-color-text-secondary);
+  border: 1px solid transparent;
+  border-bottom: 1px solid transparent;
+  border-radius: var(--sg-border-radius-sm) var(--sg-border-radius-sm) 0 0;
+  background: transparent;
+  transition:
+    color var(--sg-transition-duration),
+    background var(--sg-transition-duration),
+    border-color var(--sg-transition-duration);
+  user-select: none;
+  position: relative;
+  z-index: 0;
+}
+
+.sg-tabs-card .sg-tabs-tab:hover {
+  color: var(--sg-color-primary-hover);
+  background: color-mix(in srgb, var(--sg-color-bg) 55%, var(--sg-color-bg-secondary));
+}
+
+.sg-tabs-card .sg-tabs-tab-active {
+  color: var(--sg-color-primary);
+  background: var(--sg-color-bg);
+  border-color: var(--sg-color-border-secondary);
+  border-bottom-color: var(--sg-color-bg);
+  z-index: 1;
+}
+
+.sg-tabs-card .sg-tabs-tab-active:hover {
+  color: var(--sg-color-primary);
+}
+
+.sg-tabs-card .sg-tabs-content {
+  margin: 0;
+  padding: var(--sg-padding-md) var(--sg-padding-lg);
+  border-top: 1px solid var(--sg-color-border-secondary);
+  min-height: 0;
+}

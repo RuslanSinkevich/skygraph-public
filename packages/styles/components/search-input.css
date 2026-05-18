@@ -1,0 +1,112 @@
+/* SearchInput */
+.sg-search-input {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sg-search-input-icon {
+  position: absolute;
+  left: var(--sg-padding-sm);
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-lg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+/*
+ * `.sg-search-input-field` — тот же элемент, что и `.sg-input`.
+ * `padding` shorthand в `.sg-input` ставится первым (по порядку @import),
+ * поэтому longhand-правила здесь (ниже по каскаду) корректно перебивают его
+ * без `!important`.
+ */
+.sg-search-input-field {
+  padding-left: calc(var(--sg-padding-sm) + 20px);
+  padding-right: calc(var(--sg-padding-sm) + 24px);
+}
+
+.sg-search-input-with-button .sg-search-input-field {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.sg-search-input .sg-spin {
+  position: absolute;
+  right: var(--sg-padding-sm);
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+}
+
+.sg-search-input-clear {
+  position: absolute;
+  right: var(--sg-padding-sm);
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--sg-color-text-quaternary);
+  font-size: var(--sg-font-size);
+  line-height: 1;
+  transition: color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-search-input-with-button .sg-search-input-clear {
+  right: calc(var(--sg-height-md) + var(--sg-padding-sm));
+}
+
+.sg-search-input-clear:hover {
+  color: var(--sg-color-text-secondary);
+}
+
+.sg-search-input-btn {
+  flex-shrink: 0;
+  height: var(--sg-height-md);
+  min-width: var(--sg-height-md);
+  padding: 0 var(--sg-padding-md);
+  background: var(--sg-color-primary);
+  color: var(--sg-color-white);
+  border: 1px solid var(--sg-color-primary);
+  border-left: none;
+  border-radius: 0 var(--sg-border-radius) var(--sg-border-radius) 0;
+  cursor: pointer;
+  font-size: var(--sg-font-size);
+  transition: background var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-search-input-btn:hover {
+  background: var(--sg-color-primary-hover);
+}
+
+.sg-search-input-btn:disabled {
+  background: var(--sg-color-bg-disabled);
+  border-color: var(--sg-color-border);
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.sg-search-input-small .sg-search-input-btn {
+  height: var(--sg-height-sm);
+  min-width: var(--sg-height-sm);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-search-input-large .sg-search-input-btn {
+  height: var(--sg-height-lg);
+  min-width: var(--sg-height-lg);
+  font-size: var(--sg-font-size-lg);
+}
+
+.sg-search-input-disabled {
+  opacity: 0.65;
+}

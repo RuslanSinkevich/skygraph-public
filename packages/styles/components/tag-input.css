@@ -1,0 +1,94 @@
+/* TagInput */
+.sg-tag-input {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sg-margin-xs);
+  min-height: var(--sg-height-md);
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  background: var(--sg-color-bg-container);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  cursor: text;
+  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing),
+    box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-tag-input:hover {
+  border-color: var(--sg-color-primary-hover);
+}
+
+.sg-tag-input:focus-within {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-tag-input-field {
+  flex: 1;
+  min-width: 80px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size);
+  font-family: inherit;
+  line-height: var(--sg-line-height);
+  padding: 0;
+}
+
+.sg-tag-input-field::placeholder {
+  color: var(--sg-color-text-placeholder);
+}
+
+.sg-tag-input .sg-tag {
+  margin: 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-tag-input-count {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-tertiary);
+  margin-left: auto;
+  white-space: nowrap;
+  padding-left: var(--sg-padding-xs);
+}
+
+/* Sizes */
+.sg-tag-input-small {
+  min-height: var(--sg-height-sm);
+  padding: 2px var(--sg-padding-xs);
+}
+
+.sg-tag-input-small .sg-tag-input-field {
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-tag-input-large {
+  min-height: var(--sg-height-lg);
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+}
+
+.sg-tag-input-large .sg-tag-input-field {
+  font-size: var(--sg-font-size-lg);
+}
+
+/* Disabled */
+.sg-tag-input-disabled {
+  background: var(--sg-color-bg-disabled);
+  cursor: not-allowed;
+}
+
+.sg-tag-input-disabled:hover {
+  border-color: var(--sg-color-border);
+}
+
+.sg-tag-input-disabled:focus-within {
+  border-color: var(--sg-color-border);
+  box-shadow: none;
+}
+
+.sg-tag-input-disabled .sg-tag-input-field {
+  cursor: not-allowed;
+}

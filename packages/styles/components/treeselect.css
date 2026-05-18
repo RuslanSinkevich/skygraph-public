@@ -1,0 +1,219 @@
+/* === TreeSelect === */
+
+.sg-treeselect {
+  position: relative;
+  display: inline-block;
+  min-width: 180px;
+  font-size: var(--sg-font-size);
+}
+
+.sg-treeselect-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Selector trigger */
+
+.sg-treeselect-selector {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--sg-height-md);
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+  background: var(--sg-color-bg-container);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  cursor: pointer;
+  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing);
+  gap: var(--sg-padding-xs);
+}
+
+.sg-treeselect-small .sg-treeselect-selector {
+  min-height: var(--sg-height-sm);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-treeselect-large .sg-treeselect-selector {
+  min-height: var(--sg-height-lg);
+  font-size: var(--sg-font-size-lg);
+}
+
+.sg-treeselect-open .sg-treeselect-selector {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-treeselect-selector:hover {
+  border-color: var(--sg-color-primary-hover);
+}
+
+/* Selection wrap */
+
+.sg-treeselect-selection-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.sg-treeselect-placeholder {
+  color: var(--sg-color-text-placeholder);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-treeselect-selection-item {
+  color: var(--sg-color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tags (multiple mode) */
+
+.sg-treeselect-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  padding: 1px var(--sg-padding-sm);
+  background: var(--sg-color-bg-hover);
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius-sm);
+  font-size: var(--sg-font-size-sm);
+  line-height: 20px;
+}
+
+.sg-treeselect-tag-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sg-treeselect-tag-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  color: var(--sg-color-text-tertiary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all var(--sg-transition-duration);
+  flex-shrink: 0;
+}
+
+.sg-treeselect-tag-close:hover {
+  color: var(--sg-color-text);
+  background: var(--sg-color-border-secondary);
+}
+
+.sg-treeselect-tag-rest {
+  color: var(--sg-color-text-tertiary);
+  font-style: italic;
+}
+
+/* Search input */
+
+.sg-treeselect-search-input {
+  flex: 1;
+  min-width: 60px;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: inherit;
+  color: var(--sg-color-text);
+  padding: 0;
+  line-height: var(--sg-line-height);
+}
+
+.sg-treeselect-search-input::placeholder {
+  color: var(--sg-color-text-placeholder);
+}
+
+/* Actions (clear + arrow) */
+
+.sg-treeselect-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  flex-shrink: 0;
+}
+
+.sg-treeselect-arrow {
+  font-size: 10px;
+  color: var(--sg-color-text-tertiary);
+}
+
+.sg-treeselect-clear {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-size: 12px;
+  color: var(--sg-color-text-tertiary);
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all var(--sg-transition-duration);
+}
+
+.sg-treeselect-clear:hover {
+  color: var(--sg-color-text);
+  background: var(--sg-color-border-secondary);
+}
+
+/* Dropdown */
+
+.sg-treeselect-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: var(--sg-z-dropdown);
+  margin-top: 4px;
+  padding: var(--sg-padding-sm);
+  background: var(--sg-color-bg-elevated);
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius-lg);
+  box-shadow: var(--sg-shadow-lg);
+  max-height: 300px;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.sg-treeselect-dropdown::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sg-treeselect-dropdown::-webkit-scrollbar-thumb {
+  background: var(--sg-color-border);
+  border-radius: 3px;
+}
+
+.sg-treeselect-dropdown::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sg-treeselect-empty {
+  padding: var(--sg-padding-lg);
+  text-align: center;
+  color: var(--sg-color-text-tertiary);
+}
+
+/* Tree inside dropdown overrides */
+
+.sg-treeselect-dropdown .sg-tree {
+  font-size: inherit;
+}
+
+.sg-treeselect-dropdown .sg-tree-node {
+  padding: 1px 0;
+  min-height: 26px;
+}
+

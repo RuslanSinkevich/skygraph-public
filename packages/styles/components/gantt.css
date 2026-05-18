@@ -1,0 +1,161 @@
+/* Gantt — task bars over a discrete time axis. */
+
+.sg-gantt {
+  background: var(--sg-color-bg);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  font-family: inherit;
+}
+
+.sg-gantt-sidebar {
+  background: var(--sg-color-bg-container);
+  border-right: 1px solid var(--sg-color-border);
+  overflow: hidden;
+}
+
+.sg-gantt-sidebar-header {
+  border-bottom: 1px solid var(--sg-color-border);
+  background: var(--sg-color-bg-elevated);
+}
+
+.sg-gantt-sidebar-row {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sg-padding-md);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-gantt-main {
+  background: var(--sg-color-bg);
+  position: relative;
+}
+
+.sg-gantt-header {
+  background: var(--sg-color-bg-elevated);
+  border-bottom: 1px solid var(--sg-color-border);
+}
+
+.sg-gantt-tick {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 var(--sg-padding-xs);
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  border-right: 1px solid var(--sg-color-border-secondary);
+  box-sizing: border-box;
+}
+
+.sg-gantt-grid {
+  /* Background grid of vertical column dividers — repeated linear-gradient
+   * over `--sg-gantt-column-width` (set via inline style by the component). */
+}
+
+.sg-gantt-row {
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-gantt-row:nth-child(even) {
+  background: var(--sg-color-bg-secondary);
+}
+
+.sg-gantt-bar {
+  background: var(--sg-color-primary);
+  color: var(--sg-color-white);
+  border-radius: var(--sg-border-radius-sm);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sg-padding-xs);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  /* The shadow token includes both an outer drop and an inner highlight,
+   * giving each bar a tiny 3D feel without any borders. Keeps a dense
+   * gantt looking organised even when bars overlap rows. */
+  box-shadow: var(--sg-gantt-bar-shadow);
+  box-sizing: border-box;
+  transition:
+    box-shadow var(--sg-transition-medium),
+    transform var(--sg-transition-medium),
+    filter var(--sg-transition-fast);
+}
+
+.sg-gantt-bar:hover {
+  box-shadow: var(--sg-gantt-bar-shadow-hover);
+  /* `filter: brightness(1.05)` lifts saturated bars without needing a
+   * dedicated "primary-hover" colour for every status. Negligible cost
+   * on modern compositors. */
+  filter: brightness(1.05);
+  transform: translateY(-1px);
+}
+
+.sg-gantt-bar-draggable {
+  cursor: grab;
+}
+
+.sg-gantt-bar-draggable:active {
+  cursor: grabbing;
+  transform: translateY(0);
+  filter: brightness(1.08);
+}
+
+.sg-gantt-bar-resizable {
+  /* hover state expands the resize handle visibility */
+}
+
+.sg-gantt-bar-progress {
+  background: var(--sg-color-primary-active);
+  border-radius: inherit;
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.sg-gantt-bar-label {
+  text-overflow: ellipsis;
+  overflow: hidden;
+  /* Drop-shadow on the text increases legibility on saturated bar
+   * fills (esp. the bright primary blue). Cheap, single-line filter
+   * that doesn't disturb the bar background. */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.20);
+}
+
+.sg-gantt-bar-resize {
+  background: transparent;
+  border-left: 1px solid var(--sg-color-border-secondary);
+  opacity: 0;
+  transition: opacity var(--sg-transition-fast);
+}
+
+.sg-gantt-bar:hover .sg-gantt-bar-resize {
+  opacity: 0.6;
+}
+
+.sg-gantt-bar-resize:hover,
+.sg-gantt-bar-resize:focus-visible {
+  opacity: 1;
+}
+
+.sg-gantt-deps {
+  color: var(--sg-gantt-dep-color);
+}
+
+.sg-gantt-dep {
+  /* stroke + marker colour come from `currentColor` set on .sg-gantt-deps.
+   * `stroke-linecap: round` + a slightly thicker stroke give dependency
+   * lines a hand-drawn feel that distinguishes them from grid lines. */
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.25;
+  transition: stroke var(--sg-transition-fast);
+}
+
+.sg-gantt-dep:hover {
+  stroke: var(--sg-color-primary);
+}

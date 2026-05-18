@@ -1,0 +1,17 @@
+/* SkyGraph reset — all sg-* scoped elements */
+
+[class^="sg-"],
+[class*=" sg-"],
+[class^="sg-"] *,
+[class*=" sg-"] *,
+[class^="sg-"] *::before,
+[class*=" sg-"] *::before,
+[class^="sg-"] *::after,
+[class*=" sg-"] *::after {
+  box-sizing: border-box;
+}
+
+[class^="sg-"] button,
+[class*=" sg-"] button {
+  font-family: inherit;
+}

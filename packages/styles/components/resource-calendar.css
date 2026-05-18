@@ -1,0 +1,219 @@
+/* Resource Calendar — shifts / bookings per resource lane.
+ *
+ * All colours route through `--sg-*` global tokens. Component-local
+ * variables are scoped under `.sg-rcal` so external themes can
+ * override them per-instance without bleeding to other components.
+ */
+
+.sg-rcal {
+  /* Component-local tokens — derived from global ones, redirect freely. */
+  --sg-rcal-availability-off-bg: var(--sg-color-bg-disabled);
+  --sg-rcal-conflict-color: var(--sg-color-error);
+  --sg-rcal-conflict-bg: var(--sg-color-error-bg);
+  --sg-rcal-tentative-bg: var(--sg-color-primary-bg);
+  --sg-rcal-tentative-border: var(--sg-color-primary);
+  --sg-rcal-confirmed-bg: var(--sg-color-primary);
+  --sg-rcal-confirmed-text: var(--sg-color-white);
+  --sg-rcal-marker-size: 10px;
+
+  background: var(--sg-color-bg);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  font-family: inherit;
+}
+
+.sg-rcal-sidebar {
+  background: var(--sg-color-bg-container);
+  border-right: 1px solid var(--sg-color-border);
+  overflow: hidden;
+}
+
+.sg-rcal-sidebar-header {
+  border-bottom: 1px solid var(--sg-color-border);
+  background: var(--sg-color-bg-elevated);
+}
+
+.sg-rcal-sidebar-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: 0 var(--sg-padding-md);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-rcal-sidebar-marker {
+  display: inline-block;
+  flex-shrink: 0;
+  width: var(--sg-rcal-marker-size);
+  height: var(--sg-rcal-marker-size);
+  border-radius: 50%;
+  background: var(--sg-color-primary);
+}
+
+.sg-rcal-sidebar-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sg-rcal-sidebar-capacity {
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-rcal-main {
+  background: var(--sg-color-bg);
+  position: relative;
+}
+
+.sg-rcal-header {
+  background: var(--sg-color-bg-elevated);
+  border-bottom: 1px solid var(--sg-color-border);
+}
+
+.sg-rcal-tick {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 var(--sg-padding-xs);
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  border-right: 1px solid var(--sg-color-border-secondary);
+  box-sizing: border-box;
+}
+
+.sg-rcal-row {
+  /* Lane separators are rendered via the new `--sg-rcal-lane-divider`
+   * token, which is currently aliased to `--sg-color-border-secondary`
+   * but lets a theme dial it down independently when bookings get
+   * dense. */
+  border-bottom: 1px solid var(--sg-rcal-lane-divider);
+}
+
+.sg-rcal-row:nth-child(even) {
+  background: var(--sg-color-bg-secondary);
+}
+
+.sg-rcal-slot {
+  /* Vertical divider — kept softer than the row separator so the
+   * grid feels horizontal-first (booking rows read left-to-right). */
+  border-right: 1px solid var(--sg-rcal-lane-divider);
+  box-sizing: border-box;
+}
+
+.sg-rcal-availability-off {
+  background-color: var(--sg-rcal-availability-off-bg);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 6px,
+    var(--sg-color-border-secondary) 6px,
+    var(--sg-color-border-secondary) 7px
+  );
+  opacity: 0.55;
+}
+
+.sg-rcal-assignment {
+  background: var(--sg-rcal-tentative-bg);
+  border: 1px solid var(--sg-rcal-tentative-border);
+  color: var(--sg-color-text);
+  border-radius: var(--sg-border-radius-sm);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sg-padding-xs);
+  font-size: var(--sg-font-size-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  /* Reuse the gantt-bar shadow so resource bookings and gantt task bars
+   * feel like the same primitive rendered in two contexts. */
+  box-shadow: var(--sg-gantt-bar-shadow);
+  box-sizing: border-box;
+  transition:
+    box-shadow var(--sg-transition-medium),
+    transform var(--sg-transition-medium),
+    filter var(--sg-transition-fast);
+}
+
+.sg-rcal-assignment:hover {
+  box-shadow: var(--sg-gantt-bar-shadow-hover);
+  transform: translateY(-1px);
+  filter: brightness(1.04);
+}
+
+.sg-rcal-assignment-tentative {
+  background: var(--sg-rcal-tentative-bg);
+  border-color: var(--sg-rcal-tentative-border);
+  border-style: dashed;
+}
+
+.sg-rcal-assignment-confirmed {
+  background: var(--sg-rcal-confirmed-bg);
+  border-color: var(--sg-rcal-confirmed-bg);
+  color: var(--sg-rcal-confirmed-text);
+}
+
+.sg-rcal-assignment-conflict {
+  /* The conflict overlay now layers a flat tint underneath the diagonal
+   * stripes (via `--sg-rcal-conflict-overlay-bg`) so the warning reads
+   * even on small bookings where the stripe pattern barely shows. */
+  background-color: var(--sg-rcal-conflict-overlay-bg);
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 5px,
+    var(--sg-rcal-conflict-color) 5px,
+    var(--sg-rcal-conflict-color) 6px
+  );
+  border: 2px solid var(--sg-rcal-conflict-color);
+  color: var(--sg-color-text);
+  /* Conflict bookings should never feel "promoted" by hover lift,
+   * so we suppress the parent transform. The brightness boost still
+   * communicates interactivity. */
+  box-shadow: 0 0 0 1px var(--sg-rcal-conflict-color);
+}
+
+.sg-rcal-assignment-conflict:hover {
+  transform: none;
+  box-shadow:
+    0 0 0 1px var(--sg-rcal-conflict-color),
+    0 2px 6px rgba(245, 34, 45, 0.20);
+}
+
+.sg-rcal-assignment-draggable {
+  cursor: grab;
+}
+
+.sg-rcal-assignment-draggable:active {
+  cursor: grabbing;
+}
+
+.sg-rcal-assignment-title {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.sg-rcal-assignment-resize-start,
+.sg-rcal-assignment-resize-end {
+  background: transparent;
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+
+.sg-rcal-assignment:hover .sg-rcal-assignment-resize-start,
+.sg-rcal-assignment:hover .sg-rcal-assignment-resize-end {
+  opacity: 0.6;
+}
+
+.sg-rcal-assignment-resize-start:hover,
+.sg-rcal-assignment-resize-end:hover,
+.sg-rcal-assignment-resize-start:focus-visible,
+.sg-rcal-assignment-resize-end:focus-visible {
+  opacity: 1;
+}

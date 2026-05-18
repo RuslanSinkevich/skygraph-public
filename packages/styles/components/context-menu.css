@@ -1,0 +1,95 @@
+/* SkyGraph -- Context Menu
+ *
+ * Floating menu used by Table cell/header right-click and DataGrid
+ * context-menu. Both share visual structure (background, border, shadow,
+ * padding, hover state) but live in separate class namespaces:
+ *
+ *   - `.sg-context-menu*`         — Table ContextMenu (packages/react/src/
+ *                                   components/complex/Table/ContextMenu.tsx)
+ *   - `.sg-datagrid-context-menu*` — DataGrid ContextMenuPopup (DataGrid.tsx)
+ *
+ * Position (top/left) and submenu offset (`top:0; left:100%`) stay inline in
+ * TSX because they are computed at runtime from the click coordinates. Every
+ * other visual property (background, colour, border, shadow, paddings,
+ * font-size, hover state, danger state, disabled state) lives here and is
+ * driven by tokens — no hard-coded hex / px values.
+ */
+
+/* ── Base shape, shared between Table and DataGrid via :is() group ── */
+.sg-context-menu,
+.sg-datagrid-context-menu {
+  z-index: var(--sg-z-dropdown);
+  min-width: 160px;
+  padding: var(--sg-padding-xs) 0;
+  background: var(--sg-color-bg-elevated);
+  border: 1px solid var(--sg-color-border-secondary);
+  border-radius: var(--sg-border-radius);
+  box-shadow: var(--sg-shadow-lg);
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+/* ── Items ── */
+.sg-context-menu-item,
+.sg-datagrid-context-menu-item {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+  cursor: pointer;
+  line-height: var(--sg-line-height);
+  transition: background var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-context-menu-item:hover,
+.sg-datagrid-context-menu-item:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+/* ── Modifiers ── */
+.sg-context-menu-item--danger,
+.sg-datagrid-context-menu-item--danger {
+  color: var(--sg-color-error);
+}
+
+.sg-context-menu-item--disabled,
+.sg-datagrid-context-menu-item--disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-context-menu-item--disabled:hover,
+.sg-datagrid-context-menu-item--disabled:hover {
+  background: transparent;
+}
+
+/* ── Label (Table only — DataGrid uses plain text inside item div) ── */
+.sg-context-menu-label {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ── Submenu indicator (Table only) ── */
+.sg-context-menu-submenu-arrow {
+  margin-left: var(--sg-padding-sm);
+  color: var(--sg-color-text-tertiary);
+}
+
+/* ── Icon slot ── */
+.sg-context-menu-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  color: var(--sg-color-text-secondary);
+}
+
+/* ── Divider ── */
+.sg-context-menu-divider,
+.sg-datagrid-context-menu-divider {
+  height: 1px;
+  margin: var(--sg-padding-xs) 0;
+  background: var(--sg-color-border-secondary);
+}

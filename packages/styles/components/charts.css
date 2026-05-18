@@ -1,0 +1,408 @@
+/* Charts — SVG primitives.
+ *
+ * Stroke / fill colours are inlined per-series from JS (token references), so
+ * theming is automatic when `--sg-color-primary`, `--sg-color-success`, ...
+ * are overridden upstream.
+ *
+ * Mount / data-change animations are pure CSS (no rAF loops). Each chart
+ * passes `--sg-chart-anim-duration` (or `animation-duration` inline) and
+ * relies on `@keyframes` declared here.
+ */
+
+.sg-chart {
+  /*
+   * Component-local default for the entry-animation duration. JS may
+   * override per-instance via inline style (`{ '--sg-chart-anim-duration':
+   * '400ms' }`). Declared here so `var()` always resolves to a real value
+   * — required by `check:tokens`.
+   */
+  --sg-chart-anim-duration: 600ms;
+
+  /* Локальные токены hover-toolbar чарта. Все цвета приходят из глобальных
+   * `--sg-color-*` — toolbar пере-темится автоматически. Тень / подсветка
+   * проксируются через семантические `--sg-chart-tooltip-shadow` /
+   * `--sg-chart-legend-hover-bg`, чтобы тёмная тема не требовала
+   * правки этого файла. */
+  --sg-chart-toolbar-bg: var(--sg-color-bg-elevated);
+  --sg-chart-toolbar-border: var(--sg-color-border);
+  --sg-chart-toolbar-shadow: var(--sg-chart-tooltip-shadow);
+  --sg-chart-toolbar-icon: var(--sg-color-text-secondary);
+  --sg-chart-toolbar-icon-hover: var(--sg-color-text);
+  --sg-chart-toolbar-bg-hover: var(--sg-color-bg-hover);
+  --sg-chart-toolbar-bg-active: var(--sg-color-bg-secondary);
+
+  display: block;
+  font-family: inherit;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+}
+
+/* Wrapper-обёртка вокруг SVG (legend / hover-toolbar). Позиция —
+ * relative, чтобы абсолютный toolbar якорился за неё. */
+.sg-chart-wrapper {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.sg-chart-line,
+.sg-chart-bar {
+  /* nothing extra */
+}
+
+/* Axes — opt-in via `xAxis` / `yAxis` props on Line/Bar/Area charts.
+ * Font-size now follows the global `--sg-font-size-sm` (was hard-coded
+ * 11px), so axis labels respect a user's font-size override. */
+.sg-chart-axis {
+  pointer-events: none;
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-chart-axis-grid {
+  /* stroke + dashed pattern set inline so token references resolve in raw SVG. */
+}
+
+.sg-chart-axis-tick-label {
+  fill: var(--sg-color-text-secondary);
+}
+
+.sg-chart-axis-label {
+  fill: var(--sg-color-text);
+  font-size: var(--sg-font-size-sm);
+  font-weight: 600;
+  /* Tighten the label tracking a hair so axis titles don't wash out
+   * against busy series. */
+  letter-spacing: 0.01em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Animations
+ *
+ * Each chart family applies its own keyframe to the per-series / per-bar
+ * group node. `key={…}` on those groups changes whenever data changes,
+ * which re-mounts the node and re-triggers the animation. When `animate`
+ * is `false`, the animation classes are not applied at all.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* Line chart — per-segment "draw-in" via stroke-dashoffset. The exact
+ * dasharray / offset values are set inline (we know the segment length
+ * at render time), and per-segment delay creates a left-to-right reveal. */
+.sg-chart-line-segment-animate {
+  animation-name: sg-chart-line-draw;
+  animation-fill-mode: forwards;
+  animation-timing-function: ease-out;
+}
+
+@keyframes sg-chart-line-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Container fade for the whole series group (markers + segments). */
+.sg-chart-line-animate {
+  animation: sg-chart-line-fade var(--sg-chart-anim-duration, 600ms) ease-out both;
+}
+
+@keyframes sg-chart-line-fade {
+  from {
+    opacity: 0.05;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Bar chart — each <rect> grows from its baseline (transform-origin set
+ * inline so positive bars rise from the bottom and negative bars descend
+ * from the top). `transform-box: fill-box` makes pixel transform-origin
+ * resolve relative to the SVG element itself. */
+.sg-chart-bar-animate {
+  transform-box: fill-box;
+  animation-name: sg-chart-bar-grow;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+  transform: scaleY(0);
+}
+
+@keyframes sg-chart-bar-grow {
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Area chart — fade + slight slide-up of the whole filled region. We avoid
+ * clip-path (poorer SVG support across browsers) in favour of opacity +
+ * translate, which is enough to convey the entrance without heavy paint. */
+.sg-chart-area-animate {
+  animation: sg-chart-area-fade var(--sg-chart-anim-duration, 600ms) ease-out both;
+  transform-box: fill-box;
+}
+
+@keyframes sg-chart-area-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Pie chart — each slice rotates from -90deg to its final angle and fades
+ * in. `transform-origin` is set inline to the pie centre. */
+.sg-chart-pie-animate {
+  transform-box: view-box;
+  animation-name: sg-chart-pie-rotate;
+  animation-fill-mode: forwards;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.4, 1);
+  opacity: 0;
+}
+
+@keyframes sg-chart-pie-rotate {
+  from {
+    transform: rotate(-90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Reduce-motion users get static charts. */
+@media (prefers-reduced-motion: reduce) {
+  .sg-chart-line-segment-animate,
+  .sg-chart-line-animate,
+  .sg-chart-bar-animate,
+  .sg-chart-area-animate,
+  .sg-chart-pie-animate {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+    stroke-dashoffset: 0 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Crosshair
+ *
+ * Hover overlay rendered by `<ChartCrosshair>` (currently used by LineChart).
+ * All visual chrome is here so theming stays token-based.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.sg-chart-crosshair {
+  pointer-events: none;
+}
+
+.sg-chart-crosshair-line {
+  /* stroke set inline so token references resolve outside SVG; here we
+   * only refine the blend so the line stays legible over both light and
+   * dark series fills. `mix-blend-mode: multiply` darkens against light
+   * backgrounds, while remaining inert on dark themes (where the
+   * crosshair token already provides enough contrast). */
+  mix-blend-mode: multiply;
+}
+
+[data-sg-theme='dark'] .sg-chart-crosshair-line {
+  /* Dark theme: switch to `screen` blend so the bright crosshair token
+   * lifts against dark series instead of getting absorbed. */
+  mix-blend-mode: screen;
+}
+
+.sg-chart-crosshair-tooltip-bg {
+  /* Real elevation instead of the previous flat 0 1px 2px shadow.
+   * `drop-shadow` is preferred over `box-shadow` here — the SVG <rect>
+   * shape is what we're shadowing, not a CSS box. */
+  filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.18)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.1));
+}
+
+[data-sg-theme='dark'] .sg-chart-crosshair-tooltip-bg {
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.55)) drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+}
+
+.sg-chart-crosshair-tooltip-title,
+.sg-chart-crosshair-tooltip-label,
+.sg-chart-crosshair-tooltip-value {
+  font-family: inherit;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Brushing
+ *
+ * Drag-to-select diapason overlay rendered by <ChartBrush>. The overlay rect
+ * captures pointer events; the selection rect is non-interactive (the parent
+ * controls the diapason via onRangeChange). Colours are token-based so the
+ * brush re-themes via --sg-color-primary.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.sg-chart-brush {
+  /* Container; selection rect inside is pointer-events: none. */
+}
+
+.sg-chart-brush-overlay {
+  /* fill, stroke, and cursor are inlined per-instance; no extra styling. */
+}
+
+.sg-chart-brush-selection {
+  /* fill / stroke set inline so token references resolve in raw SVG.
+   * The drop-shadow gives the selection a faint outer halo so it pops
+   * against the chart series even when the inline fill is set very
+   * low alpha. */
+  pointer-events: none;
+  filter: drop-shadow(0 1px 3px rgba(22, 119, 255, 0.2));
+}
+
+[data-sg-theme='dark'] .sg-chart-brush-selection {
+  filter: drop-shadow(0 1px 4px rgba(64, 150, 255, 0.35));
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Hover toolbar
+ *
+ * Floating-панель в правом верхнем углу wrapper-а с действиями (print,
+ * download SVG, download PNG, reset brush). Контейнер — `pointer-events:
+ * none`, чтобы не перехватывать crosshair/brush-события на пустом
+ * overlay; кнопки — `pointer-events: auto`. Анимация opacity — pure CSS
+ * через `transition`, никакого JS.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.sg-chart-toolbar {
+  position: absolute;
+  top: var(--sg-padding-sm);
+  right: var(--sg-padding-sm);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-chart-toolbar-bg);
+  border: 1px solid var(--sg-chart-toolbar-border);
+  box-shadow: var(--sg-chart-toolbar-shadow);
+  opacity: 0;
+  /* Lift slightly higher (was -2px) so the entrance reads as a "fade
+   * down" rather than a near-instant pop. Both opacity and transform
+   * share the same easing window so the motion stays cohesive. */
+  transform: translateY(-4px);
+  transition:
+    opacity var(--sg-transition-medium),
+    transform var(--sg-transition-medium);
+  pointer-events: none;
+}
+
+.sg-chart-toolbar[data-sg-toolbar='visible'] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.sg-chart-toolbar-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--sg-border-radius-sm);
+  background: transparent;
+  color: var(--sg-chart-toolbar-icon);
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    background-color var(--sg-transition-fast),
+    color var(--sg-transition-fast);
+}
+
+.sg-chart-toolbar-button:hover {
+  background: var(--sg-chart-toolbar-bg-hover);
+  color: var(--sg-chart-toolbar-icon-hover);
+}
+
+.sg-chart-toolbar-button:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 1px;
+  color: var(--sg-chart-toolbar-icon-hover);
+}
+
+.sg-chart-toolbar-button:active {
+  background: var(--sg-chart-toolbar-bg-active);
+}
+
+.sg-chart-toolbar-button > svg {
+  display: block;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sg-chart-toolbar {
+    transition: none;
+    transform: none;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────
+ * Legend
+ *
+ * `<ChartLegend>` renders inline-styled `display`, `gap`, swatch size etc.
+ * (so the layout stays predictable in headless mode). What we add here is
+ * purely interactivity polish: a hover affordance on each item, a soft
+ * rounded background, and a focus ring so keyboard nav lands somewhere.
+ * No layout properties to avoid fighting the inline styles.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+.sg-chart-legend {
+  /* Tiny breathing room so a hover background doesn't collide with the
+   * chart's bottom edge. */
+  padding-top: var(--sg-padding-xs);
+  /* Layout — moved from inline style on <ChartLegend> root. */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--sg-color-text-secondary);
+}
+
+.sg-chart-legend-item {
+  /* Layout — moved from inline style on each legend entry. */
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  /* Hover surface — purely additive (does not override inline display:
+   * inline-flex emitted by the React component). */
+  padding: 2px var(--sg-padding-xs);
+  border-radius: var(--sg-border-radius-sm);
+  cursor: default;
+  transition:
+    background-color var(--sg-transition-fast),
+    color var(--sg-transition-fast);
+}
+
+.sg-chart-legend-item:hover {
+  background: var(--sg-chart-legend-hover-bg);
+  color: var(--sg-color-text);
+}
+
+.sg-chart-legend-item:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 1px;
+}
+
+.sg-chart-legend-swatch {
+  /* Layout — moved from inline style on each legend swatch. The
+   * `background` is still emitted inline by the React component since it
+   * comes from the dynamic series colour. */
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  /* Subtle inner ring so the swatch reads as a chip rather than a flat
+   * square — useful when the series colour is close to the background. */
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+[data-sg-theme='dark'] .sg-chart-legend-swatch {
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}

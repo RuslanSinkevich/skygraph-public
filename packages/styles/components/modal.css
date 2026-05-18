@@ -1,0 +1,77 @@
+.sg-modal-mask {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sg-z-modal);
+  background: var(--sg-color-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* dark override handled via --sg-color-overlay token */
+
+.sg-modal {
+  /* Width is forwarded from the React `width` prop via this CSS variable
+   * so the component no longer has to emit an inline `style={{ width }}`.
+   * Default mirrors the historical antd-compatible 520px modal width. */
+  --sg-modal-width: 520px;
+
+  position: relative;
+  background: var(--sg-color-bg-elevated);
+  border-radius: var(--sg-border-radius-lg);
+  box-shadow: var(--sg-shadow-lg);
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  width: var(--sg-modal-width);
+}
+
+.sg-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sg-padding-lg);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-modal-title {
+  font-size: var(--sg-font-size-lg);
+  font-weight: 600;
+  color: var(--sg-color-text);
+}
+
+.sg-modal-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
+  font-size: var(--sg-font-size-xl);
+  color: var(--sg-color-text-tertiary);
+  cursor: pointer;
+  border-radius: var(--sg-border-radius-sm);
+  transition:
+    color var(--sg-transition-duration),
+    background var(--sg-transition-duration);
+}
+
+.sg-modal-close:hover {
+  color: var(--sg-color-text);
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-modal-body {
+  padding: var(--sg-padding-lg);
+  overflow-y: auto;
+  flex: 1;
+}
+
+.sg-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-md) var(--sg-padding-lg);
+  border-top: 1px solid var(--sg-color-border-secondary);
+}

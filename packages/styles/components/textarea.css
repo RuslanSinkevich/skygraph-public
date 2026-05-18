@@ -1,0 +1,22 @@
+.sg-textarea-wrapper {
+  position: relative;
+  display: block;
+}
+
+.sg-textarea-wrapper-loading {
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}
+
+.sg-textarea-wrapper .sg-spin {
+  position: absolute;
+  right: var(--sg-padding-sm);
+  top: var(--sg-padding-sm);
+}
+
+.sg-textarea-count {
+  display: block;
+  text-align: right;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-tertiary);
+  margin-top: var(--sg-margin-xs);
+}

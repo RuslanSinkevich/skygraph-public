@@ -1,0 +1,113 @@
+/* InlineEdit */
+.sg-inline-edit-view {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  min-height: var(--sg-height-md);
+  border-radius: var(--sg-border-radius);
+  border: 1px dashed transparent;
+  cursor: pointer;
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size);
+  line-height: var(--sg-line-height);
+  transition: all var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-inline-edit-view:hover {
+  background: var(--sg-color-bg-hover);
+  border-color: var(--sg-color-border);
+}
+
+.sg-inline-edit-view:focus-visible {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+  outline: none;
+}
+
+.sg-inline-edit-view-placeholder {
+  color: var(--sg-color-text-placeholder);
+}
+
+.sg-inline-edit-view-disabled {
+  cursor: default;
+  opacity: 0.65;
+}
+
+.sg-inline-edit-view-disabled:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+.sg-inline-edit-pencil {
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+  opacity: 0;
+  transition: opacity var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-inline-edit-view:hover .sg-inline-edit-pencil {
+  opacity: 1;
+}
+
+/* Editing state */
+.sg-inline-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-xs);
+}
+
+.sg-inline-edit-input {
+  flex: 1;
+}
+
+.sg-inline-edit-actions {
+  display: flex;
+  gap: 2px;
+}
+
+.sg-inline-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius-sm);
+  cursor: pointer;
+  font-size: var(--sg-font-size-sm);
+  transition: all var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-inline-edit-btn-save {
+  background: var(--sg-color-primary);
+  border-color: var(--sg-color-primary);
+  color: var(--sg-color-white);
+}
+
+.sg-inline-edit-btn-save:hover {
+  background: var(--sg-color-primary-hover);
+}
+
+.sg-inline-edit-btn-cancel {
+  background: var(--sg-color-bg-container);
+  color: var(--sg-color-text-secondary);
+}
+
+.sg-inline-edit-btn-cancel:hover {
+  border-color: var(--sg-color-text-secondary);
+}
+
+/* Sizes */
+.sg-inline-edit-view-small {
+  min-height: var(--sg-height-sm);
+  font-size: var(--sg-font-size-sm);
+  padding: 2px var(--sg-padding-xs);
+}
+
+.sg-inline-edit-view-large {
+  min-height: var(--sg-height-lg);
+  font-size: var(--sg-font-size-lg);
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+}

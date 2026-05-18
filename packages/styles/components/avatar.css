@@ -1,0 +1,37 @@
+.sg-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: var(--sg-color-text-disabled);
+  color: var(--sg-color-white, #fff);
+  font-weight: 500;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.sg-avatar-circle {
+  border-radius: 50%;
+}
+
+.sg-avatar-square {
+  border-radius: var(--sg-border-radius);
+}
+
+.sg-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sg-avatar-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sg-avatar-text {
+  white-space: nowrap;
+  user-select: none;
+}

@@ -1,0 +1,29 @@
+.sg-checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  cursor: pointer;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  line-height: var(--sg-line-height);
+}
+
+.sg-checkbox-disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-checkbox-input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sg-color-primary);
+  cursor: inherit;
+}
+
+.sg-checkbox-label {
+  user-select: none;
+}
+
+.sg-checkbox-loading {
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}

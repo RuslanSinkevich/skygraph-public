@@ -1,0 +1,14 @@
+/* SkyGraph -- Light theme (default)
+ *
+ * Convenience re-export of the full token set. After importing this file the
+ * `[data-sg-theme="light"]` selector inside `tokens.css` is the active layer.
+ *
+ * NOTE: this file imports the SAME `tokens.css` as `dark.css`. Both light and
+ * dark semantic tokens live there; the active set is decided at runtime via
+ * the `data-sg-theme` attribute on a parent element.
+ *
+ * Import:
+ *   import '@skygraph/styles/themes/default'
+ */
+
+@import '../tokens.css';

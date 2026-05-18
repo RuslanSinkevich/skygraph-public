@@ -1,0 +1,79 @@
+/* InputGroup */
+.sg-input-group {
+  display: inline-flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.sg-input-group-addon {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sg-padding-md);
+  background: var(--sg-color-bg-secondary);
+  border: 1px solid var(--sg-color-border);
+  color: var(--sg-color-text-secondary);
+  font-size: var(--sg-font-size);
+  white-space: nowrap;
+}
+
+.sg-input-group-addon:first-child {
+  border-right: none;
+  border-radius: var(--sg-border-radius) 0 0 var(--sg-border-radius);
+}
+
+.sg-input-group-addon:last-child {
+  border-left: none;
+  border-radius: 0 var(--sg-border-radius) var(--sg-border-radius) 0;
+}
+
+/* Compact: nested inputs lose middle radii */
+.sg-input-group-compact > .sg-input-wrapper:not(:first-child):not(:last-child) .sg-input,
+.sg-input-group-compact > .sg-select:not(:first-child):not(:last-child) .sg-select-selector,
+.sg-input-group-compact > .sg-input:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.sg-input-group-compact > .sg-input-wrapper:first-child .sg-input,
+.sg-input-group-compact > .sg-select:first-child .sg-select-selector,
+.sg-input-group-compact > .sg-input:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.sg-input-group-compact > .sg-input-wrapper:last-child .sg-input,
+.sg-input-group-compact > .sg-select:last-child .sg-select-selector,
+.sg-input-group-compact > .sg-input:last-child {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.sg-input-group-compact > .sg-input-group-addon + .sg-input-wrapper .sg-input,
+.sg-input-group-compact > .sg-input-group-addon + .sg-input {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* When addon is before, the input after should not have left radius */
+.sg-input-group > .sg-input-group-addon + * .sg-input,
+.sg-input-group > .sg-input-group-addon + .sg-input {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* When there's an addon after, the element before should not have right radius */
+.sg-input-group > *:has(+ .sg-input-group-addon) .sg-input,
+.sg-input-group > .sg-input:has(+ .sg-input-group-addon) {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Sizes */
+.sg-input-group-small .sg-input-group-addon {
+  padding: 0 var(--sg-padding-sm);
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-input-group-large .sg-input-group-addon {
+  padding: 0 var(--sg-padding-lg);
+  font-size: var(--sg-font-size-lg);
+}

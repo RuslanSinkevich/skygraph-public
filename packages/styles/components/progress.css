@@ -1,0 +1,116 @@
+/* Line progress */
+.sg-progress-line {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  width: 100%;
+}
+
+.sg-progress-outer {
+  flex: 1;
+  min-width: 0;
+}
+
+.sg-progress-inner {
+  background: var(--sg-color-bg-hover);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.sg-progress-bg {
+  height: 100%;
+  border-radius: 100px;
+  background: var(--sg-color-primary);
+  /*
+   * We deliberately avoid `transition: width` here. The previous transition
+   * would interpolate from the layout-default `width: 0` to the inline
+   * `width: X%`, which made the bar look empty until the animation finished —
+   * users perceived it as "no progress bar, just numbers" on initial paint.
+   * Width now snaps to its target value; live updates (e.g. demo dynamic %)
+   * still re-paint in the same frame.
+   */
+}
+
+.sg-progress-text {
+  flex-shrink: 0;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* Status colors */
+.sg-progress-success .sg-progress-bg {
+  background: var(--sg-color-success);
+}
+.sg-progress-error .sg-progress-bg {
+  background: var(--sg-color-error);
+}
+
+.sg-progress-success .sg-progress-text {
+  color: var(--sg-color-success);
+}
+.sg-progress-error .sg-progress-text {
+  color: var(--sg-color-error);
+}
+
+/* Active animation */
+.sg-progress-active .sg-progress-bg {
+  position: relative;
+}
+
+.sg-progress-active .sg-progress-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: sg-progress-active-anim 2s ease-in-out infinite;
+}
+
+@keyframes sg-progress-active-anim {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Circle progress */
+.sg-progress-circle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sg-progress-circle-trail {
+  stroke: var(--sg-color-bg-hover);
+}
+
+.sg-progress-circle-path {
+  stroke: var(--sg-color-primary);
+  transition: stroke-dashoffset var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-progress-success .sg-progress-circle-path {
+  stroke: var(--sg-color-success);
+}
+.sg-progress-error .sg-progress-circle-path {
+  stroke: var(--sg-color-error);
+}
+
+.sg-progress-circle-text {
+  position: absolute;
+  font-size: var(--sg-font-size-xl);
+  font-weight: 500;
+  color: var(--sg-color-text);
+}
+
+.sg-progress-success .sg-progress-circle-text {
+  color: var(--sg-color-success);
+}
+.sg-progress-error .sg-progress-circle-text {
+  color: var(--sg-color-error);
+}

@@ -1,0 +1,110 @@
+.sg-input-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+}
+
+.sg-input {
+  --sg-input-height: var(--sg-height-md);
+  --sg-input-padding: var(--sg-padding-xs) var(--sg-padding-md);
+  --sg-input-font-size: var(--sg-font-size);
+  --sg-input-color: var(--sg-color-text);
+  --sg-input-bg: var(--sg-color-bg-container);
+  --sg-input-border: var(--sg-color-border);
+  --sg-input-radius: var(--sg-border-radius);
+  display: block;
+  width: 100%;
+  height: var(--sg-input-height);
+  padding: var(--sg-input-padding);
+  font-size: var(--sg-input-font-size);
+  line-height: var(--sg-line-height);
+  color: var(--sg-input-color);
+  background: var(--sg-input-bg);
+  border: 1px solid var(--sg-input-border);
+  border-radius: var(--sg-input-radius);
+  transition: color var(--sg-transition-duration) var(--sg-transition-timing),
+    background var(--sg-transition-duration) var(--sg-transition-timing),
+    border-color var(--sg-transition-duration) var(--sg-transition-timing),
+    box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
+  font-family: inherit;
+}
+
+.sg-input::placeholder {
+  color: var(--sg-color-text-placeholder);
+}
+
+.sg-input:hover {
+  --sg-input-border: var(--sg-color-primary-hover);
+}
+
+.sg-input:focus {
+  --sg-input-border: var(--sg-color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-input:focus-visible {
+  --sg-input-border: var(--sg-color-primary);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-input:disabled {
+  --sg-input-bg: var(--sg-color-bg-disabled);
+  --sg-input-color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-input-readonly,
+.sg-input[readonly] {
+  --sg-input-bg: var(--sg-color-bg-secondary);
+  --sg-input-color: var(--sg-color-text-secondary);
+  cursor: default;
+}
+
+.sg-input-readonly:hover,
+.sg-input[readonly]:hover {
+  --sg-input-border: var(--sg-color-border);
+}
+
+.sg-input-readonly:focus,
+.sg-input[readonly]:focus {
+  --sg-input-border: var(--sg-color-border);
+  box-shadow: none;
+}
+
+.sg-input-small {
+  --sg-input-height: var(--sg-height-sm);
+  --sg-input-font-size: var(--sg-font-size-sm);
+  --sg-input-padding: var(--sg-padding-xs) var(--sg-padding-sm);
+}
+
+.sg-input-large {
+  --sg-input-height: var(--sg-height-lg);
+  --sg-input-font-size: var(--sg-font-size-lg);
+  --sg-input-padding: var(--sg-padding-sm) var(--sg-padding-md);
+}
+
+.sg-textarea {
+  height: auto;
+  min-height: calc(var(--sg-height-md) * 2);
+  resize: vertical;
+}
+
+/* Loading state — spin sits inside wrapper, right side */
+.sg-input-wrapper-loading {
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}
+
+.sg-input-wrapper-loading .sg-input {
+  padding-right: calc(var(--sg-padding-md) + 20px);
+}
+
+.sg-input-wrapper .sg-spin {
+  position: absolute;
+  right: var(--sg-padding-sm);
+  top: 0;
+  bottom: 0;
+  margin: auto 0;
+}

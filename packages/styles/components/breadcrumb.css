@@ -1,0 +1,29 @@
+.sg-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  line-height: var(--sg-line-height);
+}
+
+.sg-breadcrumb-link {
+  color: var(--sg-color-text-secondary);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-breadcrumb-link:hover {
+  color: var(--sg-color-primary);
+}
+
+.sg-breadcrumb-current {
+  color: var(--sg-color-text);
+  font-weight: 500;
+}
+
+.sg-breadcrumb-separator {
+  margin: 0 var(--sg-padding-sm);
+  color: var(--sg-color-text-tertiary);
+}

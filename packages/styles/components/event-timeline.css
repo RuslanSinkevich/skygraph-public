@@ -1,0 +1,100 @@
+/* EventTimeline — chronological event stream with optional grouping. */
+
+.sg-event-timeline {
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  font-family: inherit;
+  gap: var(--sg-margin-md);
+}
+
+.sg-event-timeline-vertical {
+  align-items: stretch;
+}
+
+.sg-event-timeline-horizontal {
+  align-items: flex-start;
+  overflow-x: auto;
+  padding-bottom: var(--sg-padding-md);
+}
+
+.sg-event-timeline-group {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-tertiary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: var(--sg-padding-xs) 0;
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-event-timeline-horizontal .sg-event-timeline-group {
+  border-bottom: none;
+  border-right: 1px solid var(--sg-color-border-secondary);
+  padding: 0 var(--sg-padding-md);
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.sg-event-timeline-item {
+  display: flex;
+  gap: var(--sg-margin-sm);
+  padding: var(--sg-padding-sm) 0;
+  /* Smooth color/transform transitions for hover; we only animate
+   * properties that touch the dot/title. */
+  transition: background-color var(--sg-transition-fast);
+}
+
+.sg-event-timeline-item:hover .sg-event-timeline-dot {
+  /* Slightly larger dot + brighter halo when the parent item is hovered.
+   * Both are driven by the new `--sg-event-timeline-dot-shadow-hover`
+   * token so the affordance remains theme-correct. */
+  transform: scale(1.20);
+  box-shadow: var(--sg-event-timeline-dot-shadow-hover);
+}
+
+.sg-event-timeline-horizontal .sg-event-timeline-item {
+  flex-direction: column;
+  min-width: 160px;
+  padding: 0 var(--sg-padding-md);
+}
+
+.sg-event-timeline-marker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 16px;
+}
+
+.sg-event-timeline-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--sg-color-primary);
+  display: inline-block;
+  /* Halo via the semantic token: outer ring of `--sg-color-bg` punches
+   * the dot out from the rail, inner glow uses primary-tint for depth. */
+  box-shadow: var(--sg-event-timeline-dot-shadow);
+  transition:
+    box-shadow var(--sg-transition-medium),
+    transform var(--sg-transition-medium);
+}
+
+.sg-event-timeline-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.sg-event-timeline-title {
+  font-weight: 600;
+  color: var(--sg-color-text);
+  line-height: var(--sg-line-height);
+}
+
+.sg-event-timeline-description {
+  margin-top: var(--sg-margin-xs);
+  color: var(--sg-color-text-secondary);
+  font-size: var(--sg-font-size-sm);
+  line-height: var(--sg-line-height);
+}

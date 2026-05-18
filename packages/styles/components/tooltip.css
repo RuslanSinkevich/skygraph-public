@@ -1,0 +1,91 @@
+.sg-tooltip-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.sg-tooltip {
+  position: absolute;
+  z-index: var(--sg-z-tooltip);
+  pointer-events: none;
+}
+
+.sg-tooltip-content {
+  /* `inline-block` lets the box wrap and size itself around block-level
+   * children (the Rich-content demo embeds a `<div max-width:220px;
+   * white-space:normal>` — React renders the content node as a `<div>`
+   * which already enforces `display:block`; Vue uses `<span>` so we have
+   * to lift the box ourselves, otherwise it stays a 0-px nowrap line and
+   * the tooltip looks empty). */
+  display: inline-block;
+  padding: var(--sg-padding-xs) var(--sg-padding-sm);
+  background: var(--sg-color-tooltip-bg);
+  color: var(--sg-color-tooltip-text);
+  font-size: var(--sg-font-size-sm);
+  border-radius: var(--sg-border-radius-sm);
+  white-space: nowrap;
+  box-shadow: var(--sg-shadow);
+}
+
+/* dark override handled via --sg-color-tooltip-bg token */
+
+.sg-tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--sg-color-tooltip-bg);
+  transform: rotate(45deg);
+}
+
+/* dark override handled via --sg-color-tooltip-bg token */
+
+.sg-tooltip-top {
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+}
+
+.sg-tooltip-top .sg-tooltip-arrow {
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+}
+
+.sg-tooltip-bottom {
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 8px;
+}
+
+.sg-tooltip-bottom .sg-tooltip-arrow {
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+}
+
+.sg-tooltip-left {
+  right: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 8px;
+}
+
+.sg-tooltip-left .sg-tooltip-arrow {
+  right: -4px;
+  top: 50%;
+  margin-top: -4px;
+}
+
+.sg-tooltip-right {
+  left: 100%;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-left: 8px;
+}
+
+.sg-tooltip-right .sg-tooltip-arrow {
+  left: -4px;
+  top: 50%;
+  margin-top: -4px;
+}

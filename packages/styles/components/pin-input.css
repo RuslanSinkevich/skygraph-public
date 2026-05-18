@@ -1,0 +1,71 @@
+/* PinInput */
+.sg-pin-input {
+  display: inline-flex;
+  gap: var(--sg-padding-sm);
+}
+
+.sg-pin-input-cell {
+  width: var(--sg-height-md);
+  height: var(--sg-height-md);
+  text-align: center;
+  font-size: var(--sg-font-size-lg);
+  font-family: inherit;
+  font-weight: 600;
+  color: var(--sg-color-text);
+  background: var(--sg-color-bg-container);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  outline: none;
+  caret-color: var(--sg-color-primary);
+  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing),
+    box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-pin-input-cell::placeholder {
+  color: var(--sg-color-text-quaternary);
+  font-weight: 400;
+}
+
+.sg-pin-input-cell:hover {
+  border-color: var(--sg-color-primary-hover);
+}
+
+.sg-pin-input-cell:focus {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-pin-input-cell-filled {
+  border-color: var(--sg-color-primary);
+}
+
+.sg-pin-input-cell:disabled {
+  background: var(--sg-color-bg-disabled);
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+/* Sizes */
+.sg-pin-input-cell-small {
+  width: var(--sg-height-sm);
+  height: var(--sg-height-sm);
+  font-size: var(--sg-font-size);
+}
+
+.sg-pin-input-cell-large {
+  width: var(--sg-height-lg);
+  height: var(--sg-height-lg);
+  font-size: var(--sg-font-size-xl);
+}
+
+.sg-pin-input-small {
+  gap: var(--sg-padding-xs);
+}
+
+.sg-pin-input-large {
+  gap: var(--sg-padding-md);
+}
+
+.sg-pin-input-disabled {
+  opacity: 0.65;
+}

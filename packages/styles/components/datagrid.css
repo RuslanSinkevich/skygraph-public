@@ -1,0 +1,86 @@
+.sg-datagrid {
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg);
+  font-size: var(--sg-font-size);
+  outline: none;
+}
+
+.sg-datagrid:focus-within {
+  border-color: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-datagrid-header {
+  background: var(--sg-color-bg-secondary);
+  border-bottom: 1px solid var(--sg-color-border);
+  font-weight: 600;
+}
+
+.sg-datagrid-header-cell {
+  border-right: 1px solid var(--sg-color-border-secondary);
+  box-sizing: border-box;
+}
+
+.sg-datagrid-header-cell:last-child {
+  border-right: none;
+}
+
+.sg-datagrid-header-cell--sortable:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-datagrid-row {
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-datagrid-row:hover .sg-datagrid-cell {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-datagrid-cell {
+  display: flex;
+  align-items: center;
+  padding: 0 var(--sg-padding-sm);
+  border-right: 1px solid var(--sg-color-border-secondary);
+  box-sizing: border-box;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-datagrid-cell:last-child {
+  border-right: none;
+}
+
+.sg-datagrid-cell--active {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: -2px;
+  z-index: var(--sg-z-base);
+}
+
+.sg-datagrid-cell--editing {
+  padding: 0;
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: -2px;
+  z-index: calc(var(--sg-z-base) + 1);
+}
+
+.sg-datagrid-cell--selected {
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-datagrid-cell--frozen {
+  position: sticky;
+  z-index: var(--sg-z-sticky);
+  background: var(--sg-color-bg);
+}
+
+.sg-datagrid-resizer:hover {
+  background: var(--sg-color-primary);
+}
+
+.sg-datagrid-empty {
+  color: var(--sg-color-text-tertiary);
+}

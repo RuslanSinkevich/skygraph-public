@@ -1,0 +1,140 @@
+/* ---- Transfer ---- */
+.sg-transfer {
+  display: flex;
+  align-items: stretch;
+  gap: var(--sg-padding-md);
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+}
+
+.sg-transfer-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---- Single list panel ---- */
+.sg-transfer-list {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  background: var(--sg-color-bg-container);
+  overflow: hidden;
+}
+
+.sg-transfer-list-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* ---- Header ---- */
+.sg-transfer-list-header {
+  display: flex;
+  align-items: center;
+  gap: var(--sg-padding-sm);
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+  background: var(--sg-color-bg-secondary);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-transfer-list-header-count {
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text-secondary);
+}
+
+.sg-transfer-list-header-title {
+  margin-left: auto;
+  font-weight: 600;
+  font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text);
+}
+
+/* ---- Search ---- */
+.sg-transfer-list-search {
+  padding: var(--sg-padding-sm) var(--sg-padding-md);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+/* ---- Body ---- */
+.sg-transfer-list-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.sg-transfer-list-content {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- Item ---- */
+.sg-transfer-list-item {
+  display: flex;
+  align-items: center;
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+  transition: background var(--sg-transition-duration);
+  cursor: pointer;
+}
+
+.sg-transfer-list-item:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-transfer-list-item-selected {
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-transfer-list-item-selected:hover {
+  background: var(--sg-color-primary-bg);
+}
+
+.sg-transfer-list-item-disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-transfer-list-item-disabled:hover {
+  background: transparent;
+}
+
+.sg-transfer-list-item-text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- Empty ---- */
+.sg-transfer-list-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sg-padding-xl);
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-sm);
+}
+
+/* ---- Pagination ---- */
+.sg-transfer-list-pagination {
+  display: flex;
+  justify-content: center;
+  padding: var(--sg-padding-sm);
+  border-top: 1px solid var(--sg-color-border-secondary);
+}
+
+/* ---- Operations (move buttons) ---- */
+.sg-transfer-operations {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sg-padding-sm);
+  align-self: center;
+}
+
+.sg-transfer-operations .sg-button {
+  min-width: var(--sg-height-md);
+}

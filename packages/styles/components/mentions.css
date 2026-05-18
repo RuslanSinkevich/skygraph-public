@@ -1,0 +1,54 @@
+.sg-mentions {
+  position: relative;
+  display: inline-block;
+  width: 100%;
+}
+
+.sg-mentions-disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.sg-mentions-small .sg-textarea {
+  font-size: var(--sg-font-size-sm);
+}
+
+.sg-mentions-large .sg-textarea {
+  font-size: var(--sg-font-size-lg);
+}
+
+.sg-mentions-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: var(--sg-z-dropdown);
+  background: var(--sg-color-bg-elevated);
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  box-shadow: var(--sg-shadow-lg);
+  max-height: 200px;
+  overflow-y: auto;
+  padding: var(--sg-padding-xs) 0;
+}
+
+.sg-mentions-dropdown-bottom {
+  top: 100%;
+  margin-top: var(--sg-margin-xs);
+}
+
+.sg-mentions-dropdown-top {
+  bottom: 100%;
+  margin-bottom: var(--sg-margin-xs);
+}
+
+.sg-mentions-option {
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+  cursor: pointer;
+  transition: background-color var(--sg-transition-duration) var(--sg-transition-timing);
+  line-height: var(--sg-line-height);
+}
+
+.sg-mentions-option:hover,
+.sg-mentions-option-active {
+  background: var(--sg-color-bg-hover);
+}

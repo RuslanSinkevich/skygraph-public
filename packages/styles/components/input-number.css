@@ -1,0 +1,76 @@
+.sg-input-number {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--sg-color-border);
+  border-radius: var(--sg-border-radius);
+  overflow: hidden;
+  --sg-spin-color: var(--sg-color-text-tertiary);
+}
+
+.sg-input-number-loading {
+  opacity: 0.65;
+}
+
+.sg-input-number .sg-spin {
+  margin-right: var(--sg-padding-xs);
+}
+
+.sg-input-number-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--sg-height-md);
+  height: var(--sg-height-md);
+  border: none;
+  background: var(--sg-color-bg-secondary);
+  color: var(--sg-color-text);
+  cursor: pointer;
+  font-size: var(--sg-font-size);
+  user-select: none;
+  transition: background var(--sg-transition-duration);
+}
+
+.sg-input-number-btn:hover:not(:disabled) {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-input-number-btn:disabled {
+  color: var(--sg-color-text-disabled);
+  cursor: not-allowed;
+}
+
+.sg-input-number-input {
+  /* `flex: 1 1 60px` keeps the natural 60px default width when the wrapper
+     is sized intrinsically (inline-flex) and lets the field fill the space
+     when consumers stretch the wrapper via `style={{ width: '100%' }}` etc.
+     `min-width: 0` lets the input shrink inside narrow containers. */
+  flex: 1 1 60px;
+  min-width: 0;
+  height: var(--sg-height-md);
+  border: none;
+  text-align: center;
+  font-size: var(--sg-font-size);
+  color: var(--sg-color-text);
+  background: var(--sg-color-bg-container);
+  outline: none;
+  font-family: inherit;
+}
+
+.sg-input-number-small .sg-input-number-btn {
+  width: var(--sg-height-sm);
+  height: var(--sg-height-sm);
+}
+.sg-input-number-small .sg-input-number-input {
+  height: var(--sg-height-sm);
+  flex-basis: 48px;
+  font-size: var(--sg-font-size-sm);
+}
+.sg-input-number-large .sg-input-number-btn {
+  width: var(--sg-height-lg);
+  height: var(--sg-height-lg);
+}
+.sg-input-number-large .sg-input-number-input {
+  height: var(--sg-height-lg);
+  flex-basis: 72px;
+  font-size: var(--sg-font-size-lg);
+}

@@ -1,0 +1,25 @@
+.sg-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--sg-padding-xl) 0;
+  text-align: center;
+  font-size: var(--sg-font-size);
+}
+
+.sg-empty-image {
+  margin-bottom: var(--sg-margin-sm);
+  color: var(--sg-color-text-disabled);
+}
+
+.sg-empty-description {
+  margin: 0 0 var(--sg-margin-sm);
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size);
+  line-height: var(--sg-line-height);
+}
+
+.sg-empty-footer {
+  margin-top: var(--sg-margin-md);
+}

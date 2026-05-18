@@ -1,0 +1,35 @@
+.sg-field {
+  font-size: inherit;
+}
+
+.sg-field-label {
+  display: block;
+  margin-bottom: var(--sg-margin-xs);
+  color: var(--sg-color-text);
+  font-size: var(--sg-font-size);
+  line-height: var(--sg-line-height);
+}
+
+.sg-field-required {
+  color: var(--sg-color-error);
+  margin-left: 2px;
+}
+
+.sg-field-control {
+  position: relative;
+}
+
+.sg-field-error {
+  color: var(--sg-color-error);
+  font-size: var(--sg-font-size-sm);
+  margin-top: var(--sg-margin-xs);
+  line-height: var(--sg-line-height);
+}
+
+.sg-field-has-error .sg-input {
+  --sg-input-border: var(--sg-color-error);
+}
+
+.sg-field-has-error .sg-input:focus {
+  box-shadow: 0 0 0 2px var(--sg-color-error-bg);
+}

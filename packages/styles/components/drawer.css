@@ -1,0 +1,103 @@
+.sg-drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--sg-z-modal);
+}
+
+.sg-drawer-mask {
+  position: absolute;
+  inset: 0;
+  background: var(--sg-color-overlay);
+  animation: sg-drawer-fade-in var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+@keyframes sg-drawer-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sg-drawer {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  background: var(--sg-color-bg-elevated);
+  box-shadow: var(--sg-shadow-lg);
+}
+
+.sg-drawer-right {
+  top: 0;
+  right: 0;
+  bottom: 0;
+  animation: sg-drawer-slide-right var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-drawer-left {
+  top: 0;
+  left: 0;
+  bottom: 0;
+  animation: sg-drawer-slide-left var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-drawer-top {
+  top: 0;
+  left: 0;
+  right: 0;
+  animation: sg-drawer-slide-top var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-drawer-bottom {
+  bottom: 0;
+  left: 0;
+  right: 0;
+  animation: sg-drawer-slide-bottom var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+@keyframes sg-drawer-slide-right {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sg-drawer-slide-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes sg-drawer-slide-top {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sg-drawer-slide-bottom {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.sg-drawer-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sg-padding-md) var(--sg-padding-xl);
+  border-bottom: 1px solid var(--sg-color-border-secondary);
+}
+
+.sg-drawer-title {
+  font-size: var(--sg-font-size-lg);
+  font-weight: 500;
+  color: var(--sg-color-text);
+}
+
+.sg-drawer-close {
+  color: var(--sg-color-text-tertiary);
+  font-size: var(--sg-font-size-xl);
+}
+
+.sg-drawer-body {
+  flex: 1;
+  padding: var(--sg-padding-xl);
+  overflow: auto;
+}
+
+.sg-drawer-footer {
+  padding: var(--sg-padding-md) var(--sg-padding-xl);
+  border-top: 1px solid var(--sg-color-border-secondary);
+}

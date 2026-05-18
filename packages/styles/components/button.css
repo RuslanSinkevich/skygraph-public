@@ -1,0 +1,181 @@
+.sg-button {
+  --sg-btn-bg: transparent;
+  --sg-btn-color: var(--sg-color-text);
+  --sg-btn-border: var(--sg-color-border);
+  --sg-btn-height: var(--sg-height-md);
+  --sg-btn-padding: 0 var(--sg-padding-md);
+  --sg-btn-radius: var(--sg-border-radius);
+  --sg-btn-font-size: var(--sg-font-size);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sg-padding-xs);
+  height: var(--sg-btn-height);
+  padding: var(--sg-btn-padding);
+  font-size: var(--sg-btn-font-size);
+  line-height: var(--sg-line-height);
+  color: var(--sg-btn-color);
+  background: var(--sg-btn-bg);
+  border: 1px solid var(--sg-btn-border);
+  border-radius: var(--sg-btn-radius);
+  cursor: pointer;
+  transition: color var(--sg-transition-duration) var(--sg-transition-timing),
+    background var(--sg-transition-duration) var(--sg-transition-timing),
+    border-color var(--sg-transition-duration) var(--sg-transition-timing),
+    box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
+  user-select: none;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.sg-button:hover {
+  --sg-btn-color: var(--sg-color-primary-hover);
+  --sg-btn-border: var(--sg-color-primary-hover);
+}
+
+.sg-button:active {
+  --sg-btn-color: var(--sg-color-primary-active);
+  --sg-btn-border: var(--sg-color-primary-active);
+}
+
+.sg-button:focus-visible {
+  outline: none;
+  --sg-btn-border: var(--sg-color-primary);
+  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
+}
+
+.sg-button:disabled {
+  --sg-btn-color: var(--sg-color-text-disabled);
+  --sg-btn-border: var(--sg-color-border);
+  --sg-btn-bg: var(--sg-color-bg-disabled);
+  cursor: not-allowed;
+}
+
+.sg-button-primary {
+  --sg-btn-bg: var(--sg-color-primary);
+  --sg-btn-color: var(--sg-color-white);
+  --sg-btn-border: var(--sg-color-primary);
+}
+.sg-button-primary:hover {
+  --sg-btn-bg: var(--sg-color-primary-hover);
+  --sg-btn-color: var(--sg-color-white);
+  --sg-btn-border: var(--sg-color-primary-hover);
+}
+.sg-button-primary:active {
+  --sg-btn-bg: var(--sg-color-primary-active);
+  --sg-btn-color: var(--sg-color-white);
+  --sg-btn-border: var(--sg-color-primary-active);
+}
+
+.sg-button-dashed {
+  border-style: dashed;
+}
+
+.sg-button-text {
+  --sg-btn-border: transparent;
+  --sg-btn-bg: transparent;
+}
+.sg-button-text:hover {
+  --sg-btn-bg: var(--sg-color-bg-hover);
+  --sg-btn-border: transparent;
+}
+
+.sg-button-link {
+  --sg-btn-color: var(--sg-color-primary);
+  --sg-btn-border: transparent;
+  --sg-btn-bg: transparent;
+}
+.sg-button-link:hover {
+  --sg-btn-color: var(--sg-color-primary-hover);
+}
+
+.sg-button-small {
+  --sg-btn-height: var(--sg-height-sm);
+  --sg-btn-padding: 0 var(--sg-padding-sm);
+  --sg-btn-font-size: var(--sg-font-size-sm);
+}
+.sg-button-large {
+  --sg-btn-height: var(--sg-height-lg);
+  --sg-btn-padding: 0 var(--sg-padding-lg);
+  --sg-btn-font-size: var(--sg-font-size-lg);
+}
+
+.sg-button-loading {
+  cursor: default;
+  opacity: 0.65;
+  --sg-spin-color: currentColor;
+}
+
+/* === Danger variant ===
+ * Combines with `type`:
+ *   default → red text + red border
+ *   primary → solid red fill
+ *   dashed  → red dashed border + red text
+ *   text    → red text, transparent bg (red bg on hover)
+ *   link    → red text, no border
+ */
+.sg-button-danger {
+  --sg-btn-color: var(--sg-color-error);
+  --sg-btn-border: var(--sg-color-error);
+}
+.sg-button-danger:hover {
+  --sg-btn-color: var(--sg-red-6);
+  --sg-btn-border: var(--sg-red-6);
+}
+.sg-button-danger:active {
+  --sg-btn-color: var(--sg-red-6);
+  --sg-btn-border: var(--sg-red-6);
+}
+.sg-button-danger:focus-visible {
+  --sg-btn-border: var(--sg-color-error);
+  box-shadow: 0 0 0 2px var(--sg-color-error-bg);
+}
+
+.sg-button-primary.sg-button-danger {
+  --sg-btn-bg: var(--sg-color-error);
+  --sg-btn-color: var(--sg-color-white);
+  --sg-btn-border: var(--sg-color-error);
+}
+.sg-button-primary.sg-button-danger:hover {
+  --sg-btn-bg: var(--sg-red-6);
+  --sg-btn-color: var(--sg-color-white);
+  --sg-btn-border: var(--sg-red-6);
+}
+.sg-button-primary.sg-button-danger:active {
+  --sg-btn-bg: var(--sg-red-6);
+  --sg-btn-color: var(--sg-color-white);
+  --sg-btn-border: var(--sg-red-6);
+}
+
+.sg-button-text.sg-button-danger {
+  --sg-btn-bg: transparent;
+  --sg-btn-border: transparent;
+  --sg-btn-color: var(--sg-color-error);
+}
+.sg-button-text.sg-button-danger:hover {
+  --sg-btn-bg: var(--sg-color-error-bg);
+  --sg-btn-border: transparent;
+  --sg-btn-color: var(--sg-color-error);
+}
+
+.sg-button-link.sg-button-danger {
+  --sg-btn-bg: transparent;
+  --sg-btn-border: transparent;
+  --sg-btn-color: var(--sg-color-error);
+}
+.sg-button-link.sg-button-danger:hover {
+  --sg-btn-color: var(--sg-red-6);
+}
+
+.sg-button-danger:disabled {
+  --sg-btn-color: var(--sg-color-text-disabled);
+  --sg-btn-border: var(--sg-color-border);
+  --sg-btn-bg: var(--sg-color-bg-disabled);
+}
+
+/* === Block: stretch to parent width === */
+.sg-button-block {
+  display: flex;
+  width: 100%;
+}
