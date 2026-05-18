@@ -1,0 +1,1264 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>SkyGraph — UI-компоненты для React и Vue</title>
+		<meta name="description" content="78+ готовых компонентов для React и Vue: таблицы, формы, графики, календари. Одно ядро — одинаковый результат. Бесплатно, MIT." />
+		<meta name="robots" content="index,follow" />
+		<meta name="theme-color" content="#141414" />
+		<meta property="og:title" content="SkyGraph — UI-компоненты для React и Vue" />
+		<meta property="og:description" content="78+ компонентов на общем ядре. Одинаковый внешний вид в React и Vue. MIT." />
+		<meta property="og:url" content="https://skygraph.ruslansinkevich.ru/" />
+		<meta property="og:type" content="website" />
+
+		<script>
+			(function () {
+				try {
+					var savedTheme = localStorage.getItem('sg-theme');
+					var theme = savedTheme || (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+					document.documentElement.dataset.sgTheme = theme;
+
+					var savedLang = localStorage.getItem('sg-lang');
+					var auto = (navigator.language || 'en').slice(0, 2).toLowerCase();
+					var lang = savedLang || (auto === 'ru' ? 'ru' : 'en');
+					document.documentElement.lang = lang;
+				} catch (e) {}
+			})();
+		</script>
+
+		<style>
+			/*
+			 * SkyGraph landing — uses the same design tokens and shell
+			 * classes (xshell-*) as the React/Vue demo apps, so the header,
+			 * footer, typography and colours match across the whole site.
+			 *
+			 * Tokens are inlined here (instead of `@import '@skygraph/styles'`)
+			 * because this page ships as a single static HTML file with no
+			 * build step.
+			 */
+
+			/* === Design tokens — Light === */
+			:root,
+			[data-sg-theme='light'] {
+				--sg-gray-1: #ffffff;
+				--sg-gray-2: #fafafa;
+				--sg-gray-3: #f5f5f5;
+				--sg-gray-4: #f0f0f0;
+				--sg-gray-5: #d9d9d9;
+				--sg-blue-5: #4096ff;
+				--sg-blue-6: #1677ff;
+				--sg-blue-7: #0958d9;
+
+				--sg-color-bg: var(--sg-gray-1);
+				--sg-color-bg-secondary: var(--sg-gray-2);
+				--sg-color-bg-elevated: var(--sg-gray-1);
+				--sg-color-bg-hover: var(--sg-gray-3);
+
+				--sg-color-text: rgba(0, 0, 0, 0.88);
+				--sg-color-text-secondary: rgba(0, 0, 0, 0.65);
+				--sg-color-text-tertiary: rgba(0, 0, 0, 0.45);
+
+				--sg-color-border: var(--sg-gray-5);
+				--sg-color-border-secondary: var(--sg-gray-4);
+
+				--sg-color-primary: var(--sg-blue-6);
+				--sg-color-primary-hover: var(--sg-blue-5);
+				--sg-color-primary-active: var(--sg-blue-7);
+				--sg-color-primary-bg: #e6f4ff;
+
+				--sg-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+				--sg-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+				--sg-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.12);
+
+				--sg-color-code-bg: var(--sg-gray-2);
+				--sg-color-code-fg: #1f2937;
+			}
+
+			/* === Design tokens — Dark === */
+			[data-sg-theme='dark'] {
+				--sg-gray-3: #2a2a2a;
+				--sg-gray-4: #303030;
+				--sg-gray-5: #424242;
+
+				--sg-color-bg: #141414;
+				--sg-color-bg-secondary: #1f1f1f;
+				--sg-color-bg-elevated: #1f1f1f;
+				--sg-color-bg-hover: #2a2a2a;
+
+				--sg-color-text: rgba(255, 255, 255, 0.88);
+				--sg-color-text-secondary: rgba(255, 255, 255, 0.65);
+				--sg-color-text-tertiary: rgba(255, 255, 255, 0.45);
+
+				--sg-color-border: #424242;
+				--sg-color-border-secondary: #303030;
+
+				--sg-color-primary: var(--sg-blue-5);
+				--sg-color-primary-hover: var(--sg-blue-6);
+				--sg-color-primary-active: var(--sg-blue-7);
+				--sg-color-primary-bg: rgba(22, 119, 255, 0.15);
+
+				--sg-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+				--sg-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+				--sg-shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.5);
+
+				--sg-color-code-bg: #1a1a1a;
+				--sg-color-code-fg: #e4e4e7;
+			}
+
+			/* === Reset === */
+			*,
+			*::before,
+			*::after {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				padding: 0;
+			}
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+					'Helvetica Neue', Arial, sans-serif;
+				font-size: 14px;
+				line-height: 1.5714;
+				color: var(--sg-color-text);
+				background: var(--sg-color-bg);
+				-webkit-font-smoothing: antialiased;
+				-moz-osx-font-smoothing: grayscale;
+				transition: background 0.18s ease, color 0.18s ease;
+			}
+			a {
+				color: var(--sg-color-primary);
+				text-decoration: none;
+				transition: color 0.12s ease;
+			}
+			a:hover {
+				color: var(--sg-color-primary-hover);
+			}
+			code,
+			.mono {
+				font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+					monospace;
+				font-size: 0.92em;
+			}
+			[data-lang='en'],
+			[data-lang='ru'] {
+				display: none;
+			}
+			html[lang='en'] [data-lang='en'],
+			html[lang='ru'] [data-lang='ru'] {
+				display: revert;
+			}
+
+			/* === Shared shell — header === */
+			.xshell-header {
+				position: sticky;
+				top: 0;
+				z-index: 30;
+				height: 56px;
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				padding: 0 24px;
+				background: color-mix(in srgb, var(--sg-color-bg) 85%, transparent);
+				backdrop-filter: blur(12px);
+				-webkit-backdrop-filter: blur(12px);
+				border-bottom: 1px solid var(--sg-color-border);
+			}
+			.xshell-logo {
+				all: unset;
+				cursor: pointer;
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+					monospace;
+				font-size: 14px;
+				font-weight: 600;
+				color: var(--sg-color-text);
+				letter-spacing: -0.01em;
+				white-space: nowrap;
+			}
+			.xshell-logo-mark {
+				width: 14px;
+				height: 14px;
+				border-radius: 4px;
+				background: linear-gradient(
+					135deg,
+					var(--sg-color-primary),
+					var(--sg-color-primary-hover)
+				);
+			}
+			.xshell-nav {
+				display: flex;
+				align-items: center;
+				gap: 4px;
+				margin-left: 12px;
+			}
+			.xshell-nav-item {
+				cursor: pointer;
+				padding: 6px 12px;
+				font-size: 13px;
+				color: var(--sg-color-text-secondary);
+				border-radius: 6px;
+				transition: color 0.12s ease, background 0.12s ease;
+				white-space: nowrap;
+			}
+			.xshell-nav-item:hover {
+				color: var(--sg-color-text);
+				background: var(--sg-color-bg-hover);
+				text-decoration: none;
+			}
+			.xshell-nav-item-external::after {
+				content: '↗';
+				margin-left: 4px;
+				font-size: 11px;
+				opacity: 0.6;
+			}
+			.xshell-header-spacer {
+				flex: 1;
+			}
+			.xshell-header-extras {
+				display: flex;
+				align-items: center;
+				gap: 8px;
+			}
+			.xshell-lang {
+				display: inline-flex;
+				border: 1px solid var(--sg-color-border);
+				border-radius: 6px;
+				background: var(--sg-color-bg);
+				overflow: hidden;
+			}
+			.xshell-lang-btn {
+				all: unset;
+				cursor: pointer;
+				padding: 4px 10px;
+				font-size: 11px;
+				font-weight: 500;
+				color: var(--sg-color-text-secondary);
+				letter-spacing: 0.04em;
+				transition: color 0.12s ease, background 0.12s ease;
+			}
+			.xshell-lang-btn:hover {
+				color: var(--sg-color-text);
+				background: var(--sg-color-bg-hover);
+			}
+			.xshell-lang-btn--active {
+				background: var(--sg-color-primary);
+				color: #fff;
+			}
+			.xshell-theme {
+				all: unset;
+				cursor: pointer;
+				width: 32px;
+				height: 32px;
+				display: inline-flex;
+				align-items: center;
+				justify-content: center;
+				border-radius: 6px;
+				color: var(--sg-color-text-secondary);
+				transition: color 0.12s ease, background 0.12s ease;
+			}
+			.xshell-theme:hover {
+				color: var(--sg-color-text);
+				background: var(--sg-color-bg-hover);
+			}
+			.xshell-theme svg {
+				width: 14px;
+				height: 14px;
+			}
+			html[data-sg-theme='dark'] .theme-icon-light,
+			html:not([data-sg-theme='dark']) .theme-icon-dark {
+				display: none;
+			}
+
+			/* === Layout === */
+			main {
+				min-height: calc(100vh - 56px);
+			}
+			.container {
+				max-width: 1080px;
+				margin: 0 auto;
+				padding: 0 32px;
+			}
+			section {
+				padding: 56px 0;
+			}
+			section + section {
+				border-top: 1px solid var(--sg-color-border-secondary);
+			}
+			.section-eyebrow {
+				font-size: 11px;
+				font-weight: 600;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+				color: var(--sg-color-text-tertiary);
+				margin-bottom: 12px;
+			}
+			h1 {
+				font-size: clamp(34px, 5vw, 48px);
+				font-weight: 700;
+				line-height: 1.15;
+				letter-spacing: -0.02em;
+				margin: 0 0 20px;
+				color: var(--sg-color-text);
+			}
+			h2 {
+				font-size: clamp(24px, 3vw, 30px);
+				font-weight: 600;
+				line-height: 1.25;
+				letter-spacing: -0.01em;
+				margin: 0 0 20px;
+				color: var(--sg-color-text);
+			}
+			h3 {
+				font-size: 16px;
+				font-weight: 600;
+				margin: 0 0 8px;
+				color: var(--sg-color-text);
+			}
+			.lead {
+				font-size: 17px;
+				line-height: 1.6;
+				color: var(--sg-color-text-secondary);
+				max-width: 640px;
+				margin: 0 0 28px;
+			}
+			p {
+				margin: 0 0 12px;
+				color: var(--sg-color-text-secondary);
+			}
+
+			/* === Hero === */
+			.hero {
+				padding-top: 72px;
+				padding-bottom: 64px;
+			}
+			.cta-row {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 12px;
+				margin-bottom: 40px;
+			}
+			.btn {
+				display: inline-flex;
+				align-items: center;
+				gap: 8px;
+				padding: 10px 18px;
+				border-radius: 8px;
+				font-size: 14px;
+				font-weight: 500;
+				cursor: pointer;
+				transition: background 0.12s ease, color 0.12s ease,
+					border-color 0.12s ease, transform 0.12s ease;
+				border: 1px solid transparent;
+			}
+			.btn-primary {
+				background: var(--sg-color-primary);
+				color: #fff;
+			}
+			.btn-primary:hover {
+				background: var(--sg-color-primary-hover);
+				color: #fff;
+				text-decoration: none;
+			}
+			.btn-ghost {
+				background: transparent;
+				color: var(--sg-color-text);
+				border-color: var(--sg-color-border);
+			}
+			.btn-ghost:hover {
+				background: var(--sg-color-bg-hover);
+				color: var(--sg-color-text);
+				text-decoration: none;
+			}
+			.btn .arrow {
+				transition: transform 0.12s ease;
+			}
+			.btn:hover .arrow {
+				transform: translateX(2px);
+			}
+
+			/* === Code tabs === */
+			.code-tabs {
+				margin-top: 8px;
+			}
+			.tab-bar {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 4px;
+			}
+			.tab-bar input[type='radio'] {
+				position: absolute;
+				opacity: 0;
+				pointer-events: none;
+			}
+			.tab-bar label {
+				padding: 6px 14px;
+				font-size: 12px;
+				font-weight: 500;
+				color: var(--sg-color-text-secondary);
+				border: 1px solid var(--sg-color-border);
+				border-radius: 6px;
+				cursor: pointer;
+				background: var(--sg-color-bg);
+				transition: color 0.12s ease, background 0.12s ease,
+					border-color 0.12s ease;
+			}
+			.tab-bar label:hover {
+				color: var(--sg-color-text);
+				background: var(--sg-color-bg-hover);
+			}
+			.tab-bar input:checked + label {
+				color: #fff;
+				background: var(--sg-color-primary);
+				border-color: var(--sg-color-primary);
+			}
+			.tab-panels {
+				margin-top: 12px;
+			}
+			.tab-panel {
+				display: none;
+			}
+			#tab-react:checked ~ .tab-panels #panel-react,
+			#tab-vue:checked ~ .tab-panels #panel-vue {
+				display: block;
+			}
+			pre {
+				margin: 0 0 12px;
+				padding: 16px 20px;
+				background: var(--sg-color-code-bg);
+				color: var(--sg-color-code-fg);
+				border: 1px solid var(--sg-color-border-secondary);
+				border-radius: 8px;
+				font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+					monospace;
+				font-size: 13px;
+				line-height: 1.55;
+				overflow-x: auto;
+				white-space: pre;
+			}
+			.code-comment {
+				color: var(--sg-color-text-tertiary);
+			}
+			.code-kw {
+				color: #c084fc;
+			}
+			.code-str {
+				color: #22c55e;
+			}
+			.code-tag {
+				color: #38bdf8;
+			}
+			.code-attr {
+				color: #fbbf24;
+			}
+			html:not([data-sg-theme='dark']) .code-kw {
+				color: #7c3aed;
+			}
+			html:not([data-sg-theme='dark']) .code-str {
+				color: #15803d;
+			}
+			html:not([data-sg-theme='dark']) .code-tag {
+				color: #0369a1;
+			}
+			html:not([data-sg-theme='dark']) .code-attr {
+				color: #b45309;
+			}
+
+			/* === Stats === */
+			.stats-grid {
+				display: grid;
+				grid-template-columns: repeat(4, minmax(0, 1fr));
+				gap: 24px;
+			}
+			.stat-value {
+				font-size: 32px;
+				font-weight: 700;
+				color: var(--sg-color-text);
+				letter-spacing: -0.02em;
+				line-height: 1.1;
+			}
+			.stat-label {
+				font-size: 13px;
+				color: var(--sg-color-text-secondary);
+				margin-top: 4px;
+			}
+
+			/* === Features === */
+			.features-grid {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 24px;
+			}
+			.feature {
+				padding: 24px;
+				background: var(--sg-color-bg-secondary);
+				border: 1px solid var(--sg-color-border-secondary);
+				border-radius: 12px;
+				transition: border-color 0.18s ease, box-shadow 0.18s ease;
+			}
+			.feature:hover {
+				border-color: var(--sg-color-border);
+				box-shadow: var(--sg-shadow-sm);
+			}
+			.feature p {
+				font-size: 14px;
+				line-height: 1.6;
+				margin: 0;
+			}
+
+			/* === Demo cards === */
+			.demos-grid {
+				display: grid;
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+				gap: 20px;
+			}
+			.demo-card {
+				display: flex;
+				flex-direction: column;
+				padding: 24px;
+				background: var(--sg-color-bg-secondary);
+				border: 1px solid var(--sg-color-border-secondary);
+				border-radius: 12px;
+				color: var(--sg-color-text);
+				transition: border-color 0.18s ease, box-shadow 0.18s ease,
+					transform 0.18s ease;
+			}
+			.demo-card:hover {
+				border-color: var(--sg-color-primary);
+				box-shadow: var(--sg-shadow);
+				transform: translateY(-2px);
+				text-decoration: none;
+				color: var(--sg-color-text);
+			}
+			.demo-card-tag {
+				display: inline-block;
+				align-self: flex-start;
+				padding: 2px 10px;
+				font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+					monospace;
+				font-size: 11px;
+				font-weight: 500;
+				color: var(--sg-color-primary);
+				background: var(--sg-color-primary-bg);
+				border-radius: 999px;
+				margin-bottom: 14px;
+			}
+			.demo-card-title {
+				font-size: 17px;
+				font-weight: 600;
+				margin-bottom: 8px;
+			}
+			.demo-card-desc {
+				font-size: 13px;
+				line-height: 1.55;
+				color: var(--sg-color-text-secondary);
+				flex: 1;
+				margin-bottom: 14px;
+			}
+			.demo-card-link {
+				font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+					monospace;
+				font-size: 12px;
+				color: var(--sg-color-primary);
+			}
+
+			/* === Author === */
+			.author-card {
+				padding: 28px;
+				background: var(--sg-color-bg-secondary);
+				border: 1px solid var(--sg-color-border-secondary);
+				border-radius: 12px;
+			}
+			.author-head {
+				display: flex;
+				align-items: baseline;
+				gap: 12px;
+				flex-wrap: wrap;
+				margin-bottom: 18px;
+				padding-bottom: 18px;
+				border-bottom: 1px solid var(--sg-color-border-secondary);
+			}
+			.author-name {
+				font-size: 18px;
+				font-weight: 600;
+				color: var(--sg-color-text);
+			}
+			.author-sub {
+				font-size: 13px;
+			}
+			.author-list {
+				list-style: none;
+				margin: 0;
+				padding: 0;
+				display: flex;
+				flex-direction: column;
+				gap: 14px;
+			}
+			.author-row {
+				display: grid;
+				grid-template-columns: 110px 1fr auto;
+				gap: 16px;
+				align-items: baseline;
+				font-size: 13px;
+			}
+			.author-row .name {
+				font-weight: 600;
+				color: var(--sg-color-text);
+			}
+			.author-row .desc {
+				color: var(--sg-color-text-secondary);
+				line-height: 1.5;
+			}
+			.author-row .self {
+				font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo,
+					monospace;
+				font-size: 11px;
+				color: var(--sg-color-text-tertiary);
+				padding: 2px 8px;
+				border: 1px dashed var(--sg-color-border);
+				border-radius: 999px;
+			}
+
+			/* === Shared shell — footer === */
+			.xshell-footer {
+				border-top: 1px solid var(--sg-color-border);
+				background: var(--sg-color-bg-secondary);
+				padding: 32px 32px 0;
+				margin-top: 64px;
+			}
+			.xshell-footer-inner {
+				max-width: 1080px;
+				margin: 0 auto;
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 1fr));
+				gap: 32px;
+				padding-bottom: 32px;
+			}
+			.xshell-footer-col-title {
+				font-size: 12px;
+				font-weight: 600;
+				letter-spacing: 0.06em;
+				text-transform: uppercase;
+				color: var(--sg-color-text-tertiary);
+				margin-bottom: 12px;
+			}
+			.xshell-footer-col ul {
+				list-style: none;
+				padding: 0;
+				margin: 0;
+				display: flex;
+				flex-direction: column;
+				gap: 8px;
+			}
+			.xshell-footer-col a {
+				font-size: 13px;
+				color: var(--sg-color-text-secondary);
+			}
+			.xshell-footer-col a:hover {
+				color: var(--sg-color-primary);
+				text-decoration: none;
+			}
+			.xshell-footer-bottom {
+				max-width: 1080px;
+				margin: 0 auto;
+				display: flex;
+				align-items: center;
+				gap: 16px;
+				padding: 16px 0;
+				border-top: 1px solid var(--sg-color-border);
+				font-size: 12px;
+				color: var(--sg-color-text-tertiary);
+				flex-wrap: wrap;
+			}
+			.xshell-footer-spacer {
+				flex: 1;
+			}
+
+			/* === Responsive === */
+			@media (max-width: 880px) {
+				section {
+					padding: 40px 0;
+				}
+				.container {
+					padding: 0 20px;
+				}
+				.features-grid {
+					grid-template-columns: 1fr;
+				}
+				.demos-grid {
+					grid-template-columns: 1fr;
+				}
+				.stats-grid {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+					gap: 20px;
+				}
+				.xshell-footer {
+					padding: 24px 20px 0;
+				}
+				.xshell-footer-inner {
+					grid-template-columns: repeat(2, minmax(0, 1fr));
+					gap: 24px;
+				}
+				.author-row {
+					grid-template-columns: 1fr;
+					gap: 4px;
+				}
+			}
+			@media (max-width: 600px) {
+				.xshell-header {
+					padding: 0 16px;
+				}
+				.xshell-nav {
+					display: none;
+				}
+				.xshell-footer-inner {
+					grid-template-columns: 1fr;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<header class="xshell-header" role="banner">
+			<a class="xshell-logo" href="/" aria-label="SkyGraph">
+				<span class="xshell-logo-mark" aria-hidden="true"></span>
+				skygraph
+			</a>
+			<nav class="xshell-nav" aria-label="Primary">
+				<a class="xshell-nav-item" href="/react/">React</a>
+				<a class="xshell-nav-item" href="/vue/">Vue</a>
+			</nav>
+			<div class="xshell-header-spacer"></div>
+			<div class="xshell-header-extras">
+				<div class="xshell-lang" role="group" aria-label="Language">
+					<button
+						type="button"
+						class="xshell-lang-btn"
+						data-lang-set="en"
+						aria-label="English"
+					>EN</button>
+					<button
+						type="button"
+						class="xshell-lang-btn"
+						data-lang-set="ru"
+						aria-label="Русский"
+					>RU</button>
+				</div>
+				<button
+					id="theme-toggle"
+					type="button"
+					class="xshell-theme"
+					aria-label="Toggle theme"
+					title="Theme"
+				>
+					<svg
+						class="theme-icon-light"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<circle cx="12" cy="12" r="4"></circle>
+						<path
+							d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"
+						></path>
+					</svg>
+					<svg
+						class="theme-icon-dark"
+						viewBox="0 0 24 24"
+						fill="none"
+						stroke="currentColor"
+						stroke-width="2"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					>
+						<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+					</svg>
+				</button>
+			</div>
+		</header>
+
+		<main>
+			<section class="hero">
+				<div class="container">
+					<div class="section-eyebrow">MIT</div>
+					<h1 data-lang="en">UI for React and Vue. One code base.</h1>
+					<h1 data-lang="ru">UI для React и Vue. Один код.</h1>
+					<p class="lead" data-lang="en">
+						78+ ready-made components — tables, forms, charts, calendars,
+						diagrams. The same engine and the same look across React and Vue.
+						Free, MIT.
+					</p>
+					<p class="lead" data-lang="ru">
+						78+ готовых компонентов — таблицы, формы, графики, календари,
+						диаграммы. Один движок, одинаковый внешний вид в React и Vue.
+						Бесплатно, MIT.
+					</p>
+					<div class="cta-row">
+						<a class="btn btn-primary" href="/react/">
+							<span data-lang="en">Open demos</span>
+							<span data-lang="ru">Открыть демо</span>
+							<span class="arrow">→</span>
+						</a>
+						<a
+							class="btn btn-ghost"
+							href="https://t.me/ruslansinkevich"
+							target="_blank"
+							rel="noopener"
+						>Telegram</a>
+					</div>
+
+					<div class="code-tabs">
+						<div class="tab-bar">
+							<input type="radio" name="quickstart" id="tab-react" checked />
+							<label for="tab-react">React</label>
+							<input type="radio" name="quickstart" id="tab-vue" />
+							<label for="tab-vue">Vue 3</label>
+							<div class="tab-panels">
+								<div class="tab-panel" id="panel-react">
+<pre><span class="code-comment"># <span data-lang="en">install</span><span data-lang="ru">установка</span></span>
+npm install skygraph-react</pre>
+<pre><span class="code-kw">import</span> { Form, Field, SubmitButton } <span class="code-kw">from</span> <span class="code-str">'skygraph-react'</span>
+
+<span class="code-kw">function</span> App() {
+  <span class="code-kw">return</span> (
+    &lt;<span class="code-tag">Form</span> <span class="code-attr">defaultValues</span>={{ email: <span class="code-str">''</span> }}&gt;
+      &lt;<span class="code-tag">Field</span> <span class="code-attr">name</span>=<span class="code-str">"email"</span> <span class="code-attr">label</span>=<span class="code-str">"Email"</span> /&gt;
+      &lt;<span class="code-tag">SubmitButton</span>&gt;Submit&lt;/<span class="code-tag">SubmitButton</span>&gt;
+    &lt;/<span class="code-tag">Form</span>&gt;
+  )
+}</pre>
+								</div>
+								<div class="tab-panel" id="panel-vue">
+<pre><span class="code-comment"># <span data-lang="en">install</span><span data-lang="ru">установка</span></span>
+npm install skygraph-vue</pre>
+<pre>&lt;<span class="code-tag">script</span> <span class="code-attr">setup</span> <span class="code-attr">lang</span>=<span class="code-str">"ts"</span>&gt;
+<span class="code-kw">import</span> { SgForm, SgField, SgSubmitButton } <span class="code-kw">from</span> <span class="code-str">'skygraph-vue'</span>
+&lt;/<span class="code-tag">script</span>&gt;
+
+&lt;<span class="code-tag">template</span>&gt;
+  &lt;<span class="code-tag">SgForm</span> <span class="code-attr">:default-values</span>=<span class="code-str">"{ email: '' }"</span>&gt;
+    &lt;<span class="code-tag">SgField</span> <span class="code-attr">name</span>=<span class="code-str">"email"</span> <span class="code-attr">label</span>=<span class="code-str">"Email"</span> /&gt;
+    &lt;<span class="code-tag">SgSubmitButton</span>&gt;Submit&lt;/<span class="code-tag">SgSubmitButton</span>&gt;
+  &lt;/<span class="code-tag">SgForm</span>&gt;
+&lt;/<span class="code-tag">template</span>&gt;</pre>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<div class="container">
+					<div class="stats-grid">
+						<div>
+							<div class="stat-value">78+</div>
+							<div class="stat-label" data-lang="en">React components</div>
+							<div class="stat-label" data-lang="ru">React-компонентов</div>
+						</div>
+						<div>
+							<div class="stat-value">66+</div>
+							<div class="stat-label" data-lang="en">Vue components</div>
+							<div class="stat-label" data-lang="ru">Vue-компонентов</div>
+						</div>
+						<div>
+							<div class="stat-value">1800+</div>
+							<div class="stat-label" data-lang="en">Tests in CI</div>
+							<div class="stat-label" data-lang="ru">Тестов в CI</div>
+						</div>
+						<div>
+							<div class="stat-value">~25 KB</div>
+							<div class="stat-label" data-lang="en">CSS, gzipped</div>
+							<div class="stat-label" data-lang="ru">CSS, gzip</div>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<div class="container">
+					<div class="section-eyebrow" data-lang="en">Why SkyGraph</div>
+					<div class="section-eyebrow" data-lang="ru">Зачем</div>
+					<h2 data-lang="en">Write once. Ship for React and Vue.</h2>
+					<h2 data-lang="ru">Пишешь один раз. Отдаёшь и в React, и в Vue.</h2>
+					<div class="features-grid">
+						<div class="feature">
+							<h3 data-lang="en">Same engine for React and Vue</h3>
+							<h3 data-lang="ru">Один движок на React и Vue</h3>
+							<p data-lang="en">
+								Logic lives in one core package. React and Vue adapters share
+								the same state, the same validation, the same selection model.
+								Update the core — both stay in sync.
+							</p>
+							<p data-lang="ru">
+								Вся логика — в одном ядре. Адаптеры для React и Vue делят одно
+								состояние, одну валидацию, одну модель выделения. Обновил ядро —
+								оба остались синхронны.
+							</p>
+						</div>
+						<div class="feature">
+							<h3 data-lang="en">Identical look out of the box</h3>
+							<h3 data-lang="ru">Одинаковый внешний вид</h3>
+							<p data-lang="en">
+								React and Vue render the same DOM and the same CSS classes.
+								Switch framework — buttons, tables and forms look exactly the
+								same.
+							</p>
+							<p data-lang="ru">
+								React и Vue отдают одинаковый DOM и одинаковые CSS-классы.
+								Переехал с одного на другое — кнопки, таблицы, формы выглядят
+								так же.
+							</p>
+						</div>
+						<div class="feature">
+							<h3 data-lang="en">Light and predictable CSS</h3>
+							<h3 data-lang="ru">Лёгкий CSS без сюрпризов</h3>
+							<p data-lang="en">
+								~25 KB gzipped, no CSS-in-JS, no runtime injection. Dark and
+								light themes via a single attribute on
+								<code>&lt;html&gt;</code>.
+							</p>
+							<p data-lang="ru">
+								~25 KB gzip, без CSS-in-JS и runtime-инъекций. Светлая и тёмная
+								темы — переключаются одним атрибутом на
+								<code>&lt;html&gt;</code>.
+							</p>
+						</div>
+						<div class="feature">
+							<h3 data-lang="en">TypeScript first</h3>
+							<h3 data-lang="ru">TypeScript из коробки</h3>
+							<p data-lang="en">
+								Strict types end-to-end. Form schemas from JSON Schema or Zod.
+								No <code>any</code> in the public API.
+							</p>
+							<p data-lang="ru">
+								Строгая типизация по всем компонентам. Схемы форм из JSON Schema
+								или Zod. Никакого <code>any</code> в публичном API.
+							</p>
+						</div>
+						<div class="feature">
+							<h3 data-lang="en">Accessible by default</h3>
+							<h3 data-lang="ru">Доступность по умолчанию</h3>
+							<p data-lang="en">
+								Keyboard navigation, ARIA roles and focus traps are built in.
+								You don't have to remember them on every component.
+							</p>
+							<p data-lang="ru">
+								Клавиатурная навигация, ARIA-роли и focus-trap — встроены. Не
+								надо помнить про них каждый раз.
+							</p>
+						</div>
+						<div class="feature">
+							<h3 data-lang="en">Print &amp; PDF</h3>
+							<h3 data-lang="ru">Печать и PDF</h3>
+							<p data-lang="en">
+								Tables, diagrams and charts know how to print themselves. One
+								prop — and the native browser print dialog shows a clean
+								version.
+							</p>
+							<p data-lang="ru">
+								Таблицы, диаграммы и графики умеют печатать сами себя. Один
+								проп — и нативный print-диалог браузера показывает чистую
+								версию.
+							</p>
+						</div>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<div class="container">
+					<div class="section-eyebrow" data-lang="en">Try it</div>
+					<div class="section-eyebrow" data-lang="ru">Попробовать</div>
+					<h2 data-lang="en">Live demos</h2>
+					<h2 data-lang="ru">Живые демо</h2>
+					<p class="lead" data-lang="en">
+						Component docs and mini-app showcases, available for both React
+						and Vue.
+					</p>
+					<p class="lead" data-lang="ru">
+						Документация по компонентам и мини-приложения — отдельно
+						под React и под Vue.
+					</p>
+					<div class="demos-grid">
+						<a class="demo-card" href="/react/">
+							<span class="demo-card-tag">React</span>
+							<div class="demo-card-title" data-lang="en">Component docs</div>
+							<div class="demo-card-title" data-lang="ru">Документация компонентов</div>
+							<div class="demo-card-desc" data-lang="en">
+								78+ components with live previews, source code and API tables.
+								Open any component and try it right in the browser.
+							</div>
+							<div class="demo-card-desc" data-lang="ru">
+								78+ компонентов с live-превью, исходниками и API-таблицами.
+								Открыл компонент и сразу пощёлкал в браузере.
+							</div>
+							<div class="demo-card-link">/react/ →</div>
+						</a>
+						<a class="demo-card" href="/vue/">
+							<span class="demo-card-tag">Vue 3</span>
+							<div class="demo-card-title" data-lang="en">Component docs</div>
+							<div class="demo-card-title" data-lang="ru">Документация компонентов</div>
+							<div class="demo-card-desc" data-lang="en">
+								66+ Vue 3 components with Composition API, live previews and
+								API tables. Native <code>Sg*</code> SFCs — not a React wrapper.
+							</div>
+							<div class="demo-card-desc" data-lang="ru">
+								66+ Vue 3 компонентов на Composition API с live-превью и
+								API-таблицами. Нативные <code>Sg*</code> SFC — не обёртка над
+								React.
+							</div>
+							<div class="demo-card-link">/vue/ →</div>
+						</a>
+						<a class="demo-card" href="/react/showcases/">
+							<span class="demo-card-tag">React</span>
+							<div class="demo-card-title" data-lang="en">12 mini-apps</div>
+							<div class="demo-card-title" data-lang="ru">12 мини-приложений</div>
+							<div class="demo-card-desc" data-lang="en">
+								CRM, helpdesk, dashboard, analytics, file manager, HR portal,
+								workflow editor and more — full screens assembled from 30+
+								components.
+							</div>
+							<div class="demo-card-desc" data-lang="ru">
+								CRM, helpdesk, dashboard, аналитика, файловый менеджер,
+								HR-портал, редактор workflow и другие — целые экраны на 30+
+								компонентах.
+							</div>
+							<div class="demo-card-link">/react/showcases/ →</div>
+						</a>
+						<a class="demo-card" href="/vue/showcases/">
+							<span class="demo-card-tag">Vue 3</span>
+							<div class="demo-card-title" data-lang="en">12 mini-apps</div>
+							<div class="demo-card-title" data-lang="ru">12 мини-приложений</div>
+							<div class="demo-card-desc" data-lang="en">
+								The same 12 mini-apps on Vue 3 — CRM, helpdesk, dashboard,
+								analytics, file manager, HR portal, workflow editor, e-commerce
+								and more.
+							</div>
+							<div class="demo-card-desc" data-lang="ru">
+								Те же 12 мини-приложений на Vue 3 — CRM, helpdesk, dashboard,
+								аналитика, файловый менеджер, HR-портал, редактор workflow,
+								e-commerce и другие.
+							</div>
+							<div class="demo-card-link">/vue/showcases/ →</div>
+						</a>
+					</div>
+				</div>
+			</section>
+
+			<section>
+				<div class="container">
+					<div class="section-eyebrow" data-lang="en">Author</div>
+					<div class="section-eyebrow" data-lang="ru">Автор</div>
+					<h2 data-lang="en">Made by Ruslan Sinkevich</h2>
+					<h2 data-lang="ru">Сделано Русланом Синкевичем</h2>
+					<div class="author-card">
+						<div class="author-head">
+							<div class="author-name">Ruslan Sinkevich</div>
+							<a
+								class="author-sub"
+								href="https://ruslansinkevich.ru/"
+								target="_blank"
+								rel="noopener"
+							>ruslansinkevich.ru</a>
+							<a
+								class="author-sub"
+								href="https://t.me/ruslansinkevich"
+								target="_blank"
+								rel="noopener"
+							>Telegram</a>
+						</div>
+						<ul class="author-list">
+							<li class="author-row">
+								<span class="name">GitBor</span>
+								<span class="desc" data-lang="en">
+									Desktop Git client on Electron — visual commit graph,
+									interactive rebase, conflict resolution
+								</span>
+								<span class="desc" data-lang="ru">
+									Десктопный Git-клиент на Electron — визуальный граф коммитов,
+									интерактивный rebase, разрешение конфликтов
+								</span>
+								<a
+									class="link"
+									href="https://gitbor.ru/"
+									target="_blank"
+									rel="noopener"
+								>gitbor.ru →</a>
+							</li>
+							<li class="author-row">
+								<span class="name">SkyGraph</span>
+								<span class="desc" data-lang="en">
+									This library — UI components for React and Vue on one core
+								</span>
+								<span class="desc" data-lang="ru">
+									Эта библиотека — UI-компоненты для React и Vue на одном ядре
+								</span>
+								<span class="self" data-lang="en">you are here</span>
+								<span class="self" data-lang="ru">вы здесь</span>
+							</li>
+							<li class="author-row">
+								<span class="name">Skycode</span>
+								<span class="desc" data-lang="en">
+									VS Code fork with a built-in AI assistant — agent tools,
+									inline diff with per-message snapshots, 40+ model providers
+								</span>
+								<span class="desc" data-lang="ru">
+									Форк VS Code со встроенным AI-ассистентом — инструменты
+									агента, inline diff с per-message снапшотами, 40+ провайдеров
+									моделей
+								</span>
+								<a
+									class="link"
+									href="https://skycode-ai.ru/"
+									target="_blank"
+									rel="noopener"
+								>skycode-ai.ru →</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+		</main>
+
+		<footer class="xshell-footer" role="contentinfo">
+			<div class="xshell-footer-inner">
+				<div class="xshell-footer-col">
+					<div class="xshell-footer-col-title" data-lang="en">Demos</div>
+					<div class="xshell-footer-col-title" data-lang="ru">Демо</div>
+					<ul>
+						<li><a href="/react/">React</a></li>
+						<li><a href="/vue/">Vue 3</a></li>
+						<li>
+							<a href="/react/showcases/" data-lang="en">React showcases</a>
+							<a href="/react/showcases/" data-lang="ru">React-примеры</a>
+						</li>
+						<li>
+							<a href="/vue/showcases/" data-lang="en">Vue showcases</a>
+							<a href="/vue/showcases/" data-lang="ru">Vue-примеры</a>
+						</li>
+					</ul>
+				</div>
+				<div class="xshell-footer-col">
+					<div class="xshell-footer-col-title" data-lang="en">Project</div>
+					<div class="xshell-footer-col-title" data-lang="ru">Проект</div>
+					<ul>
+						<li>
+							<a
+								href="https://github.com/RuslanSinkevich/skygraph-public"
+								target="_blank"
+								rel="noopener"
+							>GitHub</a>
+						</li>
+						<li>
+							<a
+								href="https://github.com/RuslanSinkevich/skygraph-public/blob/master/CHANGELOG.md"
+								target="_blank"
+								rel="noopener"
+								data-lang="en"
+							>Changelog</a>
+							<a
+								href="https://github.com/RuslanSinkevich/skygraph-public/blob/master/CHANGELOG.md"
+								target="_blank"
+								rel="noopener"
+								data-lang="ru"
+							>История</a>
+						</li>
+						<li>
+							<a
+								href="https://github.com/RuslanSinkevich/skygraph-public/blob/master/LICENSE"
+								target="_blank"
+								rel="noopener"
+							>MIT License</a>
+						</li>
+					</ul>
+				</div>
+				<div class="xshell-footer-col">
+					<div class="xshell-footer-col-title" data-lang="en">Author</div>
+					<div class="xshell-footer-col-title" data-lang="ru">Автор</div>
+					<ul>
+						<li>
+							<a
+								href="https://ruslansinkevich.ru/"
+								target="_blank"
+								rel="noopener"
+							>ruslansinkevich.ru</a>
+						</li>
+						<li>
+							<a
+								href="https://t.me/ruslansinkevich"
+								target="_blank"
+								rel="noopener"
+							>Telegram</a>
+						</li>
+						<li>
+							<a
+								href="https://gitbor.ru/"
+								target="_blank"
+								rel="noopener"
+							>GitBor</a>
+						</li>
+						<li>
+							<a
+								href="https://skycode-ai.ru/"
+								target="_blank"
+								rel="noopener"
+							>Skycode</a>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div class="xshell-footer-bottom">
+				<span>© 2026 Ruslan Sinkevich · MIT</span>
+				<div class="xshell-footer-spacer"></div>
+			</div>
+		</footer>
+
+		<script>
+			(function () {
+				var html = document.documentElement;
+
+				function syncLang(lang) {
+					html.lang = lang;
+					document
+						.querySelectorAll('.xshell-lang-btn')
+						.forEach(function (btn) {
+							btn.classList.toggle(
+								'xshell-lang-btn--active',
+								btn.dataset.langSet === lang,
+							);
+						});
+				}
+
+				syncLang(html.lang);
+
+				document
+					.querySelectorAll('.xshell-lang-btn')
+					.forEach(function (btn) {
+						btn.addEventListener('click', function () {
+							var lang = btn.dataset.langSet;
+							syncLang(lang);
+							try {
+								localStorage.setItem('sg-lang', lang);
+							} catch (e) {}
+						});
+					});
+
+				var themeBtn = document.getElementById('theme-toggle');
+				themeBtn.addEventListener('click', function () {
+					var next = html.dataset.sgTheme === 'dark' ? 'light' : 'dark';
+					html.dataset.sgTheme = next;
+					try {
+						localStorage.setItem('sg-theme', next);
+					} catch (e) {}
+				});
+			})();
+		</script>
+	</body>
+</html>

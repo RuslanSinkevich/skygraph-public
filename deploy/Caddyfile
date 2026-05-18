@@ -1,0 +1,17 @@
+skygraph.ruslansinkevich.ru {
+    root * /srv/skygraph
+    encode gzip zstd
+    file_server
+
+    handle /vue/* {
+        try_files {path} {path}/ /vue/index.html
+    }
+
+    handle /angular/* {
+        try_files {path} {path}/ /angular/index.html
+    }
+
+    handle {
+        try_files {path} /index.html
+    }
+}
