@@ -85,11 +85,11 @@
   "homepage": "https://skygraph.ruslansinkevich.ru",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RuslanSinkevich/skygraph.git",
+    "url": "git+https://github.com/RuslanSinkevich/skygraph-public.git",
     "directory": "packages/styles"
   },
   "bugs": {
-    "url": "https://github.com/RuslanSinkevich/skygraph/issues"
+    "url": "https://github.com/RuslanSinkevich/skygraph-public/issues"
   },
   "keywords": [
     "css",

@@ -7,6 +7,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Public surface — meta-packages + skygraph-public repo
+
+- **New packages:** `skygraph-react` and `skygraph-vue` ship as
+  meta-packages. Each one depends on `@skygraph/core` +
+  `@skygraph/styles` + the matching adapter, and does a side-effect
+  `import '@skygraph/styles'` at the top of its entry. A single
+  `npm install skygraph-react` (or `skygraph-vue`) is now enough to get
+  styled components rendering — no extra `@skygraph/core` /
+  `@skygraph/styles` install, no separate stylesheet import.
+- **Public repository moved** to
+  [github.com/RuslanSinkevich/skygraph-public](https://github.com/RuslanSinkevich/skygraph-public).
+  `repository.url` / `bugs.url` updated in every package's
+  `package.json`, plus all `RuslanSinkevich/skygraph` URLs in README,
+  CONTRIBUTING, deploy stubs, landing, demo apps and the
+  `examples/_shared` constants are now pointing at `skygraph-public`.
+- **Landing page (`landing/index.html`):** the package table was
+  removed; quickstart blocks switched to a single `npm install
+  skygraph-react` / `skygraph-vue`; the GitHub item is dropped from the
+  top navigation and the hero "GitHub" button is replaced with
+  "Telegram" (https://t.me/ruslansinkevich); the footer "Packages"
+  column and the version badge are gone, leaving three columns
+  (Demos / Project / Author); a Telegram link was added to the Author
+  card and footer.
+- **Demo apps (`examples/demo`, `examples/demo-vue`,
+  `examples/showcases`, `examples/showcases-vue`):** quickstart
+  snippets and `INSTALL_COMMAND` rewritten to use `skygraph-react` /
+  `skygraph-vue` (existing `@skygraph/*` imports inside the demo source
+  are kept, the meta-packages are additive — both styles work). The
+  header `GitHub` item is removed across all four apps; the nav order
+  is now uniform (`components → guide → showcases → [benchmarks] →
+  roadmap → about` for `demo` / `demo-vue`, `docs → showcases` for the
+  showcases apps).
+- **Telegram contact:** `TELEGRAM_URL` constant added to
+  `examples/_shared/src/constants/stats.ts`; the author Telegram is
+  surfaced on the landing footer + author card.
+- **Tone pass:** the landing page, README, and `skyplatform` project
+  copy were rewritten to drop contributor-only jargon ("headless core",
+  "path-based store", "axe-core", "roving tabindex", "pixel-identical
+  adapters"). Architectural details still live in `ARCHITECTURE.md`.
+
+This change is purely additive — `@skygraph/core`, `@skygraph/react`,
+`@skygraph/vue` and `@skygraph/styles` continue to ship as before and
+existing imports keep working. See `MIGRATION.md` for the optional
+migration.
+
 ### Stream 4 — Vue audit polish (critical bugfixes + visual parity)
 
 Stream 4 закрыл 19 пунктов аудита Vue-адаптера против React reference.

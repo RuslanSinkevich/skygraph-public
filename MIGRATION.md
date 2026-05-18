@@ -1,8 +1,65 @@
 # SkyGraph — Migration notes
 
 This file tracks breaking and notable changes for downstream consumers
-of `@skygraph/{core,react,vue,styles}`. Sections are added on top so the
-freshest entry is first.
+of the published packages. Sections are added on top so the freshest
+entry is first.
+
+---
+
+## 2026-05-18 — meta-packages: one install per framework
+
+### What changed
+
+Two new packages let consumers install SkyGraph with a single command:
+
+- `skygraph-react` — re-exports the full public API of `@skygraph/react`
+  and pulls in `@skygraph/core` + `@skygraph/styles` as transitive
+  dependencies.
+- `skygraph-vue` — re-exports the full public API of `@skygraph/vue` and
+  pulls in `@skygraph/core` + `@skygraph/styles` as transitive
+  dependencies.
+
+Both meta-packages do a side-effect `import '@skygraph/styles'` at the
+top of their entry, so consumers no longer need a separate stylesheet
+import.
+
+### Migration (optional)
+
+The change is **purely additive**. Existing imports keep working:
+
+```ts
+// Still supported, unchanged
+import '@skygraph/styles'
+import { Form, Field } from '@skygraph/react'
+```
+
+If you want the shorter form:
+
+```ts
+// New: single install, single import path, styles auto-loaded
+import { Form, Field } from 'skygraph-react'
+```
+
+Same for Vue (`@skygraph/vue` → `skygraph-vue`).
+
+### Install commands
+
+Before:
+
+```bash
+npm install @skygraph/core @skygraph/react @skygraph/styles
+```
+
+After:
+
+```bash
+npm install skygraph-react
+# or for Vue:
+npm install skygraph-vue
+```
+
+The repository now lives at
+[github.com/RuslanSinkevich/skygraph-public](https://github.com/RuslanSinkevich/skygraph-public).
 
 ---
 

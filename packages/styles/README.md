@@ -16,8 +16,10 @@ pnpm add @skygraph/styles
 # or: npm install @skygraph/styles
 ```
 
-If you already pull in `@skygraph/react`, this package is a transitive
-dependency — you don't need to install it separately.
+If you install one of the meta-packages (`skygraph-react`, `skygraph-vue`)
+or an adapter directly (`@skygraph/react`, `@skygraph/vue`,
+`@skygraph/angular`), this package is a transitive dependency — you don't
+need to install or import it separately.
 
 ## Usage
 

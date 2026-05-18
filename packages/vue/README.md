@@ -1,21 +1,19 @@
 # @skygraph/vue
 
-Vue 3 adapter for [`@skygraph/core`](../core). MVP: 5 composables and 4 base
-components built on top of the framework-agnostic engines, sharing the same
-`.sg-*` CSS contract as `@skygraph/react` via `@skygraph/styles`.
+Vue 3 adapter for [SkyGraph](https://skygraph.ruslansinkevich.ru/) — 66+ components and composables built on the framework-agnostic [`@skygraph/core`](../core) engine. Shares the `.sg-*` CSS contract with the React adapter via [`@skygraph/styles`](../styles).
 
-## Status
+> **Easier path — the meta-package:**
+>
+> ```bash
+> npm install skygraph-vue
+> ```
+>
+> The meta-package re-exports everything below and auto-loads the CSS as a side effect. No separate `@skygraph/core` install, no manual `import '@skygraph/styles'`. Use this package directly only when you need fine-grained control over the install set.
 
-- 5 composables: `useForm`, `useField`, `useTable`, `useTree`, `useGraph`
-- 4 components: `SgButton`, `SgInput`, `SgForm`, `SgField`
-- Vue 3 only, Composition API only, `<script setup>` SFCs
-- ~48 vitest tests via `@vue/test-utils` + `jsdom`
-- Built with `vite` library mode + `vite-plugin-dts`
-
-## Install
+## Install (direct)
 
 ```bash
-pnpm add @skygraph/vue @skygraph/core @skygraph/styles vue
+npm install @skygraph/vue @skygraph/core vue
 ```
 
 ## Usage

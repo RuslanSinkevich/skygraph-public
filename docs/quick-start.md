@@ -1,12 +1,21 @@
 # Быстрый старт
 
+> Этот документ — про работу внутри монорепы. Если просто хочешь
+> поставить SkyGraph в свой проект: `npm install skygraph-react`
+> (или `skygraph-vue`) — этого достаточно, дальше см. публичный
+> [README](../README.md).
+
 ## Структура монорепозитория
 
 ```
 skygraph/
 ├── packages/
-│   ├── core/          ← @skygraph/core — реактивный движок (0 зависимостей)
-│   └── react/         ← @skygraph/react — React-компоненты + хуки
+│   ├── core/             ← @skygraph/core — реактивный движок (0 зависимостей)
+│   ├── react/            ← @skygraph/react — React-компоненты + хуки
+│   ├── vue/              ← @skygraph/vue — Vue-компоненты + composables
+│   ├── styles/           ← @skygraph/styles — CSS-токены, темы, компоненты
+│   ├── skygraph-react/   ← meta-пакет: react + core + styles одной командой
+│   └── skygraph-vue/     ← meta-пакет: vue + core + styles одной командой
 ├── examples/
 │   ├── demo/          ← Vite-приложение с интерактивными демками компонентов
 │   └── showcases/     ← Vite-приложение с full-app showcases (CRM, e-commerce, ...)

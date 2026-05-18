@@ -6,8 +6,8 @@ Thanks for your interest in contributing!
 
 ```bash
 # Clone the repo
-git clone https://github.com/RuslanSinkevich/skygraph.git
-cd skygraph
+git clone https://github.com/RuslanSinkevich/skygraph-public.git
+cd skygraph-public
 
 # Install dependencies (requires pnpm)
 pnpm install
