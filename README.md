@@ -1,5 +1,7 @@
 # SkyGraph
 
+> Русская версия: [docs/ru/README.md](docs/ru/README.md)
+
 **UI components for React and Vue on a shared engine. One install, one CSS, the same look.**
 
 78+ ready-made components — forms, tables, trees, charts, calendars,

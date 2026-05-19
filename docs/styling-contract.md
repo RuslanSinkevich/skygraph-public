@@ -1,32 +1,36 @@
 # SkyGraph — Styling Contract
 
-> Этот документ — публичное обещание библиотеки про стили.
-> Всё, что здесь описано как "стабильное", не ломается в минорных и патч-версиях.
-> Всё, что явно помечено как "внутреннее", может меняться без предупреждения.
->
-> Внутренний гайд для разработчиков самой библиотеки (как писать CSS внутри пакета) — см. `docs/styling.md`. Этот файл — про API для пользователя SkyGraph.
+> Русская версия: [ru/styling-contract.md](./ru/styling-contract.md)
+
+> This document is the library's public promise about styles.
+> Everything marked here as "stable" does not break in minor or patch
+> versions. Everything explicitly marked as "internal" may change without
+> notice.
 
 ---
 
-## 1. Цель
+## 1. Goal
 
-Пользователь SkyGraph должен уметь **переопределить любой визуальный аспект** компонента, не залезая во внутренности и не воюя со специфичностью. Это — главный дифференциатор библиотеки по отношению к Ant Design / Arco / Mantine.
+A SkyGraph user must be able to **override any visual aspect** of a
+component without diving into internals or fighting CSS specificity.
+This is the library's main differentiator versus Ant Design / Arco /
+Mantine.
 
-Практически это значит:
+In practice this means:
 
-- любая задача стилизации решается **одним из трёх уровней** (ниже);
-- если задача не решается ни одним — это **баг API**, а не проблема пользователя;
-- контракт зафиксирован, нарушение контракта = breaking change = major-версия.
+- any styling task is solved by **one of three levels** (below);
+- if a task is solved by none — that's an **API bug**, not a user problem;
+- the contract is fixed, breaking it = breaking change = major version.
 
 ---
 
-## 2. Три уровня стилизации
+## 2. Three styling levels
 
-Пользователь применяет **первый подходящий**:
+The user applies the **first one that fits**:
 
-### 2.1. Тема через токены (глобально)
+### 2.1. Theme via tokens (global)
 
-Переопределяете CSS-переменную — меняется везде, где она читается.
+Override a CSS custom property — it changes everywhere it is read.
 
 ```css
 :root {
@@ -36,11 +40,11 @@
 }
 ```
 
-Это основной путь для бренда и тёмной темы.
+This is the primary path for branding and dark mode.
 
-### 2.2. `classNames` / `styles` по слотам (точечно)
+### 2.2. `classNames` / `styles` per slot (scoped)
 
-У сложных компонентов есть **именованные слоты** для каждого визуального узла.
+Complex components expose **named slots** for each visual node.
 
 ```tsx
 <Table
@@ -58,168 +62,179 @@
 />
 ```
 
-Классы и стили применяются **внутрь** разметки, к стабильным узлам (см. раздел 4).
+Classes and styles are applied to stable nodes **inside** the markup
+(see section 4).
 
-### 2.3. `unstyled` + свой CSS (полный контроль)
+### 2.3. `unstyled` + your own CSS (full control)
 
-Компонент рендерится без стилей библиотеки (`@skygraph/styles` не подключается или отключается на конкретном компоненте):
+The component renders without library styles (`@skygraph/styles` is not
+imported, or is disabled per component):
 
 ```tsx
 <Table unstyled className="my-table" ... />
 ```
 
-Разметка остаётся семантической (ARIA-роли сохранены), но никакого визуального дефолта нет.
+The markup stays semantic (ARIA roles preserved), but no visual default
+is shipped.
 
 ---
 
-## 3. Что в контракте (стабильно)
+## 3. What is in the contract (stable)
 
-Следующие элементы API считаются **публичными** и не меняются без мажорной версии:
+The following API surface is **public** and does not change without a
+major version bump:
 
-### 3.1. Имена токенов в `tokens.css`
+### 3.1. Token names in `tokens.css`
 
-- **Палитра**: `--sg-blue-1 … --sg-blue-10`, `--sg-gray-1 … --sg-gray-10`, `--sg-red-*`, `--sg-green-*`, `--sg-orange-*`.
-- **Семантика**: `--sg-color-bg*`, `--sg-color-text*`, `--sg-color-border*`, `--sg-color-primary*`, `--sg-color-error*`, `--sg-color-success*`, `--sg-color-warning*`, `--sg-shadow*`, `--sg-color-overlay`, `--sg-color-tooltip-*`.
-- **Размеры**: `--sg-font-size*`, `--sg-line-height`, `--sg-height-*`, `--sg-border-radius*`, `--sg-padding-*`, `--sg-margin-*`, `--sg-transition-*`, `--sg-z-*`.
-- **Компонентные**: `--sg-btn-*`, `--sg-table-*`, `--sg-list-*` и т.п. (полный список — раздел 4).
+- **Palette**: `--sg-blue-1 … --sg-blue-10`, `--sg-gray-1 … --sg-gray-10`, `--sg-red-*`, `--sg-green-*`, `--sg-orange-*`.
+- **Semantic**: `--sg-color-bg*`, `--sg-color-text*`, `--sg-color-border*`, `--sg-color-primary*`, `--sg-color-error*`, `--sg-color-success*`, `--sg-color-warning*`, `--sg-shadow*`, `--sg-color-overlay`, `--sg-color-tooltip-*`.
+- **Sizing**: `--sg-font-size*`, `--sg-line-height`, `--sg-height-*`, `--sg-border-radius*`, `--sg-padding-*`, `--sg-margin-*`, `--sg-transition-*`, `--sg-z-*`.
+- **Component-level**: `--sg-btn-*`, `--sg-table-*`, `--sg-list-*` and so on (full list — section 4).
 
-### 3.2. Классы-корни и классы-слоты
+### 3.2. Root classes and slot classes
 
-У каждого компонента зафиксирован **корневой класс** и набор **классов-слотов**. См. раздел 4.
+Every component has a fixed **root class** and a set of **slot
+classes**. See section 4.
 
-### 3.3. Публичные пропы стилизации
+### 3.3. Public styling props
 
-- `className`, `style` — на корне любого компонента.
-- `unstyled` — на любом компоненте.
-- `classNames`, `styles` — на компонентах, где они заявлены (см. раздел 4).
-- `prefixCls` через `ConfigProvider` — **не входит** в публичный API до момента корректной реализации (решение: вариант A из `styling-plan.md`, фаза 4). Для изоляции классов используйте изолированный скоуп на хосте (shadow DOM или отдельный контейнер со своими токенами).
+- `className`, `style` — on the root of any component.
+- `unstyled` — on any component.
+- `classNames`, `styles` — on components that declare them (see section 4).
+- `prefixCls` via `ConfigProvider` — **not part** of the public API. To
+  isolate class names, use an isolated host scope (Shadow DOM or a
+  separate container with its own tokens).
 
-### 3.4. Поведение тем
+### 3.4. Theme behaviour
 
-- Переключение темы: атрибут `data-sg-theme="light" | "dark"` на любом контейнере.
-- Семантические токены переопределяются через этот атрибут.
-- Палитра от темы не зависит.
+- Theme switch: the attribute `data-sg-theme="light" | "dark"` on any container.
+- Semantic tokens are overridden through this attribute.
+- The palette does not depend on the theme.
 
 ---
 
-## 4. Слоты по компонентам
+## 4. Slots per component
 
-Для каждого компонента указан **корневой класс** и **слоты**. Ключи слотов — это имена свойств в `classNames` / `styles`, если они поддерживаются.
+For each component the **root class** and the **slots** are listed. Slot
+keys are the property names in `classNames` / `styles` when supported.
 
-> В текущей версии часть компонентов ещё не имеет `classNames`/`styles`-пропов — они добавляются согласно плану. Но классы-слоты в DOM уже стабильны (или становятся стабильными после первого прохода аудита).
+> In the current version some components do not yet expose
+> `classNames`/`styles` props — they are added per plan. Slot classes in
+> the DOM are already stable (or become stable after the first audit pass).
 
 ### 4.1. Table
 
-Корень: `.sg-table-wrapper`
+Root: `.sg-table-wrapper`
 
-Слоты:
+Slots:
 
-| Ключ | Класс в DOM | Описание |
+| Key | DOM class | Description |
 |---|---|---|
-| `root` | `.sg-table-wrapper` | Внешний контейнер. |
-| `toolbar` | `.sg-table-toolbar` | Верхняя панель (поиск, экспорт, плотность). |
-| `scroll` | `.sg-table-scroll` | Скролл-область таблицы. |
-| `grid` | `.sg-table-grid` | Сетка заголовков и тела. |
-| `headerRow` | (корень рядов шапки) | Ряд шапки. |
-| `headerCell` | `.sg-table-th` | Ячейка шапки. |
-| `headerCellContent` | `.sg-table-th-content` | Контент ячейки шапки (без сортировок/иконок). |
-| `row` | `.sg-table-row` | Строка тела (корень ряда). |
-| `bodyCell` | `.sg-table-td` | Ячейка тела. |
-| `empty` | `.sg-table-empty` | Пустое состояние. |
-| `pagination` | `.sg-table-pagination` | Контейнер пагинации. |
-| `footer` | `.sg-table-footer` | Футер с агрегатами. |
+| `root` | `.sg-table-wrapper` | Outer container. |
+| `toolbar` | `.sg-table-toolbar` | Top toolbar (search, export, density). |
+| `scroll` | `.sg-table-scroll` | Table scroll area. |
+| `grid` | `.sg-table-grid` | Header + body grid. |
+| `headerRow` | (header row root) | Header row. |
+| `headerCell` | `.sg-table-th` | Header cell. |
+| `headerCellContent` | `.sg-table-th-content` | Header cell content (no sort/icon chrome). |
+| `row` | `.sg-table-row` | Body row (row root). |
+| `bodyCell` | `.sg-table-td` | Body cell. |
+| `empty` | `.sg-table-empty` | Empty state. |
+| `pagination` | `.sg-table-pagination` | Pagination container. |
+| `footer` | `.sg-table-footer` | Footer with aggregates. |
 
-Доп. крючки на уровне колонки:
+Column-level hooks:
 
-- `column.cellClassName` — класс на ячейку тела в этой колонке.
-- `column.headerClassName` — класс на ячейку шапки в этой колонке.
-- `column.render` — произвольный рендер контента ячейки.
-- `column.title: ReactNode` — произвольный рендер контента шапки.
+- `column.cellClassName` — class on the body cell in that column.
+- `column.headerClassName` — class on the header cell in that column.
+- `column.render` — custom cell content renderer.
+- `column.title: ReactNode` — custom header content.
 
-На уровне таблицы:
+Table-level:
 
-- `rowClassName: string | (row, id) => string` — класс на корень строки.
+- `rowClassName: string | (row, id) => string` — class on the row root.
 
-Компонентные токены (подмножество, полный список — в `tokens.css` и CSS таблицы):
+Component tokens (subset, full list in `tokens.css` and the table CSS):
 
 - `--sg-table-row-height`, `--sg-table-row-bg`, `--sg-table-row-hover-bg`, `--sg-table-header-bg`, `--sg-table-border-color`, `--sg-table-cell-padding`.
 
 ### 4.2. List
 
-Корень: `.sg-list`
+Root: `.sg-list`
 
-Слоты:
+Slots:
 
-| Ключ | Класс в DOM | Описание |
+| Key | DOM class | Description |
 |---|---|---|
-| `root` | `.sg-list` | Корень. |
-| `header` | `.sg-list-header` | Верхняя зона. |
-| `footer` | `.sg-list-footer` | Нижняя зона. |
-| `items` | `.sg-list-items` | Контейнер элементов. |
-| `item` | `.sg-list-item` | Элемент. |
-| `empty` | `.sg-list-empty` | Пустое состояние. |
-| `pagination` | `.sg-list-pagination` | Контейнер пагинации. |
+| `root` | `.sg-list` | Root. |
+| `header` | `.sg-list-header` | Top area. |
+| `footer` | `.sg-list-footer` | Bottom area. |
+| `items` | `.sg-list-items` | Items container. |
+| `item` | `.sg-list-item` | Item. |
+| `empty` | `.sg-list-empty` | Empty state. |
+| `pagination` | `.sg-list-pagination` | Pagination container. |
 
-Крючки:
+Hooks:
 
-- `rowClassName: string | (item, index) => string` — класс на обёртку строки.
-- `renderItem(item, index)` — произвольный рендер элемента.
-- `List.Item.Meta` с `title`/`description` как `ReactNode`.
+- `rowClassName: string | (item, index) => string` — class on the row wrapper.
+- `renderItem(item, index)` — custom item renderer.
+- `List.Item.Meta` with `title`/`description` as `ReactNode`.
 
 ### 4.3. Button
 
-Корень: `.sg-button`.
-Модификаторы: `.sg-button-primary`, `.sg-button-dashed`, `.sg-button-text`, `.sg-button-link`, `.sg-button-small`, `.sg-button-large`, `.sg-button-loading`.
-Компонентные токены: `--sg-btn-bg`, `--sg-btn-color`, `--sg-btn-border`, `--sg-btn-height`, `--sg-btn-padding`, `--sg-btn-radius`, `--sg-btn-font-size`.
+Root: `.sg-button`.
+Modifiers: `.sg-button-primary`, `.sg-button-dashed`, `.sg-button-text`, `.sg-button-link`, `.sg-button-small`, `.sg-button-large`, `.sg-button-loading`.
+Component tokens: `--sg-btn-bg`, `--sg-btn-color`, `--sg-btn-border`, `--sg-btn-height`, `--sg-btn-padding`, `--sg-btn-radius`, `--sg-btn-font-size`.
 
 ### 4.4. Form / Field
 
-*(раздел заполняется по ходу аудита)*
+*(section is filled in as the audit progresses)*
 
 ### 4.5. Tree / DatePicker / Upload / …
 
-*(раздел заполняется по ходу аудита)*
+*(section is filled in as the audit progresses)*
 
 ---
 
-## 5. Что **не** в контракте (внутреннее)
+## 5. What is **not** in the contract (internal)
 
-Пользователь на это опираться не должен — может сломаться в любой версии.
+The user must not rely on these — they may break in any version.
 
-- Вложенность `div`-ов внутри компонента (кроме узлов, отмеченных в разделе 4 как слоты).
-- Классы, не начинающиеся с префикса `.sg-`, и классы, явно помеченные в коде как внутренние (например `.sg-i-*`).
-- Порядок CSS-правил, каскад, специфичность внутри пакета.
-- Имя и набор утилитных CSS-переменных, не перечисленных в `tokens.css` верхнего уровня.
-- Точный HTML-тег узла, если это не корень компонента и не слот.
-- Вспомогательные атрибуты `data-sg-*`, не задокументированные тут (например внутренние `data-sg-state-*`).
-
----
-
-## 6. Политика версий
-
-- **major**: изменение имени токена, удаление слота, переименование корневого класса, смена DOM-узла, за который цепляется слот, удаление `unstyled`, поломка семантики `classNames`/`styles`.
-- **minor**: добавление токена, добавление слота, добавление нового компонента, расширение `classNames` новыми ключами.
-- **patch**: рефакторинг внутренностей без нарушения контракта, визуальные правки дефолтной темы в пределах "того же вида".
-
-Пользователь, цепляющийся только за задокументированные токены и слоты, не ломается в minor/patch. Это и есть главная разница с Ant.
+- The `div` nesting inside a component (except for nodes marked as slots in section 4).
+- Classes that do not start with the `.sg-` prefix, and classes explicitly marked in code as internal (for example `.sg-i-*`).
+- The order of CSS rules, cascade, specificity inside the package.
+- The name and set of utility CSS variables not listed in the top of `tokens.css`.
+- The exact HTML tag of a node, unless it's a component root or a slot.
+- Helper `data-sg-*` attributes not documented here (for example internal `data-sg-state-*`).
 
 ---
 
-## 7. Требования к самой библиотеке
+## 6. Versioning policy
 
-Проверяется в CI (см. план реализации):
+- **major**: renaming a token, removing a slot, renaming a root class, switching the DOM node a slot hooks onto, removing `unstyled`, breaking the semantics of `classNames`/`styles`.
+- **minor**: adding a token, adding a slot, adding a new component, extending `classNames` with new keys.
+- **patch**: refactoring internals without breaking the contract, visual tweaks to the default theme within "the same look".
 
-1. В `packages/styles/**/*.css` **запрещены** `var(--sg-…)` имена, которых нет в `tokens.css`.
-2. Для каждого компонента из раздела 4 существует снапшот-тест, проверяющий наличие в DOM заявленных слотовых классов.
-3. Все токены из `tokens.css` документированы в разделе 3.1 либо 4 (автогенерацией или ручным чек-листом на релизе).
-4. Никаких `!important` и никаких "магических" hex-цветов в компонентных CSS — только через токены (исключения документируются отдельно).
+A user who relies only on documented tokens and slots does not break in
+minor/patch. That is the core difference versus Ant.
 
 ---
 
-## 8. Как пользователю читать этот документ
+## 7. Library-side requirements
 
-- Нужно изменить цвет/бренд/размер глобально — раздел 2.1 + список токенов 3.1.
-- Нужно стилизовать один компонент точечно — раздел 2.2 + слоты компонента в разделе 4.
-- Нужно "сделать полностью своё" — раздел 2.3.
-- Нужно понять, на что можно опираться надолго — разделы 3 и 5.
-- Нужно понять, когда можно ждать ломки — раздел 6.
+Checked in CI (see implementation plan):
+
+1. In `packages/styles/**/*.css`, `var(--sg-…)` names that are not in `tokens.css` are **forbidden**.
+2. Every component from section 4 has a snapshot test that asserts the declared slot classes are present in the DOM.
+3. Every token in `tokens.css` is documented in section 3.1 or 4 (auto-generated or by a manual checklist on release).
+4. No `!important` and no "magic" hex colors in component CSS — only tokens (exceptions are documented separately).
+
+---
+
+## 8. How a user should read this document
+
+- Need to change colour/brand/size globally — section 2.1 + token list 3.1.
+- Need to style one component scoped — section 2.2 + component slots in section 4.
+- Need to "go fully custom" — section 2.3.
+- Need to know what is safe to depend on long-term — sections 3 and 5.
+- Need to know when breakage may happen — section 6.

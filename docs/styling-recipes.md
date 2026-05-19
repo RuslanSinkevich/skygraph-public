@@ -1,20 +1,22 @@
 # SkyGraph — Styling Recipes
 
-> Практический справочник по стилизации SkyGraph. 80% реальных задач
-> закрываются одним из рецептов ниже. Контракт, на который они опираются,
-> зафиксирован в [`styling-contract.md`](./styling-contract.md).
+> Русская версия: [ru/styling-recipes.md](./ru/styling-recipes.md)
 
-Все рецепты используют публичные механизмы:
+> Practical SkyGraph styling cookbook. 80% of real tasks are covered by
+> one of the recipes below. The contract they rely on is fixed in
+> [`styling-contract.md`](./styling-contract.md).
 
-1. **Токены** — CSS custom properties из `@skygraph/styles/tokens.css`.
-2. **Слоты** — `classNames` / `styles` по заявленным ключам.
-3. **`unstyled`** — полный отказ от дефолтного CSS.
+All recipes use public mechanisms:
+
+1. **Tokens** — CSS custom properties from `@skygraph/styles/tokens.css`.
+2. **Slots** — `classNames` / `styles` against declared keys.
+3. **`unstyled`** — opting out of the default CSS entirely.
 
 ---
 
-## 1. Поменять бренд за 30 секунд
+## 1. Change the brand in 30 seconds
 
-Достаточно переопределить несколько токенов в любом CSS поверх библиотеки:
+Override a few tokens in any CSS layered on top of the library:
 
 ```css
 @import '@skygraph/styles';
@@ -27,16 +29,16 @@
 }
 ```
 
-Токены читаются во всех компонентах — правка попадает и в кнопку, и в заголовок
-таблицы, и в бордер инпута. Полный список стабильных токенов — в
-`styling-contract.md` §3.1.
+Tokens are read by every component — your edit lands in the button, in
+the table header, and in the input border. The full list of stable
+tokens is in [`styling-contract.md`](./styling-contract.md) §3.1.
 
 ---
 
-## 2. Тёмная тема
+## 2. Dark theme
 
-На любом контейнере ставится атрибут `data-sg-theme="dark"`, и семантические
-токены перевешиваются:
+Put the attribute `data-sg-theme="dark"` on any container, and semantic
+tokens swap:
 
 ```tsx
 <div data-sg-theme="dark">
@@ -44,15 +46,16 @@
 </div>
 ```
 
-Или глобально:
+Or globally:
 
 ```html
 <html data-sg-theme="dark">
 ```
 
-Палитра при этом не меняется — меняются только семантические имена
-(`--sg-color-bg*`, `--sg-color-text*`, `--sg-color-border*` и т. п.).
-Чтобы сделать свою тему, переопределите нужные токены под тем же селектором:
+The palette does not change — only the semantic names swap
+(`--sg-color-bg*`, `--sg-color-text*`, `--sg-color-border*` and so on).
+To roll your own theme, override the tokens you need under the same
+selector:
 
 ```css
 [data-sg-theme='dark'] {
@@ -64,9 +67,9 @@
 
 ---
 
-## 3. Стилизовать только одну таблицу
+## 3. Style a single table
 
-### 3.1. Через `className` на корне
+### 3.1. Via `className` on the root
 
 ```tsx
 <Table className="orders-table" ... />
@@ -83,11 +86,11 @@
 }
 ```
 
-Внутри своего скоупа можно писать что угодно — хоть переопределять компонентные
-токены (`--sg-table-*`), хоть цепляться к публичным слотам (`.sg-table-th`,
+Inside your own scope, write whatever you need — override component
+tokens (`--sg-table-*`) or target public slots (`.sg-table-th`,
 `.sg-table-td`, `.sg-table-row`).
 
-### 3.2. Через `classNames` / `styles` (рекомендуемый путь)
+### 3.2. Via `classNames` / `styles` (recommended)
 
 ```tsx
 <Table
@@ -106,14 +109,14 @@
 />
 ```
 
-Классы и стили доезжают до ровно тех узлов, что описаны в контракте.
-Ничего лишнего рендерить и стилизовать не требуется.
+Classes and styles land exactly on the nodes described in the contract.
+Nothing extra needs to be rendered or styled.
 
-Полный список слотов — в `styling-contract.md` §4.
+The full list of slots is in [`styling-contract.md`](./styling-contract.md) §4.
 
 ---
 
-## 4. Покрасить строки и ячейки по условию
+## 4. Colour rows and cells conditionally
 
 ```tsx
 <Table
@@ -138,15 +141,15 @@
 }
 ```
 
-`rowClassName` и `column.cellClassName` — стабильные крючки контракта.
-`!important` не нужен: достаточно специфичности корневого класса
+`rowClassName` and `column.cellClassName` are stable contract hooks.
+`!important` is not needed: the specificity of a root class is enough
 (`.orders-table .row-overdue`).
 
 ---
 
-## 5. Точечно поменять заголовок колонки
+## 5. Tweak one column header
 
-Вариант с классом (паритет с `cellClassName`):
+With a class (matches `cellClassName`):
 
 ```tsx
 <Table
@@ -157,7 +160,7 @@
 />
 ```
 
-Вариант с произвольной разметкой:
+With custom markup:
 
 ```tsx
 <Table
@@ -172,7 +175,7 @@
 
 ---
 
-## 6. Список: второй элемент другого цвета
+## 6. List: highlight the second item
 
 ```tsx
 <List
@@ -188,15 +191,17 @@
 }
 ```
 
-Кроме `rowClassName`, доступны `classNames`/`styles` по слотам List
-(`root`, `header`, `footer`, `items`, `item`, `empty`, `pagination`).
+In addition to `rowClassName`, List exposes `classNames`/`styles` per
+slot (`root`, `header`, `footer`, `items`, `item`, `empty`,
+`pagination`).
 
 ---
 
-## 7. Свой CSS полностью (`unstyled`)
+## 7. Fully custom CSS (`unstyled`)
 
-Если дефолтный вид не нужен — `unstyled` отключает стили библиотеки для
-конкретного экземпляра. Семантика (роли, aria-атрибуты, табуляция) сохраняется.
+If the default look is not needed, `unstyled` disables library styles
+for a single instance. Semantics (roles, aria attributes, tab order) is
+preserved.
 
 ```tsx
 <Modal unstyled open onClose={close} className="my-modal">
@@ -212,32 +217,33 @@
 }
 ```
 
-Работает на любом компоненте, у которого в пропах есть `unstyled`.
+Works on any component whose props include `unstyled`.
 
 ---
 
-## 8. Когда чего хватит — в одной таблице
+## 8. What's enough — at a glance
 
-| Задача | Уровень | Что использовать |
+| Task | Level | What to use |
 |---|---|---|
-| Сменить бренд, размер, радиусы везде | Токены | `:root` / `--sg-*` |
-| Переключить тему | Токены | `data-sg-theme="dark"` |
-| Стилизовать один компонент | `className` / `classNames` | корневой класс + слоты |
-| Оформить строку или ячейку по условию | Крючки | `rowClassName`, `cellClassName`, `column.render` |
-| Сделать компонент полностью своим | `unstyled` | `unstyled` + свой CSS |
+| Change brand, size, radii everywhere | Tokens | `:root` / `--sg-*` |
+| Toggle theme | Tokens | `data-sg-theme="dark"` |
+| Style one component | `className` / `classNames` | Root class + slots |
+| Style a row or cell conditionally | Hooks | `rowClassName`, `cellClassName`, `column.render` |
+| Make a component fully your own | `unstyled` | `unstyled` + your CSS |
 
 ---
 
-## 9. Что стабильно, что нет
+## 9. What is stable, what is not
 
-Опираться можно только на то, что заявлено в `styling-contract.md`:
+You can only depend on what is declared in
+[`styling-contract.md`](./styling-contract.md):
 
-- имена токенов из §3.1;
-- корневые классы и ключи слотов из §4;
-- пропы `className`, `style`, `classNames`, `styles`, `unstyled`;
-- крючки вида `rowClassName`, `cellClassName`, `renderItem`, `render`;
-- атрибут темы `data-sg-theme`.
+- token names from §3.1;
+- root classes and slot keys from §4;
+- props `className`, `style`, `classNames`, `styles`, `unstyled`;
+- hooks like `rowClassName`, `cellClassName`, `renderItem`, `render`;
+- the theme attribute `data-sg-theme`.
 
-Вложенность внутренних `div`-ов, порядок CSS-правил, вспомогательные
-`data-sg-*`-атрибуты — внутреннее. Попытка цепляться за это = поломка
-в ближайшем patch-релизе.
+Internal `div` nesting, CSS rule ordering, helper `data-sg-*`
+attributes — internal. Reaching for them = breakage in the next patch
+release.
