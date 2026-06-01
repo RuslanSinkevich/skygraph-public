@@ -338,7 +338,7 @@ export function TableHeader(props: HeaderProps) {
                       .join(' ')}
                     style={sSty.headerCellContent}
                   >
-                    {cell.col.title}
+                    <span className="sg-table-th-title">{cell.col.title}</span>
                     {isLeaf && cell.col.tooltip && <ColumnTooltip content={cell.col.tooltip} />}
                     {isLeaf && <SortIndicator col={cell.col} {...sortProps} />}
                   </span>
@@ -416,7 +416,7 @@ export function TableHeader(props: HeaderProps) {
             className={['sg-table-th-content', sCls.headerCellContent].filter(Boolean).join(' ')}
             style={sSty.headerCellContent}
           >
-            {col.title}
+            <span className="sg-table-th-title">{col.title}</span>
             {col.tooltip && <ColumnTooltip content={col.tooltip} />}
             <SortIndicator col={col} {...sortProps} />
           </span>

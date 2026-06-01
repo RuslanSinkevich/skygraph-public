@@ -109,6 +109,7 @@ const hasDefaultSlot = computed(() => slots.default !== undefined)
       :disabled="disabled || loading"
       @change="onChange"
     />
+    <span v-if="!unstyled" class="sg-checkbox-box" aria-hidden="true" />
     <span v-if="hasDefaultSlot" :class="unstyled ? '' : 'sg-checkbox-label'">
       <slot />
     </span>

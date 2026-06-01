@@ -7,6 +7,7 @@ import SgCheckbox from '../../ui/Checkbox.vue'
 import SgSelect from '../../ui/Select.vue'
 import SgPagination from '../../ui/Pagination.vue'
 import SgSpin from '../../ui/Spin.vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import {
   DEFAULT_TABLE_LOCALE,
   type TableProps,
@@ -34,6 +35,7 @@ const emit = defineEmits<{
   (e: 'sortChange', column: string, direction: SortDirection | null): void
   (e: 'cellEdit', id: RowId, column: string, value: unknown): void
   (e: 'expand', expanded: boolean, id: RowId): void
+  (e: 'columnOrderChange', order: string[]): void
 }>()
 
 defineSlots<{
@@ -50,6 +52,8 @@ defineSlots<{
 }>()
 
 const slots = useSlots()
+const cfg = useConfig()
+const selectAllLabel = computed(() => cfg.value.locale?.table?.selectAll ?? 'Select all')
 
 const localeFull = computed(() => ({ ...DEFAULT_TABLE_LOCALE, ...props.locale }))
 const sCls = computed(() => props.classNames ?? {})
@@ -83,7 +87,15 @@ const headerDepth = computed(() =>
   props.columns.length === 0 ? 1 : Math.max(...props.columns.map(colDepth)),
 )
 
-const leafColumns = computed<TableColumn[]>(() => {
+/* ── Column reorder (drag-and-drop) ──────────────────────────────────────── */
+// Mirrors React `useTableState` colOrder: an internal ordering of leaf keys
+// applied on top of `props.columns`. Reorder is only available for flat
+// (non-grouped) tables, matching React.
+const colOrder = ref<string[]>([])
+const dragCol = ref<string | null>(null)
+const dragOver = ref<string | null>(null)
+
+const rawLeafColumns = computed<TableColumn[]>(() => {
   const out: TableColumn[] = []
   const visit = (c: TableColumn) => {
     if (c.hidden) return
@@ -94,9 +106,38 @@ const leafColumns = computed<TableColumn[]>(() => {
   return out
 })
 
+// Keep colOrder in sync with the column set: preserve the existing order,
+// append newly-added keys, drop removed ones.
+watch(
+  rawLeafColumns,
+  (cols) => {
+    const keys = cols.map((c) => c.key)
+    const prevSet = new Set(colOrder.value)
+    const added = keys.filter((k) => !prevSet.has(k))
+    const valid = colOrder.value.filter((k) => keys.includes(k))
+    colOrder.value = [...valid, ...added]
+  },
+  { immediate: true },
+)
+
+const leafColumns = computed<TableColumn[]>(() => {
+  const cols = rawLeafColumns.value
+  if (hasColumnGroups.value || !props.draggable) return cols
+  const map = new Map(cols.map((c) => [c.key, c]))
+  return colOrder.value.filter((k) => map.has(k)).map((k) => map.get(k)!)
+})
+
 const headerRows = computed<HeaderCellShape[][]>(() => {
   const depth = headerDepth.value
   const rows: HeaderCellShape[][] = Array.from({ length: depth }, () => [])
+  // Flat reorderable header: emit leaf columns in colOrder so drag changes
+  // the rendered order without rebuilding the grouped grid.
+  if (!hasColumnGroups.value && props.draggable && depth === 1) {
+    for (const col of leafColumns.value) {
+      rows[0].push({ col, colSpan: 1, rowSpan: 1 })
+    }
+    return rows
+  }
   const visit = (c: TableColumn, level: number) => {
     if (c.hidden) return
     const hasChildren = !!(c.children && c.children.length > 0)
@@ -115,6 +156,58 @@ const headerRows = computed<HeaderCellShape[][]>(() => {
 })
 
 const columns = computed(() => leafColumns.value)
+
+function handleColDragStart(ev: DragEvent, key: string) {
+  dragCol.value = key
+  if (ev.dataTransfer) {
+    ev.dataTransfer.effectAllowed = 'move'
+    ev.dataTransfer.setData('text/plain', key)
+  }
+}
+
+function handleColDragOver(ev: DragEvent, key: string) {
+  ev.preventDefault()
+  if (ev.dataTransfer) ev.dataTransfer.dropEffect = 'move'
+  dragOver.value = key
+}
+
+function handleColDragLeave() {
+  dragOver.value = null
+}
+
+function handleColDrop(ev: DragEvent, targetKey: string) {
+  ev.preventDefault()
+  const from = dragCol.value
+  if (!from || from === targetKey) {
+    dragCol.value = null
+    dragOver.value = null
+    return
+  }
+  const next = colOrder.value.filter((k) => k !== from)
+  const idx = next.indexOf(targetKey)
+  next.splice(idx < 0 ? next.length : idx, 0, from)
+  colOrder.value = next
+  props.onColumnOrderChange?.(next)
+  emit('columnOrderChange', next)
+  dragCol.value = null
+  dragOver.value = null
+}
+
+function handleColDragEnd() {
+  dragCol.value = null
+  dragOver.value = null
+}
+
+// A column is draggable only on flat tables, when the feature is enabled,
+// and the column is not pinned (fixed) — matching React's `draggable && !col.fixed`.
+function isColDraggable(col: TableColumn): boolean {
+  return (
+    !!props.draggable &&
+    !hasColumnGroups.value &&
+    !col.fixed &&
+    !(col.children && col.children.length > 0)
+  )
+}
 
 /* -------------------------------------------------------------------------- */
 /* Engine wiring                                                              */
@@ -731,8 +824,14 @@ watch(
   { deep: false },
 )
 
-function onVirtualScroll(ev: Event) {
-  scrollTop.value = (ev.target as HTMLElement).scrollTop
+// Synchronous scroll handler — when the user drags the scrollbar
+// thumb, the browser moves it in sync with the pointer. Deferring to
+// rAF causes the DOM content (topPad/bottomPad) to update a frame
+// late, which makes the browser recalculate scroll position and the
+// thumb drifts away from the cursor.
+function onVirtualScroll() {
+  const el = scrollEl.value
+  if (el) scrollTop.value = el.scrollTop
 }
 
 function syncViewport() {
@@ -786,6 +885,44 @@ const bodyRows = computed<FlatRow[]>(() =>
 )
 
 const rowIndexOffset = computed(() => (virtualRange.value ? virtualRange.value.startIndex : 0))
+
+// Inline-locking высот ячеек к engine.getItemSize(idx). React делает
+// то же самое в `VirtualTableBody` через useLayoutEffect — без этого
+// DOM.scrollHeight рассинхронизируется с engine.totalHeight (натуральная
+// высота ячеек может отличаться от заявленной в `rowHeight(row)` —
+// например, рендер контента влияет на интервалы), и при drag-е ползунка
+// браузер мапит cursorY → scrollTop по «вранному» scrollHeight, ползунок
+// уезжает от курсора.
+//
+// `flush: 'post'` гарантирует, что эффект отрабатывает ПОСЛЕ обновления
+// DOM, когда новые видимые строки уже есть в дереве. Лочим высоту на
+// inline-style каждой ячейки в строке.
+watch(
+  [() => virtualRange.value, () => virtualVersion.value, () => bodyRows.value],
+  () => {
+    const eng = virtualEngine.value
+    const cfg = virtualConfig.value
+    if (!eng || !cfg) return
+    const grid = scrollEl.value?.querySelector('.sg-table-grid')
+    if (!grid) return
+    const rowEls = grid.querySelectorAll<HTMLElement>('[data-sg-virtual-row-index]')
+    rowEls.forEach((rowEl) => {
+      const idx = Number(rowEl.getAttribute('data-sg-virtual-row-index'))
+      if (!Number.isFinite(idx)) return
+      const h = eng.getItemSize(idx)
+      if (!Number.isFinite(h) || h <= 0) return
+      const px = `${h}px`
+      const children = rowEl.children
+      for (let c = 0; c < children.length; c++) {
+        const cell = children[c] as HTMLElement
+        if (cell.style.height !== px) cell.style.height = px
+        if (cell.style.minHeight !== '0px') cell.style.minHeight = '0px'
+        if (cell.style.overflow !== 'hidden') cell.style.overflow = 'hidden'
+      }
+    })
+  },
+  { flush: 'post' },
+)
 
 /* -------------------------------------------------------------------------- */
 /* Layout classes                                                             */
@@ -843,6 +980,24 @@ const scrollStyle = computed<Record<string, string | number>>(() => {
   return out
 })
 
+const virtualFixedRowHeight = computed(() => {
+  const cfg = virtualConfig.value
+  if (!cfg) return null
+  if (typeof cfg.rowHeight === 'number' && cfg.estimateRowHeight == null) return cfg.rowHeight
+  return null
+})
+
+const gridClass = computed(
+  () =>
+    [
+      'sg-table-grid',
+      virtualFixedRowHeight.value != null ? 'sg-table-grid-virtual-fixed' : '',
+      sCls.value.grid,
+    ]
+      .filter(Boolean)
+      .join(' ') || undefined,
+)
+
 const gridStyle = computed<Record<string, string | number>>(() => {
   const out: Record<string, string | number> = {
     gridTemplateColumns: gridTemplate.value,
@@ -850,6 +1005,9 @@ const gridStyle = computed<Record<string, string | number>>(() => {
   }
   if (props.scroll?.x) {
     out.minWidth = typeof props.scroll.x === 'number' ? `${props.scroll.x}px` : props.scroll.x
+  }
+  if (virtualFixedRowHeight.value != null) {
+    out['--sg-virtual-row-height'] = `${virtualFixedRowHeight.value}px`
   }
   return out
 })
@@ -901,11 +1059,7 @@ defineExpose({
       :aria-busy="loading || undefined"
       @scroll="onVirtualScroll"
     >
-      <div
-        :class="['sg-table-grid', sCls.grid].filter(Boolean).join(' ') || undefined"
-        :style="gridStyle"
-        role="table"
-      >
+      <div :class="gridClass" :style="gridStyle" role="table">
         <!-- Header rows -->
         <template v-for="(headerRow, rowIdx) in headerRows" :key="`hdr-${rowIdx}`">
           <div
@@ -931,7 +1085,7 @@ defineExpose({
                 v-if="rowSelection.type !== 'radio'"
                 :checked="allCurrentPageSelected"
                 :indeterminate="someCurrentPageSelected"
-                aria-label="Select all"
+                :aria-label="selectAllLabel"
                 @change="toggleSelectAll"
               />
             </div>
@@ -947,11 +1101,21 @@ defineExpose({
                         : '',
                     cell.col.fixed ? 'sg-table-cell-fixed' : '',
                     cell.col.fixed ? `sg-table-cell-fixed-${cell.col.fixed}` : '',
+                    isColDraggable(cell.col) && dragOver === cell.col.key
+                      ? 'sg-table-th-drag-over'
+                      : '',
                     sCls.headerCell,
+                    cell.col.headerClassName,
                   ]
                     .filter(Boolean)
                     .join(' ') || undefined
                 "
+                :draggable="isColDraggable(cell.col) || undefined"
+                @dragstart="isColDraggable(cell.col) && handleColDragStart($event, cell.col.key)"
+                @dragover="isColDraggable(cell.col) && handleColDragOver($event, cell.col.key)"
+                @dragleave="isColDraggable(cell.col) && handleColDragLeave()"
+                @drop="isColDraggable(cell.col) && handleColDrop($event, cell.col.key)"
+                @dragend="isColDraggable(cell.col) && handleColDragEnd()"
                 :style="{
                   ...(!(cell.col.children && cell.col.children.length > 0)
                     ? fixedStyle(cell.col, true)
@@ -975,7 +1139,7 @@ defineExpose({
                 "
               >
                 <span class="sg-table-th-content">
-                  <span>{{ cell.col.title }}</span>
+                  <span class="sg-table-th-title">{{ cell.col.title }}</span>
                   <span
                     v-if="cell.col.sortable && !(cell.col.children && cell.col.children.length > 0)"
                     class="sg-table-sort-arrows"

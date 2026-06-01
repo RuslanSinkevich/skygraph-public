@@ -51,6 +51,11 @@
   color: var(--sg-color-text-secondary);
   border-right: 1px solid var(--sg-color-border-secondary);
   box-sizing: border-box;
+  /* Clip the label when the tick is narrower than the rendered text
+   * (e.g. day scale with columnWidth=24) — without this, adjacent
+   * labels visually pile up on each other. */
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sg-gantt-grid {
@@ -123,7 +128,7 @@
   /* Drop-shadow on the text increases legibility on saturated bar
    * fills (esp. the bright primary blue). Cheap, single-line filter
    * that doesn't disturb the bar background. */
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.20);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .sg-gantt-bar-resize {

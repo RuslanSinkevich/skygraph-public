@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import SgButton from '../../ui/Button.vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 
 export interface SubmitButtonProps {
   /** Disables the button. */
@@ -19,6 +21,9 @@ withDefaults(defineProps<SubmitButtonProps>(), {
 defineSlots<{
   default(props: Record<string, never>): unknown
 }>()
+
+const cfg = useConfig()
+const submitLabel = computed(() => cfg.value.locale?.form?.submitText ?? 'Submit')
 </script>
 
 <template>
@@ -29,6 +34,6 @@ defineSlots<{
     :loading="loading"
     :unstyled="unstyled"
   >
-    <slot>Submit</slot>
+    <slot>{{ submitLabel }}</slot>
   </SgButton>
 </template>

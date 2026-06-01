@@ -52,6 +52,7 @@ const cfg = useConfig()
 const totalPrefix = computed(() => cfg.value.locale?.pagination?.totalPrefix ?? 'Total')
 const itemsPerPageLabel = computed(() => cfg.value.locale?.pagination?.itemsPerPage ?? '/ page')
 const jumpLabel = computed(() => cfg.value.locale?.pagination?.jump ?? 'Go to')
+const navAriaLabel = computed(() => cfg.value.locale?.pagination?.ariaLabel ?? 'Pagination')
 
 const jumpValue = ref('')
 
@@ -107,7 +108,7 @@ const simpleClasses = computed(() =>
 </script>
 
 <template>
-  <nav v-if="unstyled" aria-label="Pagination">
+  <nav v-if="unstyled" :aria-label="navAriaLabel">
     <button type="button" :disabled="safeCurrent <= 1" @click="go(safeCurrent - 1)">‹</button>
     <template v-for="(p, i) in pages" :key="`p${i}-${p}`">
       <span v-if="p === '...'">…</span>
@@ -124,7 +125,7 @@ const simpleClasses = computed(() =>
       ›
     </button>
   </nav>
-  <nav v-else-if="simple" :class="simpleClasses" aria-label="Pagination">
+  <nav v-else-if="simple" :class="simpleClasses" :aria-label="navAriaLabel">
     <button
       type="button"
       class="sg-pagination-item sg-pagination-prev"
@@ -143,7 +144,7 @@ const simpleClasses = computed(() =>
       ›
     </button>
   </nav>
-  <nav v-else :class="rootClasses" aria-label="Pagination">
+  <nav v-else :class="rootClasses" :aria-label="navAriaLabel">
     <span v-if="showTotal" class="sg-pagination-total">{{ totalPrefix }} {{ total }}</span>
     <button
       type="button"

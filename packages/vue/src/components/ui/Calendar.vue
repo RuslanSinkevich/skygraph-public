@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface CalendarEvent {
   id?: string
@@ -121,10 +122,23 @@ const DEFAULT_MONTH_NAMES = [
 ]
 const DEFAULT_DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
-const monthNames = computed(() => props.locale?.monthNames ?? DEFAULT_MONTH_NAMES)
-const dayNamesBase = computed(() => props.locale?.dayNames ?? DEFAULT_DAY_NAMES)
-const todayLabel = computed(() => props.locale?.today ?? 'Today')
-const weekLabel = computed(() => props.locale?.week ?? 'W')
+const cfg = useConfig()
+const monthNames = computed(
+  () => props.locale?.monthNames ?? cfg.value.locale?.calendar?.monthNames ?? DEFAULT_MONTH_NAMES,
+)
+const dayNamesBase = computed(
+  () => props.locale?.dayNames ?? cfg.value.locale?.calendar?.dayNames ?? DEFAULT_DAY_NAMES,
+)
+const todayLabel = computed(
+  () => props.locale?.today ?? cfg.value.locale?.calendar?.today ?? 'Today',
+)
+const weekLabel = computed(() => props.locale?.week ?? cfg.value.locale?.calendar?.week ?? 'W')
+const prevYearLabel = computed(() => cfg.value.locale?.calendar?.prevYear ?? 'Previous year')
+const nextYearLabel = computed(() => cfg.value.locale?.calendar?.nextYear ?? 'Next year')
+const prevMonthLabel = computed(() => cfg.value.locale?.calendar?.prevMonth ?? 'Previous month')
+const nextMonthLabel = computed(() => cfg.value.locale?.calendar?.nextMonth ?? 'Next month')
+const monthSelectLabel = computed(() => cfg.value.locale?.calendar?.month ?? 'Month')
+const yearSelectLabel = computed(() => cfg.value.locale?.calendar?.year ?? 'Year')
 
 const internal = ref<Date>(props.modelValue ?? props.value ?? props.defaultValue ?? new Date())
 watch(
@@ -432,8 +446,8 @@ function onHeaderChange(d: Date) {
           <button
             type="button"
             class="sg-calendar-nav-btn"
-            title="Previous year"
-            aria-label="Previous year"
+            :title="prevYearLabel"
+            :aria-label="prevYearLabel"
             @click="shiftYear(-1)"
           >
             &laquo;
@@ -442,8 +456,8 @@ function onHeaderChange(d: Date) {
             v-if="currentMode === 'month'"
             type="button"
             class="sg-calendar-nav-btn"
-            title="Previous month"
-            aria-label="Previous month"
+            :title="prevMonthLabel"
+            :aria-label="prevMonthLabel"
             @click="shiftMonth(-1)"
           >
             &lsaquo;
@@ -453,7 +467,7 @@ function onHeaderChange(d: Date) {
         <div class="sg-calendar-header-center">
           <select
             class="sg-calendar-month-select"
-            aria-label="Month"
+            :aria-label="monthSelectLabel"
             :value="panelMonth"
             @change="handleMonthSelectChange"
           >
@@ -461,7 +475,7 @@ function onHeaderChange(d: Date) {
           </select>
           <select
             class="sg-calendar-year-select"
-            aria-label="Year"
+            :aria-label="yearSelectLabel"
             :value="panelYear"
             @change="handleYearSelectChange"
           >
@@ -476,7 +490,7 @@ function onHeaderChange(d: Date) {
               ]"
               @click="setMode('month')"
             >
-              Month
+              {{ monthSelectLabel }}
             </button>
             <button
               type="button"
@@ -486,7 +500,7 @@ function onHeaderChange(d: Date) {
               ]"
               @click="setMode('year')"
             >
-              Year
+              {{ yearSelectLabel }}
             </button>
           </div>
         </div>
@@ -496,8 +510,8 @@ function onHeaderChange(d: Date) {
             v-if="currentMode === 'month'"
             type="button"
             class="sg-calendar-nav-btn"
-            title="Next month"
-            aria-label="Next month"
+            :title="nextMonthLabel"
+            :aria-label="nextMonthLabel"
             @click="shiftMonth(1)"
           >
             &rsaquo;
@@ -505,8 +519,8 @@ function onHeaderChange(d: Date) {
           <button
             type="button"
             class="sg-calendar-nav-btn"
-            title="Next year"
-            aria-label="Next year"
+            :title="nextYearLabel"
+            :aria-label="nextYearLabel"
             @click="shiftYear(1)"
           >
             &raquo;

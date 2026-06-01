@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { printElement } from '../../../utils/print'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { DashboardProps, DashboardStyle, DashboardWidget } from './types'
 
 const props = withDefaults(defineProps<DashboardProps>(), {
@@ -15,6 +16,8 @@ defineSlots<{
 }>()
 
 const rootRef = ref<HTMLDivElement | null>(null)
+const cfg = useConfig()
+const dashboardLabel = computed(() => cfg.value.locale?.dashboard?.ariaLabel ?? 'Dashboard')
 
 const gridStyle = computed<DashboardStyle>(() => ({
   display: 'grid',
@@ -46,7 +49,7 @@ defineExpose({
     :class="[!props.unstyled && 'sg-dashboard', props.className]"
     :style="gridStyle"
     role="region"
-    aria-label="Dashboard"
+    :aria-label="dashboardLabel"
   >
     <div
       v-for="widget in props.widgets"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { Assignment, CalendarScale, ResourceCalendarProps } from './types'
 
 const props = withDefaults(defineProps<ResourceCalendarProps>(), {
@@ -17,6 +18,15 @@ const emit = defineEmits<{
   (e: 'assignmentChange', next: Assignment): void
   (e: 'conflict', conflicts: Array<{ a: Assignment; b: Assignment }>): void
 }>()
+
+const cfg = useConfig()
+const calendarLabel = computed(
+  () => cfg.value.locale?.resourceCalendar?.ariaLabel ?? 'Resource calendar',
+)
+const resizeStartLabel = computed(
+  () => cfg.value.locale?.resourceCalendar?.resizeStart ?? 'Resize start',
+)
+const resizeEndLabel = computed(() => cfg.value.locale?.resourceCalendar?.resizeEnd ?? 'Resize end')
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000
 
@@ -292,7 +302,7 @@ const wrapperStyle = computed(() => ({
     :class="wrapperClass"
     :style="wrapperStyle"
     role="region"
-    aria-label="Resource calendar"
+    :aria-label="calendarLabel"
     :data-scale="scale"
     :data-conflict-count="conflictingIds.size"
     @pointermove="onPointerMove"
@@ -423,7 +433,7 @@ const wrapperStyle = computed(() => ({
             v-if="resizable"
             :class="unstyled ? undefined : 'sg-rcal-assignment-resize-start'"
             role="button"
-            aria-label="Resize start"
+            :aria-label="resizeStartLabel"
             tabindex="-1"
             data-role="resize-handle-start"
             :style="{
@@ -445,7 +455,7 @@ const wrapperStyle = computed(() => ({
             v-if="resizable"
             :class="unstyled ? undefined : 'sg-rcal-assignment-resize-end'"
             role="button"
-            aria-label="Resize end"
+            :aria-label="resizeEndLabel"
             tabindex="-1"
             data-role="resize-handle-end"
             :style="{

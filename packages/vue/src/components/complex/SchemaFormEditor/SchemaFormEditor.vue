@@ -7,6 +7,7 @@ import SgSchemaFormEditorInspector from './SchemaFormEditorInspector.vue'
 import SgSchemaFormEditorSchemaView from './SchemaFormEditorSchemaView.vue'
 import { useSchemaEditor, type SchemaEditorStore } from './useSchemaEditor'
 import { editorSchemaToJsonSchema, createFieldFromPaletteType } from './adapters/jsonSchema'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { PaletteItem } from './palette'
 import type { EditorSchema } from './types'
 
@@ -31,6 +32,10 @@ const internalStore = useSchemaEditor({
 const store = computed(() => props.store ?? internalStore)
 
 const bottomTab = ref<'preview' | 'schema'>('preview')
+
+const cfg = useConfig()
+const undoLabel = computed(() => cfg.value.locale?.schemaFormEditor?.undo ?? 'Undo')
+const redoLabel = computed(() => cfg.value.locale?.schemaFormEditor?.redo ?? 'Redo')
 
 function handlePaletteActivate(type: ReturnType<typeof createFieldFromPaletteType>['type']) {
   const existingNames = store.value.state.value.schema.fields.map((f) => f.name)
@@ -71,25 +76,26 @@ const previewKey = computed(() =>
         type="button"
         class="sg-sfe-toolbar-btn"
         data-testid="sfe-undo"
-        aria-label="Undo"
+        :aria-label="undoLabel"
         :disabled="!store.state.value.canUndo"
         @click="store.undo()"
-      >Undo</button>
+      >
+        {{ undoLabel }}
+      </button>
       <button
         type="button"
         class="sg-sfe-toolbar-btn"
         data-testid="sfe-redo"
-        aria-label="Redo"
+        :aria-label="redoLabel"
         :disabled="!store.state.value.canRedo"
         @click="store.redo()"
-      >Redo</button>
+      >
+        {{ redoLabel }}
+      </button>
     </div>
 
     <div class="sg-sfe-body">
-      <SgSchemaFormEditorPalette
-        :items="paletteItems"
-        @item-activate="handlePaletteActivate"
-      />
+      <SgSchemaFormEditorPalette :items="paletteItems" @item-activate="handlePaletteActivate" />
       <div class="sg-sfe-center">
         <SgSchemaFormEditorCanvas :store="store" :empty-text="emptyText" />
         <div v-if="!hideSchemaView" class="sg-sfe-bottom" data-testid="sfe-bottom">
@@ -99,13 +105,17 @@ const previewKey = computed(() =>
               :class="['sg-sfe-tab', bottomTab === 'preview' ? 'sg-sfe-tab-active' : '']"
               data-testid="sfe-tab-preview"
               @click="bottomTab = 'preview'"
-            >Preview</button>
+            >
+              Preview
+            </button>
             <button
               type="button"
               :class="['sg-sfe-tab', bottomTab === 'schema' ? 'sg-sfe-tab-active' : '']"
               data-testid="sfe-tab-schema"
               @click="bottomTab = 'schema'"
-            >Schema</button>
+            >
+              Schema
+            </button>
           </div>
           <template v-if="bottomTab === 'preview'">
             <div

@@ -1,0 +1,18 @@
+# Зависимости
+node_modules/
+
+# Сборка / артефакты
+dist/
+temp/
+coverage/
+.turbo/
+.cache/
+*.tsbuildinfo
+
+# Собранная статика деплоя
+deploy/output/
+
+# Прочее
+*.log
+.DS_Store
+Thumbs.db

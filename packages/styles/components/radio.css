@@ -1,3 +1,10 @@
+/* Radio — custom painted dot on top of a visually-hidden native input.
+ *
+ * Like Checkbox, the native `<input type="radio">` stays in the DOM for
+ * keyboard / form / a11y but is visually hidden. `.sg-radio-box` paints
+ * the circle so demos can rebrand through `--sg-radio-*` tokens without
+ * fighting `accent-color` limitations across browsers. */
+
 .sg-radio-group {
   display: flex;
   gap: var(--sg-padding-md);
@@ -8,12 +15,21 @@
 }
 
 .sg-radio {
+  --sg-radio-size: 16px;
+  --sg-radio-border: var(--sg-color-border);
+  --sg-radio-border-hover: var(--sg-color-primary);
+  --sg-radio-bg: var(--sg-color-bg);
+  --sg-radio-bg-checked: var(--sg-color-primary);
+  --sg-radio-dot-color: var(--sg-color-white);
+
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--sg-padding-xs);
   cursor: pointer;
   font-size: var(--sg-font-size);
   color: var(--sg-color-text);
+  line-height: var(--sg-line-height);
 }
 
 .sg-radio-disabled {
@@ -22,11 +38,52 @@
 }
 
 .sg-radio-input {
-  width: 16px;
-  height: 16px;
+  position: absolute;
+  width: var(--sg-radio-size);
+  height: var(--sg-radio-size);
   margin: 0;
-  accent-color: var(--sg-color-primary);
-  cursor: inherit;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sg-radio-box {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+  width: var(--sg-radio-size);
+  height: var(--sg-radio-size);
+  border: 1px solid var(--sg-radio-border);
+  border-radius: 50%;
+  background: var(--sg-radio-bg);
+  transition:
+    background var(--sg-transition-duration) var(--sg-transition-timing),
+    border-color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-radio:hover .sg-radio-box {
+  border-color: var(--sg-radio-border-hover);
+}
+
+.sg-radio-input:focus-visible ~ .sg-radio-box {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 2px;
+}
+
+.sg-radio-input:checked ~ .sg-radio-box {
+  background: var(--sg-radio-bg-checked);
+  border-color: var(--sg-radio-bg-checked);
+}
+
+.sg-radio-input:checked ~ .sg-radio-box::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sg-radio-dot-color);
+  transform: translate(-50%, -50%);
 }
 
 .sg-radio-label {

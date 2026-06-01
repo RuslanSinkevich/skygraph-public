@@ -209,7 +209,7 @@ SkyGraph is one of several pet projects by [Ruslan Sinkevich](https://ruslansink
 
 - [GitBor](https://gitbor.ru/) — cross-platform desktop Git client (Electron, [github.com/RuslanSinkevich/gitbor](https://github.com/RuslanSinkevich/gitbor))
 - [SkyGraph](https://skygraph.ruslansinkevich.ru/) — multi-framework UI library (this repo, [github.com/RuslanSinkevich/skygraph-public](https://github.com/RuslanSinkevich/skygraph-public))
-- [Skycode](https://github.com/RuslanSinkevich/skycode) — VS Code fork with built-in AI assistant
+- [Skycode](https://skycode-ai.ru/) — VS Code fork with built-in AI assistant
 
 Contacts: [ruslansinkevich.ru](https://ruslansinkevich.ru/), [Telegram](https://t.me/ruslansinkevich), [GitHub](https://github.com/RuslanSinkevich).
 

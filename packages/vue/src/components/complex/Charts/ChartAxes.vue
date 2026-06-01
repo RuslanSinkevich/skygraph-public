@@ -22,8 +22,15 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), { unstyled: false })
 
+function defaultYFormatter(value: number): string {
+  if (Number.isInteger(value)) return String(value)
+  if (Math.abs(value) >= 1000) return value.toFixed(0)
+  if (Math.abs(value) >= 1) return value.toFixed(2).replace(/\.?0+$/, '')
+  return value.toFixed(2)
+}
+
 const formatY = (v: number) =>
-  props.yAxis?.tickFormatter ? props.yAxis.tickFormatter(v) : String(Math.round(v * 100) / 100)
+  props.yAxis?.tickFormatter ? props.yAxis.tickFormatter(v) : defaultYFormatter(v)
 
 const formatX = (c: ChartCategory, i: number) =>
   props.xAxis?.tickFormatter ? props.xAxis.tickFormatter(c, i) : String(c)
@@ -48,9 +55,7 @@ const xTicks = computed(() => {
   const arr: { label: string; x: number }[] = []
   for (let i = 0; i < tickCount; i++) {
     const idx =
-      tickCount === 1
-        ? 0
-        : Math.round((i * (props.categories.length - 1)) / (tickCount - 1))
+      tickCount === 1 ? 0 : Math.round((i * (props.categories.length - 1)) / (tickCount - 1))
     const t = props.categories.length === 1 ? 0 : idx / (props.categories.length - 1)
     arr.push({
       label: formatX(props.categories[idx], idx),

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { useVirtualScroll } from '../../../composables/useVirtualScroll'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type {
   CellPosition,
   CellValue,
@@ -24,6 +25,12 @@ const props = withDefaults(defineProps<DataGridProps<Row>>(), {
   loading: false,
   emptyText: 'No data',
 })
+
+const cfg = useConfig()
+const selectAllRowsLabel = computed(
+  () => cfg.value.locale?.dataGrid?.selectAllRows ?? 'Select all rows',
+)
+const selectRowLabel = computed(() => cfg.value.locale?.dataGrid?.selectRow ?? 'Select row')
 
 const emit = defineEmits<{
   (e: 'cell-edit', payload: { rowIndex: number; columnKey: string; value: CellValue }): void
@@ -68,7 +75,12 @@ watch(
 
 const visibleRows = computed(() => {
   const items = range.value.visibleItems
-  return items.map((vi) => ({ row: props.data[vi.index] as Row, index: vi.index, offsetTop: vi.offsetTop, height: vi.height }))
+  return items.map((vi) => ({
+    row: props.data[vi.index] as Row,
+    index: vi.index,
+    offsetTop: vi.offsetTop,
+    height: vi.height,
+  }))
 })
 
 const resolveRowKey = (row: Row, index: number): string | number => {
@@ -191,7 +203,7 @@ defineExpose({
         <input
           type="checkbox"
           :checked="allSelected"
-          aria-label="Select all rows"
+          :aria-label="selectAllRowsLabel"
           @change="toggleSelectAll"
         />
       </div>
@@ -209,8 +221,12 @@ defineExpose({
           'sg-datagrid-header-cell',
           col.headerClassName,
           col.sortable && 'sg-datagrid-header-cell--sortable',
-          props.sortColumn === col.key && props.sortDirection === 'asc' && 'sg-datagrid-header-cell--asc',
-          props.sortColumn === col.key && props.sortDirection === 'desc' && 'sg-datagrid-header-cell--desc',
+          props.sortColumn === col.key &&
+            props.sortDirection === 'asc' &&
+            'sg-datagrid-header-cell--asc',
+          props.sortColumn === col.key &&
+            props.sortDirection === 'desc' &&
+            'sg-datagrid-header-cell--desc',
         ]"
         :style="{
           width: col.width ? `${col.width}px` : '120px',
@@ -267,9 +283,11 @@ defineExpose({
           :key="resolveRowKey(entry.row, entry.index)"
           class="sg-datagrid-row"
           :class="[
-            props.striped && (entry.index % 2 === 0 ? 'sg-datagrid-row--even' : 'sg-datagrid-row--odd'),
+            props.striped &&
+              (entry.index % 2 === 0 ? 'sg-datagrid-row--even' : 'sg-datagrid-row--odd'),
             props.highlightOnHover && 'sg-datagrid-row--hoverable',
-            internalSelected.has(resolveRowKey(entry.row, entry.index)) && 'sg-datagrid-row--selected',
+            internalSelected.has(resolveRowKey(entry.row, entry.index)) &&
+              'sg-datagrid-row--selected',
           ]"
           :style="{
             position: 'absolute',
@@ -291,7 +309,7 @@ defineExpose({
             <input
               type="checkbox"
               :checked="internalSelected.has(resolveRowKey(entry.row, entry.index))"
-              aria-label="Select row"
+              :aria-label="selectRowLabel"
               @click.stop
               @change="toggleRowSelection(entry.row, entry.index)"
             />
@@ -309,8 +327,14 @@ defineExpose({
             :class="[
               'sg-datagrid-cell',
               col.className,
-              activeCell && activeCell.row === entry.index && activeCell.col === ci && 'sg-datagrid-cell--active',
-              editingCell && editingCell.row === entry.index && editingCell.col === ci && 'sg-datagrid-cell--editing',
+              activeCell &&
+                activeCell.row === entry.index &&
+                activeCell.col === ci &&
+                'sg-datagrid-cell--active',
+              editingCell &&
+                editingCell.row === entry.index &&
+                editingCell.col === ci &&
+                'sg-datagrid-cell--editing',
             ]"
             :style="{
               width: col.width ? `${col.width}px` : '120px',

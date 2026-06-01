@@ -13,6 +13,7 @@
  * see `decisions/T-Vue-Charts.md` D1.
  */
 import { computed, type CSSProperties } from 'vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { ChartAction } from './chartActions'
 
 export interface ChartHoverToolbarProps {
@@ -38,6 +39,9 @@ const props = defineProps<ChartHoverToolbarProps>()
 
 const visibleActions = computed(() => props.actions.filter((a) => !a.hidden))
 
+const cfg = useConfig()
+const actionsLabel = computed(() => cfg.value.locale?.charts?.actions ?? 'Chart actions')
+
 function onButtonClick(a: ChartAction, e: MouseEvent) {
   e.stopPropagation()
   const svg = props.getSvg()
@@ -59,7 +63,7 @@ function onButtonClick(a: ChartAction, e: MouseEvent) {
     data-sg-chart-toolbar=""
     :data-sg-toolbar="props.visible ? 'visible' : 'hidden'"
     role="toolbar"
-    aria-label="Chart actions"
+    :aria-label="actionsLabel"
     :aria-hidden="props.visible ? undefined : true"
   >
     <button

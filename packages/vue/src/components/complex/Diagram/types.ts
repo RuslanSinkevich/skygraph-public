@@ -103,6 +103,17 @@ export interface DiagramProps {
     maxNodes?: number
     cornerRadius?: number
     curvature?: number
+    /**
+     * Where the central bend of an orthogonal edge sits between the
+     * two perpendicular stubs (0 = at source, 0.5 = midpoint, 1 = at
+     * target). Defaults to `0.5` (React Flow's smoothstep behaviour).
+     */
+    stepPosition?: number
+    /**
+     * Length of the perpendicular stub extending from each endpoint
+     * before the connector turns. Defaults to `max(20, gridSize)`.
+     */
+    stubLength?: number
   }
 
   /**

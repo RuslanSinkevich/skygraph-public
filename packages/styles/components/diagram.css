@@ -220,13 +220,17 @@
 
 .sg-diagram-edge {
   stroke: var(--sg-diagram-edge-color);
-  stroke-width: 1.75;
+  stroke-width: 1.5;
   fill: none;
-  /* `linejoin` keeps orthogonal-routed edges crisp at corners; `linecap`
-   * rounds the start/end so an edge feels finished where it meets the
-   * node border instead of clipping abruptly. */
+  /* `linejoin: round` smooths orthogonal corners. `linecap: butt`
+   * means the path tip ends flush — combined with the marker-end
+   * sitting at `refX/refY = 0`, the arrow glyph picks up exactly
+   * where the line stops, with no visible "pill" cap protruding
+   * beyond the arrowhead. Round caps used to leak a half-circle
+   * over the marker base and that was visible on every screenshot
+   * the user shared. */
   stroke-linejoin: round;
-  stroke-linecap: round;
+  stroke-linecap: butt;
   transition:
     stroke var(--sg-transition-fast),
     stroke-width var(--sg-transition-fast);
@@ -236,7 +240,7 @@
  * naturally thins at the inflection point, which makes the same
  * stroke-width look lighter than its orthogonal counterpart. */
 .sg-diagram-edge-bezier {
-  stroke-width: 2;
+  stroke-width: 1.75;
 }
 
 /* Dashed for manual-routed waypoints — visually distinguishes a hand-
@@ -248,7 +252,7 @@
 .sg-diagram-edge-hit:hover + .sg-diagram-edge,
 g[data-edge-id]:hover .sg-diagram-edge {
   stroke: var(--sg-diagram-edge-hover-stroke);
-  stroke-width: 2.5;
+  stroke-width: 2.25;
 }
 
 /* Highlight edges connected to a selected node when the selection is
@@ -257,26 +261,35 @@ g[data-edge-id]:hover .sg-diagram-edge {
  * `selected` color on `:focus-within` of the SVG group. */
 g[data-edge-id]:focus-within .sg-diagram-edge {
   stroke: var(--sg-diagram-edge-color-selected);
-  stroke-width: 2.5;
+  stroke-width: 2.25;
 }
 
 /* ─── Arrow markers ─────────────────────────────────────────────────── */
 /*
- * SVG markers don't inherit `stroke` from the path automatically — the
- * `context-stroke` keyword in the marker `fill` solves it where
- * supported, and the fallback below keeps Firefox / Safari < TP rendering
- * the arrow in the right colour by using `currentColor`.
+ * The arrowhead is an "open V" — two strokes meeting at the marker
+ * anchor, not a filled triangle. That gives the arrow visual cohesion
+ * with the line (same stroke), keeps it readable on dense graphs, and
+ * matches the look used by React Flow / draw.io / Lucidchart.
  *
- * `.sg-diagram-edges` carries `currentColor` from the token so the arrow
- * inherits the default colour; per-state overrides (`:hover`) below adjust
- * `currentColor` so the arrow lights up together with the line.
+ * SVG markers don't inherit `stroke` from the path automatically. We
+ * use `context-stroke` in the marker so modern browsers paint the arrow
+ * with the line colour, and rely on `currentColor` below as a fallback
+ * for Firefox / Safari versions that don't yet support context-stroke.
+ *
+ * `.sg-diagram-edges { color: ... }` is the lever per-edge state hooks
+ * (`:hover`) modulate so the arrow lights up together with the line.
  */
 .sg-diagram-edges {
   color: var(--sg-diagram-edge-color);
 }
 
+/* Marker glyph: stroke takes the inherited `currentColor` so old
+ * browsers without context-stroke still render the arrow in the right
+ * colour. `fill: none` is essential — the marker is an open polyline,
+ * not a triangle. */
 .sg-diagram-arrow-fill {
-  fill: currentColor;
+  stroke: currentColor;
+  fill: none;
 }
 
 g[data-edge-id]:hover {

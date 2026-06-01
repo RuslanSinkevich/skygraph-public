@@ -121,6 +121,7 @@ onMounted(syncInputs)
         :disabled="opt.disabled || disabled || loading"
         @change="select(opt)"
       />
+      <span v-if="!unstyled" class="sg-radio-box" aria-hidden="true" />
       <span :class="unstyled ? '' : 'sg-radio-label'">{{ opt.label }}</span>
       <span
         v-if="loading && current === opt.value && !unstyled"

@@ -130,6 +130,8 @@ export interface TableLocale {
   filterOpIsEmpty?: string
   /** Operator label: is not empty. */
   filterOpIsNotEmpty?: string
+  /** Accessible label for the filter-operator `<Select>`. */
+  filterOperatorAriaLabel?: string
 }
 
 /** Locale strings for the DataGrid component. */

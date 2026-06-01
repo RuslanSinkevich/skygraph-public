@@ -102,6 +102,8 @@ export interface TableColumn {
   onCell?: (row: Record<string, unknown>, rowIndex: number) => CellSpan
   /** Child columns for grouped headers. */
   children?: TableColumn[]
+  /** Extra class for header cell of this column. */
+  headerClassName?: string
   /** Footer aggregate for this column. */
   aggregate?: AggregateType | ((values: unknown[]) => unknown)
 }
@@ -177,6 +179,10 @@ export interface TableProps {
   size?: 'small' | 'middle' | 'large'
   /** Sticky header while scrolling vertically. */
   sticky?: boolean
+  /** Enables column reorder by drag-and-drop in the header. */
+  draggable?: boolean
+  /** Called after header columns are reordered by drag-and-drop. */
+  onColumnOrderChange?: (order: string[]) => void
   /** Locale strings. */
   locale?: TableLocale
   /** Row class name. */

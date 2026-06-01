@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 import SgTimePicker from './TimePicker.vue'
 
 export interface TimeRangePickerProps {
@@ -53,6 +54,9 @@ const props = withDefaults(defineProps<TimeRangePickerProps>(), {
   loading: false,
   open: undefined,
 })
+
+const cfg = useConfig()
+const clearLabel = computed(() => cfg.value.locale?.input?.clear ?? 'Clear')
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: [string, string]): void
@@ -163,7 +167,7 @@ const wrapperCls = computed(() =>
           v-if="allowClear && (current[0] || current[1])"
           :class="unstyled ? '' : 'sg-timepicker-clear'"
           role="button"
-          aria-label="Clear"
+          :aria-label="clearLabel"
           @click="handleClear"
           >×</span
         >

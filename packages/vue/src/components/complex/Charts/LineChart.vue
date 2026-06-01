@@ -2,10 +2,11 @@
 import { ref, computed } from 'vue'
 import { useChartSize } from '../../../composables/useChartSize'
 import { printElement } from '../../../utils/print'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import {
   chartBounds,
   colorForSeries,
-  normalizePadding,
+  resolveChartPadding,
   resolveChartAnimation,
   type BaseChartProps,
 } from './types'
@@ -57,6 +58,8 @@ const props = withDefaults(defineProps<LineChartProps>(), {
 
 const rootRef = ref<HTMLDivElement | null>(null)
 const svgRef = ref<SVGSVGElement | null>(null)
+const cfg = useConfig()
+const chartLabel = computed(() => cfg.value.locale?.charts?.lineChart ?? 'Line chart')
 const fallbackW = computed(() =>
   typeof props.width === 'number' && Number.isFinite(props.width) ? props.width : 600,
 )
@@ -65,15 +68,16 @@ const fallbackH = computed(() =>
 )
 const { size } = useChartSize(svgRef, { width: fallbackW.value, height: fallbackH.value })
 
-const padding = computed(() => normalizePadding(props.padding))
+const bounds = computed(() => chartBounds(props.series.map((s) => s.values)))
+const padding = computed(() =>
+  resolveChartPadding(props.padding, props.yAxis, bounds.value.min, bounds.value.max),
+)
 const viewW = computed(() => size.value.width)
 const viewH = computed(() => size.value.height)
 const plotX = computed(() => padding.value[3])
 const plotY = computed(() => padding.value[0])
 const plotW = computed(() => Math.max(0, viewW.value - padding.value[3] - padding.value[1]))
 const plotH = computed(() => Math.max(0, viewH.value - padding.value[0] - padding.value[2]))
-
-const bounds = computed(() => chartBounds(props.series.map((s) => s.values)))
 const animation = computed(() => resolveChartAnimation(props.animate))
 
 const xCoord = (i: number) => {
@@ -108,6 +112,22 @@ const lineSegments = computed(() =>
     return { id: s.id, color, label: s.label, segments }
   }),
 )
+
+const groupAnimStyle = computed(() =>
+  animation.value.enabled
+    ? { '--sg-chart-anim-duration': `${animation.value.duration}ms` }
+    : undefined,
+)
+function segmentAnimStyle(segCount: number, segIdx: number) {
+  if (!animation.value.enabled) return undefined
+  const d = animation.value.duration
+  return {
+    strokeDasharray: 1,
+    strokeDashoffset: 1,
+    animationDelay: `${(segIdx / Math.max(1, segCount)) * d}ms`,
+    animationDuration: `${d / Math.max(1, segCount)}ms`,
+  }
+}
 
 const markerPoints = computed(() =>
   props.series.flatMap((s, i) => {
@@ -213,7 +233,7 @@ defineExpose({
       :width="typeof props.width === 'number' ? props.width : '100%'"
       :height="props.height"
       role="img"
-      aria-label="Line chart"
+      :aria-label="chartLabel"
       @mousemove="crosshairEnabled ? handleSvgMouseMove($event) : undefined"
       @mouseleave="crosshairEnabled ? handleSvgMouseLeave() : undefined"
     >
@@ -231,16 +251,24 @@ defineExpose({
       />
       <g class="sg-chart-line-paths">
         <template v-for="ln in lineSegments" :key="ln.id">
-          <path
-            v-for="(seg, si) in ln.segments"
-            :key="`${ln.id}-${si}`"
-            :d="seg"
-            :stroke="ln.color"
-            :stroke-width="props.strokeWidth"
-            fill="none"
-            vector-effect="non-scaling-stroke"
-            :data-series-id="ln.id"
-          />
+          <g
+            :class="[animation.enabled && !props.unstyled && 'sg-chart-line-animate']"
+            :style="groupAnimStyle"
+          >
+            <path
+              v-for="(seg, si) in ln.segments"
+              :key="`${ln.id}-${si}`"
+              :class="[animation.enabled && !props.unstyled && 'sg-chart-line-segment-animate']"
+              :d="seg"
+              :stroke="ln.color"
+              :stroke-width="props.strokeWidth"
+              pathLength="1"
+              fill="none"
+              vector-effect="non-scaling-stroke"
+              :data-series-id="ln.id"
+              :style="segmentAnimStyle(ln.segments.length, si)"
+            />
+          </g>
         </template>
       </g>
       <g v-if="props.markers" class="sg-chart-line-markers">

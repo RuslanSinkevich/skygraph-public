@@ -21,13 +21,11 @@ import {
   pointsToPath,
   pointsToRoundedPath,
   getBezierPath,
-  nearestSide,
+  resolveEdgeEndpoint,
 } from '@skygraph/core'
-import type { Side } from '@skygraph/core'
+import type { ResolvedEndpoint } from '@skygraph/core'
 import type {
   AABB,
-  Anchor,
-  AnchorId,
   EdgeEndpoint,
   GraphEdge,
   GraphEngine,
@@ -191,6 +189,20 @@ export interface DiagramProps {
     maxNodes?: number
     cornerRadius?: number
     curvature?: number
+    /**
+     * Where the central bend of an orthogonal edge sits between the
+     * two perpendicular stubs:
+     *   - `0`   → bend at the source
+     *   - `0.5` → midpoint (default — matches React Flow's smoothstep)
+     *   - `1`   → bend at the target
+     */
+    stepPosition?: number
+    /**
+     * Length of the perpendicular stub extending from each endpoint
+     * before the connector turns. Defaults to `max(20, gridSize)`,
+     * matching React Flow's `offset = 20`.
+     */
+    stubLength?: number
   }
   /**
    * When `true`, every rendered edge gets an arrow marker on its target
@@ -293,61 +305,6 @@ interface ViewState {
   panY: number
 }
 
-interface ResolvedAnchor {
-  point: Point
-}
-
-function resolveAnchor(
-  graph: GraphEngine,
-  nodeId: NodeId,
-  ref: AnchorId | { s: number },
-): ResolvedAnchor | null {
-  const anchors = graph.anchorsOf(nodeId)
-  let anchor: Anchor | undefined
-  if (typeof ref === 'string') {
-    anchor = anchors.find((a) => a.id === ref)
-  } else {
-    let best: Anchor | undefined
-    let bestDiff = Infinity
-    for (const a of anchors) {
-      const diff = Math.abs(a.s - ref.s)
-      if (diff < bestDiff) {
-        bestDiff = diff
-        best = a
-      }
-    }
-    anchor = best
-  }
-  if (!anchor) return null
-  return { point: anchor.point }
-}
-
-function endpointWorldPoint(graph: GraphEngine, ep: EdgeEndpoint): Point | null {
-  const node = graph.getNode(ep.node)
-  if (!node) return null
-  const local = resolveAnchor(graph, ep.node, ep.anchor)
-  if (!local) return null
-  const bounds = graph.boundsOf(ep.node)
-  return [
-    bounds.x + (local.point[0] - localOriginOffset(node).x),
-    bounds.y + (local.point[1] - localOriginOffset(node).y),
-  ]
-}
-
-/**
- * Offset between the outline-local origin and the bounding-box top-left.
- * For `rect`/`polygon`/`path` the origin is at `(0, 0)` which IS the
- * top-left, so the offset is zero. For `ellipse` the origin is the centre,
- * so the offset is `(-rx, -ry)` — i.e. the local anchor (rx*cos, ry*sin)
- * has to be shifted by `(-(-rx), -(-ry)) = (rx, ry)` to land relative to
- * the bbox top-left.
- */
-function localOriginOffset(node: GraphNode): { x: number; y: number } {
-  const o = node.outline
-  if (o.kind === 'ellipse') return { x: -o.rx, y: -o.ry }
-  return { x: 0, y: 0 }
-}
-
 function defaultRenderNode(node: GraphNode): ReactNode {
   return <span className="sg-diagram-node-label">{node.id}</span>
 }
@@ -359,15 +316,69 @@ function defaultRenderNode(node: GraphNode): ReactNode {
  */
 const ORTHOGONAL_CORNER_RADIUS = 8
 
+/**
+ * Visual gap between the arrowhead tip and the node border. ~8 world
+ * units matches the typical `border-radius` on shape nodes so arrows
+ * never clip the rounded corner, and gives the marker enough breathing
+ * room to read as a distinct glyph instead of merging into the node
+ * border. Two endpoints in a row × 8 = 16 — well below the smallest
+ * sensible node-to-node gap in any realistic layout.
+ */
+const ENDPOINT_PADDING = 8
+
+/**
+ * Pure-geometry endpoint resolution — port of React Flow's
+ * `getNodeIntersection` (which itself derives from mxGraph's
+ * `mxPerimeter.RectanglePerimeter`). The connection point is the
+ * intersection between the centre-to-centre segment and the node's
+ * bounding rectangle, with a small outward `padding` for the marker.
+ *
+ * **Anchors from `GraphEdge.from / to` are intentionally ignored at
+ * the render layer.** They remain meaningful for the engine
+ * (`graph.anchorsOf`, serialization) but the visual layer now follows
+ * the floating-edges convention used by every mainstream diagram
+ * library (xyflow / mxGraph / draw.io). Dragging a node around the
+ * canvas no longer produces the "wrong-side-of-the-box" /
+ * "edge cuts through node body" artifacts the anchor-honouring
+ * resolver leaked.
+ */
+function resolveEdgeEndpoints(
+  sourceBox: AABB,
+  targetBox: AABB,
+): { source: ResolvedEndpoint; target: ResolvedEndpoint } {
+  const source = resolveEdgeEndpoint(sourceBox, targetBox, ENDPOINT_PADDING)
+  const target = resolveEdgeEndpoint(targetBox, sourceBox, ENDPOINT_PADDING)
+  return { source, target }
+}
+
+/**
+ * Mid-point of an edge for hover toolbar placement — keep it close to
+ * the rendered path geometry by averaging the two resolved endpoint
+ * points (post-padding), so the toolbar tracks the visual centre of
+ * the edge as nodes are dragged around.
+ */
+function edgeMidpoint(
+  graph: GraphEngine,
+  ep: { from: EdgeEndpoint; to: EdgeEndpoint },
+): Point | null {
+  const sb = graph.boundsOf(ep.from.node)
+  const tb = graph.boundsOf(ep.to.node)
+  if (sb.w === 0 || tb.w === 0) return null
+  const { source, target } = resolveEdgeEndpoints(sb, tb)
+  return [(source.point[0] + target.point[0]) / 2, (source.point[1] + target.point[1]) / 2]
+}
+
 function buildEdgePath(
   edge: GraphEdge,
-  start: Point,
-  end: Point,
+  source: ResolvedEndpoint,
+  target: ResolvedEndpoint,
   obstacles: readonly AABB[] | undefined,
   sourceBounds: AABB | undefined,
   targetBounds: AABB | undefined,
   routerOpts: DiagramProps['routingOptions'],
 ): string {
+  const start = source.point
+  const end = target.point
   switch (edge.routing) {
     case 'orthogonal': {
       const points = routeOrthogonal(start, end, {
@@ -377,21 +388,17 @@ function buildEdgePath(
         maxNodes: routerOpts?.maxNodes,
         sourceBounds,
         targetBounds,
+        stepPosition: routerOpts?.stepPosition,
+        stubLength: routerOpts?.stubLength,
       })
       return pointsToRoundedPath(points, routerOpts?.cornerRadius ?? ORTHOGONAL_CORNER_RADIUS)
     }
     case 'bezier': {
-      // Pick the exit/enter side from each endpoint's AABB. When the
-      // bounds aren't available (rare — only happens for nodes with
-      // exotic outlines) the curve falls back to "right → left",
-      // which still looks reasonable for horizontal layouts.
-      const sourceSide: Side = sourceBounds ? nearestSide(sourceBounds, end) : 'right'
-      const targetSide: Side = targetBounds ? nearestSide(targetBounds, start) : 'left'
       return getBezierPath({
         source: start,
-        sourceSide,
+        sourceSide: source.side,
         target: end,
-        targetSide,
+        targetSide: target.side,
         curvature: routerOpts?.curvature,
       })
     }
@@ -1036,10 +1043,9 @@ function DiagramInner(
   const hoveredEdgeRecord = hoveredEdge != null ? (state.edges.get(hoveredEdge) ?? null) : null
   const hoveredEdgeMid = useMemo(() => {
     if (!hoveredEdgeRecord) return null
-    const a = endpointWorldPoint(graph, hoveredEdgeRecord.from)
-    const b = endpointWorldPoint(graph, hoveredEdgeRecord.to)
-    if (!a || !b) return null
-    return { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 }
+    const mid = edgeMidpoint(graph, hoveredEdgeRecord)
+    if (!mid) return null
+    return { x: mid[0], y: mid[1] }
   }, [graph, hoveredEdgeRecord])
 
   return (
@@ -1088,48 +1094,44 @@ function DiagramInner(
           aria-hidden="true"
         >
           {/*
-           * Marker defs — one arrow per visual state. We keep them
-           * on every diagram (cheap; one defs block, zero render
-           * cost when `edgeArrows={false}`) and let CSS swap them
-           * out via the marker-end attribute on the path.
+           * Marker defs — open-V arrowhead designed in `strokeWidth`
+           * units so the arrow always reads as a natural extension of
+           * the path stroke (instead of looking like a glued-on
+           * triangle). The shape is two strokes that meet at `(0, 0)`,
+           * which is also the marker's `refX`/`refY` anchor — that
+           * means the marker tip touches the path's endpoint exactly,
+           * so the routing layer can leave a clean `ENDPOINT_PADDING`
+           * gap between the path and the node border and the arrow
+           * lands inside that gap.
            *
-           * The arrow shape uses `context-stroke` so it inherits
-           * the edge's stroke colour automatically when supported,
-           * with a `fill` fallback for browsers that lack it. The
-           * marker viewport is 10×10 with `refX={9}` so the arrow
-           * tip lands on the path's endpoint instead of overshooting.
+           * `markerUnits="strokeWidth"` is the key knob: it scales the
+           * arrow with the stroke, so hover (which thickens the line)
+           * also enlarges the arrowhead — visual cue-stack matching
+           * React Flow, draw.io and Lucidchart.
+           *
+           * `context-stroke` makes the arrow inherit the line's
+           * colour. The CSS fallback (`fill: currentColor`) keeps
+           * Firefox and older Safari rendering the right colour.
            */}
           {edgeArrows && (
             <defs>
               <marker
                 id="sg-diagram-arrow"
-                viewBox="0 0 10 10"
-                refX="9"
-                refY="5"
-                markerWidth="7"
-                markerHeight="7"
+                viewBox="-10 -10 20 20"
+                refX="0"
+                refY="0"
+                markerWidth="12"
+                markerHeight="12"
                 orient="auto-start-reverse"
-                markerUnits="userSpaceOnUse"
+                markerUnits="strokeWidth"
               >
                 <path
-                  d="M 0 0 L 10 5 L 0 10 Z"
-                  fill="context-stroke"
-                  className="sg-diagram-arrow-fill"
-                />
-              </marker>
-              <marker
-                id="sg-diagram-arrow-hover"
-                viewBox="0 0 10 10"
-                refX="9"
-                refY="5"
-                markerWidth="8"
-                markerHeight="8"
-                orient="auto-start-reverse"
-                markerUnits="userSpaceOnUse"
-              >
-                <path
-                  d="M 0 0 L 10 5 L 0 10 Z"
-                  fill="context-stroke"
+                  d="M -7 -5 L 0 0 L -7 5"
+                  fill="none"
+                  stroke="context-stroke"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   className="sg-diagram-arrow-fill"
                 />
               </marker>
@@ -1137,7 +1139,6 @@ function DiagramInner(
           )}
           {edges.map((edge) =>
             renderEdge(
-              graph,
               edge,
               boundsById,
               routeAroundNodes,
@@ -1243,7 +1244,6 @@ function DiagramInner(
 }
 
 function renderEdge(
-  graph: GraphEngine,
   edge: GraphEdge,
   boundsById: ReadonlyMap<NodeId, AABB>,
   routeAroundNodes: boolean,
@@ -1254,9 +1254,15 @@ function renderEdge(
   onMouseEnter: (() => void) | undefined,
   onMouseLeave: (() => void) | undefined,
 ): ReactNode {
-  const a = endpointWorldPoint(graph, edge.from)
-  const b = endpointWorldPoint(graph, edge.to)
-  if (!a || !b) return null
+  const sBox = boundsById.get(edge.from.node)
+  const tBox = boundsById.get(edge.to.node)
+  if (!sBox || !tBox) return null
+
+  // Pure-geometry floating endpoints — see `resolveEdgeEndpoint` in
+  // `@skygraph/core`. Source/target each get the same outward padding
+  // so the arrowhead sits in a symmetric visual gap and the line never
+  // overlaps the node border.
+  const { source, target } = resolveEdgeEndpoints(sBox, tBox)
 
   // Build the obstacle list (every node except this edge's two endpoints).
   // We only do this for `orthogonal` routing AND only when `routeAroundNodes`
@@ -1270,15 +1276,13 @@ function renderEdge(
     }
   }
 
-  // Always pass source/target bounds for orthogonal/bezier routing —
-  // the router uses them to pick the side of each rectangle nearest
-  // to the other endpoint, so edges exit from the closest face instead
-  // of from a corner-anchor like `s = 0.25` / `s = 0.75`.
-  const needsBounds = edge.routing === 'orthogonal' || edge.routing === 'bezier'
-  const sourceBounds = needsBounds ? boundsById.get(edge.from.node) : undefined
-  const targetBounds = needsBounds ? boundsById.get(edge.to.node) : undefined
-
-  const d = buildEdgePath(edge, a, b, obstacles, sourceBounds, targetBounds, routerOpts)
+  // No bounds are passed to the orthogonal router any more: the
+  // resolver already placed the endpoints OUTSIDE the boxes
+  // (padded by ENDPOINT_PADDING), so the router shouldn't re-derive
+  // "exit through nearest side" — doing so on top of an already-
+  // outside-the-box point produced visible loops around the source
+  // node (visible on the OrthogonalRouting demo in v1).
+  const d = buildEdgePath(edge, source, target, obstacles, undefined, undefined, routerOpts)
 
   const markerEnd = arrows ? 'url(#sg-diagram-arrow)' : undefined
 

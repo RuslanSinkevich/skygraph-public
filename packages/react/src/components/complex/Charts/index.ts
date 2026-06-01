@@ -15,11 +15,7 @@ export { PieChart } from './PieChart'
 export type { PieChartProps, PieChartSlice } from './PieChart'
 export { useChartSize } from './useChartSize'
 export type { ChartSize } from './useChartSize'
-export {
-  ChartHoverToolbar,
-  resolveChartActions,
-  defaultChartActions,
-} from './ChartHoverToolbar'
+export { ChartHoverToolbar, resolveChartActions, defaultChartActions } from './ChartHoverToolbar'
 export type {
   ChartAction,
   ChartActionContext,
@@ -34,10 +30,7 @@ export {
   triggerDownload,
 } from './chartExport'
 export type { DownloadPngOptions, PngSize } from './chartExport'
-export {
-  makeChartContextMenuHandler,
-  makeSeriesContextMenuHandler,
-} from './chartContextMenu'
+export { makeChartContextMenuHandler, makeSeriesContextMenuHandler } from './chartContextMenu'
 export type {
   ChartContextMenuPayload,
   ChartContextMenuHandler,
@@ -56,5 +49,9 @@ export {
   colorForSeries,
   resolveChartAnimation,
   chartDataKey,
+  normalizePadding,
+  resolveChartPadding,
+  estimateYAxisLabelWidth,
+  defaultYTickFormatter,
   DEFAULT_CHART_ANIMATION_MS,
 } from './types'

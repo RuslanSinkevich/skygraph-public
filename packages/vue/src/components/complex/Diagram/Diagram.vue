@@ -17,24 +17,20 @@
  */
 import { computed, getCurrentInstance, onBeforeUnmount, ref, watch } from 'vue'
 import {
+  resolveEdgeEndpoint,
   getBezierPath,
-  nearestSide,
   pointsToPath,
   pointsToRoundedPath,
   routeOrthogonal,
   type AABB,
-  type Anchor,
-  type AnchorId,
-  type EdgeEndpoint,
   type GraphEdge,
-  type GraphEngine,
   type GraphNode,
   type NodeId,
-  type Point,
-  type Side,
+  type ResolvedEndpoint,
 } from '@skygraph/core'
 import { printElement } from '../../../utils/print'
 import type { PrintOptions } from '../../../utils/print'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type {
   DiagramCanvasContextPoint,
   DiagramDropPoint,
@@ -60,6 +56,13 @@ const props = withDefaults(defineProps<DiagramProps>(), {
 
 /** Default corner radius for rounded orthogonal corners. */
 const ORTHOGONAL_CORNER_RADIUS = 8
+/**
+ * Visual gap between the arrowhead tip and the node border. ~8 world
+ * units matches the typical `border-radius` on shape nodes and the
+ * `markerWidth` of the arrowhead, so the marker lands cleanly inside
+ * the gap without biting into the node. Parity with React.
+ */
+const ENDPOINT_PADDING = 8
 /** Movement threshold (CSS px) before a pointer interaction counts as a drag. */
 const DRAG_THRESHOLD_PX = 0.5
 
@@ -150,51 +153,33 @@ const boundsById = computed<Map<NodeId, AABB>>(() => {
 
 // ─── Edge geometry ─────────────────────────────────────────────────────────
 
-function localOriginOffset(node: GraphNode): { x: number; y: number } {
-  const o = node.outline
-  if (o.kind === 'ellipse') return { x: -o.rx, y: -o.ry }
-  return { x: 0, y: 0 }
-}
-
-function resolveAnchor(
-  g: GraphEngine,
-  nodeId: NodeId,
-  refer: AnchorId | { s: number },
-): Anchor | null {
-  const anchors = g.anchorsOf(nodeId)
-  if (typeof refer === 'string') {
-    return anchors.find((a) => a.id === refer) ?? null
+/**
+ * Pure-geometry floating endpoint pair — parity with the React adapter
+ * which delegates to `resolveEdgeEndpoint` from `@skygraph/core`
+ * (a port of xyflow / mxGraph). Anchor information from the engine is
+ * intentionally ignored at the render layer; see the matching
+ * comment in `Diagram.tsx` for the rationale.
+ */
+function resolveEdgePair(
+  sourceBox: AABB,
+  targetBox: AABB,
+): { source: ResolvedEndpoint; target: ResolvedEndpoint } {
+  return {
+    source: resolveEdgeEndpoint(sourceBox, targetBox, ENDPOINT_PADDING),
+    target: resolveEdgeEndpoint(targetBox, sourceBox, ENDPOINT_PADDING),
   }
-  let best: Anchor | null = null
-  let bestDiff = Infinity
-  for (const a of anchors) {
-    const diff = Math.abs(a.s - refer.s)
-    if (diff < bestDiff) {
-      bestDiff = diff
-      best = a
-    }
-  }
-  return best
-}
-
-function endpointWorldPoint(g: GraphEngine, ep: EdgeEndpoint): Point | null {
-  const node = g.getNode(ep.node)
-  if (!node) return null
-  const a = resolveAnchor(g, ep.node, ep.anchor)
-  if (!a) return null
-  const b = g.boundsOf(ep.node)
-  const off = localOriginOffset(node)
-  return [b.x + (a.point[0] - off.x), b.y + (a.point[1] - off.y)]
 }
 
 function buildEdgePath(
   edge: GraphEdge,
-  start: Point,
-  end: Point,
+  source: ResolvedEndpoint,
+  target: ResolvedEndpoint,
   obstacles: readonly AABB[] | undefined,
   sourceBounds: AABB | undefined,
   targetBounds: AABB | undefined,
 ): string {
+  const start = source.point
+  const end = target.point
   switch (edge.routing) {
     case 'orthogonal': {
       const pts = routeOrthogonal(start, end, {
@@ -204,6 +189,8 @@ function buildEdgePath(
         maxNodes: props.routingOptions?.maxNodes,
         sourceBounds,
         targetBounds,
+        stepPosition: props.routingOptions?.stepPosition,
+        stubLength: props.routingOptions?.stubLength,
       })
       return pointsToRoundedPath(
         pts,
@@ -211,13 +198,11 @@ function buildEdgePath(
       )
     }
     case 'bezier': {
-      const sourceSide: Side = sourceBounds ? nearestSide(sourceBounds, end) : 'right'
-      const targetSide: Side = targetBounds ? nearestSide(targetBounds, start) : 'left'
       return getBezierPath({
         source: start,
-        sourceSide,
+        sourceSide: source.side,
         target: end,
-        targetSide,
+        targetSide: target.side,
         curvature: props.routingOptions?.curvature,
       })
     }
@@ -243,9 +228,11 @@ const renderedEdges = computed<RenderedEdge[]>(() => {
   const map = boundsById.value
   const out: RenderedEdge[] = []
   for (const edge of edges.value) {
-    const a = endpointWorldPoint(props.graph, edge.from)
-    const b = endpointWorldPoint(props.graph, edge.to)
-    if (!a || !b) continue
+    const sBox = map.get(edge.from.node)
+    const tBox = map.get(edge.to.node)
+    if (!sBox || !tBox) continue
+    const { source, target } = resolveEdgePair(sBox, tBox)
+
     let obstacles: AABB[] | undefined
     if (props.routeAroundNodes && edge.routing === 'orthogonal') {
       const skip = new Set<NodeId>([edge.from.node, edge.to.node])
@@ -254,14 +241,18 @@ const renderedEdges = computed<RenderedEdge[]>(() => {
         if (!skip.has(id)) obstacles.push(bb)
       }
     }
-    const needsBounds = edge.routing === 'orthogonal' || edge.routing === 'bezier'
-    const sb = needsBounds ? map.get(edge.from.node) : undefined
-    const tb = needsBounds ? map.get(edge.to.node) : undefined
+    // Resolved endpoints already sit OUTSIDE the bboxes (padded), so
+    // we no longer pass source/target bounds to the router — letting
+    // it re-derive an "exit side" on top of an outside-the-box point
+    // produced loops around the source node.
     out.push({
       id: String(edge.id),
-      d: buildEdgePath(edge, a, b, obstacles, sb, tb),
+      d: buildEdgePath(edge, source, target, obstacles, undefined, undefined),
       routing: edge.routing,
-      mid: { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 },
+      mid: {
+        x: (source.point[0] + target.point[0]) / 2,
+        y: (source.point[1] + target.point[1]) / 2,
+      },
       raw: edge,
     })
   }
@@ -592,6 +583,8 @@ function onCanvasClick(e: MouseEvent) {
 // listener, `onDropNode` is the camel form) so the canvas only goes into
 // "drop target" mode when the parent actually listens.
 const __instance = getCurrentInstance()
+const cfg = useConfig()
+const diagramLabel = computed(() => cfg.value.locale?.diagram?.ariaLabel ?? 'Diagram')
 const dropEnabled = computed(() => {
   const attrs = __instance?.vnode?.props ?? {}
   return Boolean(
@@ -768,10 +761,14 @@ const hoveredEdgeRecord = computed<GraphEdge | null>(() =>
 )
 const hoveredEdgeMid = computed<{ x: number; y: number } | null>(() => {
   if (!hoveredEdgeRecord.value) return null
-  const a = endpointWorldPoint(props.graph, hoveredEdgeRecord.value.from)
-  const b = endpointWorldPoint(props.graph, hoveredEdgeRecord.value.to)
-  if (!a || !b) return null
-  return { x: (a[0] + b[0]) / 2, y: (a[1] + b[1]) / 2 }
+  const sBox = boundsById.value.get(hoveredEdgeRecord.value.from.node)
+  const tBox = boundsById.value.get(hoveredEdgeRecord.value.to.node)
+  if (!sBox || !tBox) return null
+  const { source, target } = resolveEdgePair(sBox, tBox)
+  return {
+    x: (source.point[0] + target.point[0]) / 2,
+    y: (source.point[1] + target.point[1]) / 2,
+  }
 })
 
 // ─── Canvas bounds (SVG sizing) ───────────────────────────────────────────
@@ -877,7 +874,7 @@ defineExpose({
     :data-selection-mode="props.selectionMode"
     :data-sg-drop="dropEnabled ? 'true' : undefined"
     role="application"
-    aria-label="Diagram"
+    :aria-label="diagramLabel"
     @wheel="effectiveZoomable || effectivePanable ? onWheel($event) : undefined"
     @pointerdown="onWrapperPointerDown"
     @pointermove="onWrapperPointerMove"
@@ -909,36 +906,32 @@ defineExpose({
         aria-hidden="true"
       >
         <!--
-          Marker defs — one regular and one slightly enlarged arrow for the
-          hover state. We always render them when `edgeArrows` is on (cheap;
-          zero render cost otherwise) and let CSS swap the marker-end
-          attribute on the path. `context-stroke` inherits the edge stroke
-          colour automatically when supported.
+          Marker defs — open-V arrowhead in `strokeWidth` units so the
+          arrow scales naturally with the line. `refX/refY = 0` puts the
+          tip on the path's endpoint exactly, and the routing layer
+          leaves an `ENDPOINT_PADDING` gap for the marker to sit in.
+          Parity with React `Diagram.tsx`.
         -->
         <defs v-if="props.edgeArrows">
           <marker
             id="sg-diagram-arrow"
-            viewBox="0 0 10 10"
-            refX="9"
-            refY="5"
-            markerWidth="7"
-            markerHeight="7"
+            viewBox="-10 -10 20 20"
+            refX="0"
+            refY="0"
+            markerWidth="12"
+            markerHeight="12"
             orient="auto-start-reverse"
-            markerUnits="userSpaceOnUse"
+            markerUnits="strokeWidth"
           >
-            <path d="M 0 0 L 10 5 L 0 10 Z" fill="context-stroke" class="sg-diagram-arrow-fill" />
-          </marker>
-          <marker
-            id="sg-diagram-arrow-hover"
-            viewBox="0 0 10 10"
-            refX="9"
-            refY="5"
-            markerWidth="8"
-            markerHeight="8"
-            orient="auto-start-reverse"
-            markerUnits="userSpaceOnUse"
-          >
-            <path d="M 0 0 L 10 5 L 0 10 Z" fill="context-stroke" class="sg-diagram-arrow-fill" />
+            <path
+              d="M -7 -5 L 0 0 L -7 5"
+              fill="none"
+              stroke="context-stroke"
+              stroke-width="1.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              class="sg-diagram-arrow-fill"
+            />
           </marker>
         </defs>
         <template v-for="ep in renderedEdges" :key="ep.id">

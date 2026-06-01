@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface ColorPickerProps {
   /** v-model binding (Vue idiom). */
@@ -39,6 +40,9 @@ const emit = defineEmits<{
   (e: 'change', value: string): void
   (e: 'openChange', open: boolean): void
 }>()
+
+const cfg = useConfig()
+const pickColorLabel = computed(() => cfg.value.locale?.colorPicker?.pickColor ?? 'Pick color')
 
 interface HSV {
   h: number
@@ -357,7 +361,7 @@ const satBackground = computed(
       :disabled="disabled"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      aria-label="Pick color"
+      :aria-label="pickColorLabel"
       @click="handleTriggerClick"
     >
       <span class="sg-colorpicker-swatch" :style="{ background: current }" />

@@ -5,8 +5,13 @@ export {
   pointsToRoundedPath,
   getBezierPath,
   nearestSide,
+  inferSide,
+  floatingAnchor,
+  getNodeIntersection,
+  getEdgePosition,
+  resolveEdgeEndpoint,
 } from './router'
-export type { RouteOrthogonalOptions, BezierPathOptions, Side } from './router'
+export type { RouteOrthogonalOptions, BezierPathOptions, ResolvedEndpoint, Side } from './router'
 export { aabbFromOBB, obbCorners, obbContainsPoint } from './obb'
 
 export type {

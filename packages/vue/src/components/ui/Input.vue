@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, useSlots } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface InputProps {
   /** v-model value (Vue idiom) — alias for `value`. */
@@ -106,6 +107,9 @@ const showClear = computed(
 const slots = useSlots()
 const hasPrefix = computed(() => Boolean(slots.prefix))
 const hasSuffix = computed(() => Boolean(slots.suffix))
+
+const cfg = useConfig()
+const clearLabel = computed(() => cfg.value.locale?.input?.clear ?? 'Clear')
 </script>
 
 <template>
@@ -127,7 +131,13 @@ const hasSuffix = computed(() => Boolean(slots.suffix))
       @focus="onFocus"
       @blur="onBlur"
     />
-    <button v-if="showClear" type="button" class="sg-input-clear" aria-label="Clear" @click="clear">
+    <button
+      v-if="showClear"
+      type="button"
+      class="sg-input-clear"
+      :aria-label="clearLabel"
+      @click="clear"
+    >
       ×
     </button>
     <span v-if="loading && !unstyled" class="sg-spin sg-spin-small" aria-hidden="true" />

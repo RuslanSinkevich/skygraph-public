@@ -1,6 +1,6 @@
 {
   "name": "skygraph-react",
-  "version": "0.5.2",
+  "version": "0.6.1",
   "description": "SkyGraph for React — components, hooks and styles in a single install",
   "license": "MIT",
   "type": "module",

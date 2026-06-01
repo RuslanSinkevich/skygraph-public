@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import { printElement } from '../../../utils/print'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { DashboardEditorProps, DashboardStyle, DashboardWidget } from './types'
 
 const props = withDefaults(defineProps<DashboardEditorProps>(), {
@@ -24,6 +25,14 @@ defineSlots<{
 
 const rootRef = ref<HTMLDivElement | null>(null)
 const internal = ref<DashboardWidget[]>(props.widgets.map((w) => ({ ...w })))
+
+const cfg = useConfig()
+const editorLabel = computed(
+  () => cfg.value.locale?.dashboard?.editorAriaLabel ?? 'Dashboard editor',
+)
+const resizeWidgetLabel = computed(
+  () => cfg.value.locale?.dashboard?.resizeWidget ?? 'Resize widget',
+)
 
 const widgets = computed(() => internal.value)
 
@@ -111,7 +120,10 @@ const onPointerMove = (e: PointerEvent) => {
 
 const onPointerUp = () => {
   if (dragSession) {
-    emit('layout-change', internal.value.map((w) => ({ ...w })))
+    emit(
+      'layout-change',
+      internal.value.map((w) => ({ ...w })),
+    )
   }
   dragSession = null
 }
@@ -131,7 +143,7 @@ defineExpose({
     :class="[!props.unstyled && 'sg-dashboard sg-dashboard-editor', props.className]"
     :style="gridStyle"
     role="region"
-    aria-label="Dashboard editor"
+    :aria-label="editorLabel"
     @pointermove="onPointerMove"
     @pointerup="onPointerUp"
   >
@@ -155,6 +167,8 @@ defineExpose({
       <div
         v-if="props.resizable"
         class="sg-dashboard-resize-handle"
+        role="button"
+        :aria-label="resizeWidgetLabel"
         :style="{
           position: 'absolute',
           right: 0,

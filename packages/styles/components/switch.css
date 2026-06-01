@@ -1,4 +1,10 @@
 .sg-switch {
+  /* Off state uses a dedicated token so demos can rebrand without
+   * touching `--sg-color-text-disabled` (which is also used by the
+   * disabled visual state — overriding it makes every control look
+   * disabled). */
+  --sg-switch-bg: color-mix(in srgb, var(--sg-color-text) 25%, transparent);
+  --sg-switch-bg-checked: var(--sg-color-primary);
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -7,7 +13,7 @@
   padding: 0;
   border: none;
   border-radius: 11px;
-  background: var(--sg-color-text-disabled);
+  background: var(--sg-switch-bg);
   cursor: pointer;
   transition: background var(--sg-transition-duration) var(--sg-transition-timing);
 }
@@ -19,7 +25,7 @@
 }
 
 .sg-switch-checked {
-  background: var(--sg-color-primary);
+  background: var(--sg-switch-bg-checked);
 }
 
 .sg-switch-disabled {

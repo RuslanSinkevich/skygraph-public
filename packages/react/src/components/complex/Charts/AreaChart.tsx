@@ -3,7 +3,7 @@ import {
   chartBounds,
   chartDataKey,
   colorForSeries,
-  normalizePadding,
+  resolveChartPadding,
   resolveChartAnimation,
 } from './types'
 import { ChartLegend } from './ChartLegend'
@@ -68,15 +68,6 @@ function AreaChartInner(
   const chartsLocale = useConfig().locale?.charts
   const { rootRef } = useChartPrint<Element>(forwardedRef, printable)
   const svgRef = useRef<SVGSVGElement | null>(null)
-  const [pt, pr, pb, pl] = normalizePadding(padding)
-
-  const fallbackW = typeof width === 'number' && Number.isFinite(width) ? width : 600
-  const fallbackH = typeof height === 'number' && Number.isFinite(height) ? height : 200
-  const measured = useChartSize<SVGSVGElement>(svgRef, { width: fallbackW, height: fallbackH })
-  const viewW = measured.width
-  const viewH = measured.height
-  const plotW = Math.max(0, viewW - pl - pr)
-  const plotH = Math.max(0, viewH - pt - pb)
 
   // Effective values per series — for stacked, each series adds to the
   // running total (treating null as 0 for the stack base).
@@ -102,6 +93,19 @@ function AreaChartInner(
   const baseline = Math.min(0, min)
   const top = Math.max(0, max)
   const span = top - baseline || 1
+
+  const [pt, pr, pb, pl] = useMemo(
+    () => resolveChartPadding(padding, yAxis, baseline, top),
+    [padding, yAxis, baseline, top],
+  )
+
+  const fallbackW = typeof width === 'number' && Number.isFinite(width) ? width : 600
+  const fallbackH = typeof height === 'number' && Number.isFinite(height) ? height : 200
+  const measured = useChartSize<SVGSVGElement>(svgRef, { width: fallbackW, height: fallbackH })
+  const viewW = measured.width
+  const viewH = measured.height
+  const plotW = Math.max(0, viewW - pl - pr)
+  const plotH = Math.max(0, viewH - pt - pb)
 
   const xStep = categories.length > 1 ? plotW / (categories.length - 1) : 0
   function xFor(i: number) {

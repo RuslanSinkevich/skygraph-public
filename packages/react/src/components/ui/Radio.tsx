@@ -43,13 +43,11 @@ export function RadioGroup({
   const config = useConfig()
   const disabled = disabledProp ?? config.disabled ?? false
 
-  const [internalValue, setInternalValue] = React.useState(
-    value ?? defaultValue
-  )
+  const [internalValue, setInternalValue] = React.useState(value ?? defaultValue)
   const currentValue = value ?? internalValue
 
   const groupClass = unstyled
-    ? className ?? ''
+    ? (className ?? '')
     : [
         'sg-radio-group',
         `sg-radio-group-${direction}`,
@@ -88,10 +86,9 @@ export function RadioGroup({
               onChange?.(opt.value)
             }}
           />
+          {!unstyled && <span className="sg-radio-box" aria-hidden="true" />}
           <span className={unstyled ? '' : 'sg-radio-label'}>{opt.label}</span>
-          {loading && currentValue === opt.value && (
-            <Spin size="small" unstyled={unstyled} />
-          )}
+          {loading && currentValue === opt.value && <Spin size="small" unstyled={unstyled} />}
         </label>
       ))}
     </div>

@@ -116,6 +116,7 @@ const prevMonthLabel = computed(
   () => config.value.locale?.datePicker?.prevMonth ?? 'Previous month',
 )
 const nextMonthLabel = computed(() => config.value.locale?.datePicker?.nextMonth ?? 'Next month')
+const clearLabel = computed(() => config.value.locale?.input?.clear ?? 'Clear')
 
 function pad(n: number) {
   return String(n).padStart(2, '0')
@@ -566,7 +567,7 @@ watch([isOpen, () => tempTime.value], async () => {
             v-if="allowClear && current"
             class="sg-datepicker-clear"
             role="button"
-            aria-label="Clear"
+            :aria-label="clearLabel"
             @click="handleClear"
             >×</span
           >

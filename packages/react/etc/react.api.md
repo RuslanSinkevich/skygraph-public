@@ -980,11 +980,15 @@ export interface DiagramProps {
     className?: string;
     defaultSelection?: readonly NodeId[];
     draggable?: boolean | ((id: NodeId, x: number, y: number) => void);
+    dropTypes?: readonly string[] | '*' | null;
     edgeActions?: readonly DiagramEdgeAction[];
+    edgeArrows?: boolean;
     graph: GraphEngine;
     height?: number | string;
     nodeActions?: readonly DiagramNodeAction[];
     onCanvasContextMenu?: (event: MouseEvent_2<HTMLDivElement>, point: DiagramCanvasContextPoint) => void;
+    // Warning: (ae-forgotten-export) The symbol "DiagramDropPoint" needs to be exported by the entry point index.d.ts
+    onDropNode?: (point: DiagramDropPoint) => void;
     onEdgeContextMenu?: (event: MouseEvent_2<SVGPathElement>, edge: GraphEdge) => void;
     onNodeContextMenu?: (event: MouseEvent_2<HTMLDivElement>, node: GraphNode) => void;
     onSelectionChange?: (selection: NodeId[]) => void;
@@ -996,6 +1000,10 @@ export interface DiagramProps {
         gridSize?: number;
         inflate?: number;
         maxNodes?: number;
+        cornerRadius?: number;
+        curvature?: number;
+        stepPosition?: number;
+        stubLength?: number;
     };
     selection?: readonly NodeId[];
     selectionMode?: DiagramSelectionMode;
@@ -2572,6 +2580,7 @@ export interface TableLocale {
     filterOpContains?: string;
     filterOpEndsWith?: string;
     filterOpEq?: string;
+    filterOperatorAriaLabel?: string;
     filterOpGt?: string;
     filterOpGte?: string;
     filterOpIn?: string;

@@ -13,5 +13,12 @@ export default defineConfig({
   },
   clean: true,
   sourcemap: true,
-  external: ['react', 'react-dom', '@skygraph/core', '@skygraph/react', '@skygraph/styles'],
+  external: [
+    'react',
+    'react-dom',
+    '@skygraph/core',
+    '@skygraph/react',
+    '@skygraph/styles',
+    '@skygraph/styles/index.css',
+  ],
 })

@@ -42,7 +42,7 @@ export function Checkbox({
   }, [indeterminate])
 
   const wrapperClass = unstyled
-    ? className ?? ''
+    ? (className ?? '')
     : [
         'sg-checkbox',
         disabled || loading ? 'sg-checkbox-disabled' : '',
@@ -64,9 +64,8 @@ export function Checkbox({
         disabled={disabled || loading}
         onChange={(e) => onChange?.(e.target.checked)}
       />
-      {children && (
-        <span className={unstyled ? '' : 'sg-checkbox-label'}>{children}</span>
-      )}
+      {!unstyled && <span className="sg-checkbox-box" aria-hidden />}
+      {children && <span className={unstyled ? '' : 'sg-checkbox-label'}>{children}</span>}
       {loading && <Spin size="small" unstyled={unstyled} />}
     </label>
   )

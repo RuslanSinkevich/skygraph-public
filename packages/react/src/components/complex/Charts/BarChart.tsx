@@ -3,7 +3,7 @@ import {
   chartBounds,
   chartDataKey,
   colorForSeries,
-  normalizePadding,
+  resolveChartPadding,
   resolveChartAnimation,
 } from './types'
 import { ChartLegend } from './ChartLegend'
@@ -68,7 +68,18 @@ function BarChartInner(
   const chartsLocale = useConfig().locale?.charts
   const { rootRef } = useChartPrint<Element>(forwardedRef, printable)
   const svgRef = useRef<SVGSVGElement | null>(null)
-  const [pt, pr, pb, pl] = normalizePadding(padding)
+
+  const { min, max } = useMemo(() => chartBounds(series.map((s) => s.values)), [series])
+
+  // Always include zero in the range so positive bars rest on the baseline.
+  const baseline = Math.min(0, min)
+  const top = Math.max(0, max)
+  const span = top - baseline || 1
+
+  const [pt, pr, pb, pl] = useMemo(
+    () => resolveChartPadding(padding, yAxis, baseline, top),
+    [padding, yAxis, baseline, top],
+  )
 
   const fallbackW = typeof width === 'number' && Number.isFinite(width) ? width : 600
   const fallbackH = typeof height === 'number' && Number.isFinite(height) ? height : 200
@@ -77,13 +88,6 @@ function BarChartInner(
   const viewH = measured.height
   const plotW = Math.max(0, viewW - pl - pr)
   const plotH = Math.max(0, viewH - pt - pb)
-
-  const { min, max } = useMemo(() => chartBounds(series.map((s) => s.values)), [series])
-
-  // Always include zero in the range so positive bars rest on the baseline.
-  const baseline = Math.min(0, min)
-  const top = Math.max(0, max)
-  const span = top - baseline || 1
   const yZero = pt + (top / span) * plotH
 
   const groupCount = categories.length

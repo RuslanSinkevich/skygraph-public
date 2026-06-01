@@ -2,10 +2,11 @@
 import { ref, computed } from 'vue'
 import { useChartSize } from '../../../composables/useChartSize'
 import { printElement } from '../../../utils/print'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import {
   chartBounds,
   colorForSeries,
-  normalizePadding,
+  resolveChartPadding,
   resolveChartAnimation,
   type BaseChartProps,
 } from './types'
@@ -31,6 +32,8 @@ const props = withDefaults(defineProps<BarChartProps>(), {
 
 const rootRef = ref<HTMLDivElement | null>(null)
 const svgRef = ref<SVGSVGElement | null>(null)
+const cfg = useConfig()
+const chartLabel = computed(() => cfg.value.locale?.charts?.barChart ?? 'Bar chart')
 const fallbackW = computed(() =>
   typeof props.width === 'number' && Number.isFinite(props.width) ? props.width : 600,
 )
@@ -38,14 +41,6 @@ const fallbackH = computed(() =>
   typeof props.height === 'number' && Number.isFinite(props.height) ? props.height : 200,
 )
 const { size } = useChartSize(svgRef, { width: fallbackW.value, height: fallbackH.value })
-const padding = computed(() => normalizePadding(props.padding))
-
-const viewW = computed(() => size.value.width)
-const viewH = computed(() => size.value.height)
-const plotX = computed(() => padding.value[3])
-const plotY = computed(() => padding.value[0])
-const plotW = computed(() => Math.max(0, viewW.value - padding.value[3] - padding.value[1]))
-const plotH = computed(() => Math.max(0, viewH.value - padding.value[0] - padding.value[2]))
 
 const animation = computed(() => resolveChartAnimation(props.animate))
 
@@ -73,6 +68,16 @@ const bounds = computed(() => {
   return { min: Math.min(0, min), max: Math.max(0, max) }
 })
 
+const padding = computed(() =>
+  resolveChartPadding(props.padding, props.yAxis, bounds.value.min, bounds.value.max),
+)
+const viewW = computed(() => size.value.width)
+const viewH = computed(() => size.value.height)
+const plotX = computed(() => padding.value[3])
+const plotY = computed(() => padding.value[0])
+const plotW = computed(() => Math.max(0, viewW.value - padding.value[3] - padding.value[1]))
+const plotH = computed(() => Math.max(0, viewH.value - padding.value[0] - padding.value[2]))
+
 const yCoord = (v: number) => {
   const { min, max } = bounds.value
   if (max === min) return plotY.value + plotH.value / 2
@@ -97,6 +102,7 @@ const bars = computed(() => {
     height: number
     rx: number
     categoryIndex: number
+    originY: number
   }> = []
 
   if (props.stacked) {
@@ -122,6 +128,7 @@ const bars = computed(() => {
           height: h,
           rx: props.cornerRadius,
           categoryIndex: ci,
+          originY: v >= 0 ? baseY : topY,
         })
         acc += v
       }
@@ -129,13 +136,13 @@ const bars = computed(() => {
   } else {
     const seriesCount = Math.max(1, props.series.length)
     const barWidth = groupBox / seriesCount
+    const baseY = yCoord(0)
     for (let ci = 0; ci < cats; ci++) {
       for (let si = 0; si < props.series.length; si++) {
         const s = props.series[si]
         const v = s.values[ci]
         if (v == null) continue
         const x = plotX.value + ci * groupWidth + groupOffset + si * barWidth
-        const baseY = yCoord(0)
         const topY = yCoord(v)
         const yTop = Math.min(baseY, topY)
         const h = Math.abs(baseY - topY)
@@ -149,12 +156,24 @@ const bars = computed(() => {
           height: h,
           rx: props.cornerRadius,
           categoryIndex: ci,
+          originY: baseY,
         })
       }
     }
   }
   return result
 })
+
+const totalCategories = computed(() => Math.max(1, props.categories.length))
+function barAnimStyle(bar: { x: number; width: number; originY: number; categoryIndex: number }) {
+  if (!animation.value.enabled) return undefined
+  const d = animation.value.duration
+  return {
+    transformOrigin: `${bar.x + bar.width / 2}px ${bar.originY}px`,
+    animationDuration: `${d}ms`,
+    animationDelay: `${(bar.categoryIndex / totalCategories.value) * (d * 0.3)}ms`,
+  }
+}
 
 defineExpose({
   print: (opts: { fileName?: string } = {}) => {
@@ -183,7 +202,7 @@ defineExpose({
       :width="typeof props.width === 'number' ? props.width : '100%'"
       :height="props.height"
       role="img"
-      aria-label="Bar chart"
+      :aria-label="chartLabel"
     >
       <ChartAxes
         :x="plotX"
@@ -201,6 +220,7 @@ defineExpose({
         <rect
           v-for="(b, i) in bars"
           :key="`${b.seriesId}-${b.categoryIndex}-${i}`"
+          :class="[animation.enabled && !props.unstyled && 'sg-chart-bar-animate']"
           :x="b.x"
           :y="b.y"
           :width="b.width"
@@ -209,8 +229,12 @@ defineExpose({
           :ry="b.rx"
           :fill="b.color"
           :data-series-id="b.seriesId"
+          :style="barAnimStyle(b)"
         >
-          <title>{{ b.label }}: {{ props.series[b.seriesId === b.seriesId ? 0 : 0]?.values[b.categoryIndex] }}</title>
+          <title>
+            {{ b.label }}:
+            {{ props.series[b.seriesId === b.seriesId ? 0 : 0]?.values[b.categoryIndex] }}
+          </title>
         </rect>
       </g>
     </svg>

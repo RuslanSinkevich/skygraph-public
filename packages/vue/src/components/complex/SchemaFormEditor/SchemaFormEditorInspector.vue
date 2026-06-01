@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { SchemaEditorStore } from './useSchemaEditor'
 import type { EditorField } from './types'
 import type { AutoFieldOption, FieldType } from '../SchemaForm/AutoField.vue'
@@ -20,11 +21,28 @@ const selected = computed<EditorField | null>(() => {
   return props.store.state.value.schema.fields.find((f) => f.id === id) ?? null
 })
 
-const isOptionsType = computed(() => selected.value && TYPES_WITH_OPTIONS.includes(selected.value.type))
-const isNumericType = computed(() => selected.value && TYPES_WITH_NUMERIC_RANGE.includes(selected.value.type))
-const isLengthType = computed(() => selected.value && TYPES_WITH_LENGTH_RANGE.includes(selected.value.type))
+const isOptionsType = computed(
+  () => selected.value && TYPES_WITH_OPTIONS.includes(selected.value.type),
+)
+const isNumericType = computed(
+  () => selected.value && TYPES_WITH_NUMERIC_RANGE.includes(selected.value.type),
+)
+const isLengthType = computed(
+  () => selected.value && TYPES_WITH_LENGTH_RANGE.includes(selected.value.type),
+)
 const isBooleanType = computed(
   () => selected.value && (selected.value.type === 'boolean' || selected.value.type === 'switch'),
+)
+
+const cfg = useConfig()
+const removeOptionLabel = computed(
+  () => cfg.value.locale?.schemaFormEditor?.removeOption ?? 'Remove option',
+)
+const optionLabelPlaceholder = computed(
+  () => cfg.value.locale?.schemaFormEditor?.optionLabelPlaceholder ?? 'Label',
+)
+const optionValuePlaceholder = computed(
+  () => cfg.value.locale?.schemaFormEditor?.optionValuePlaceholder ?? 'Value',
 )
 
 function patch(p: Partial<EditorField>) {
@@ -139,10 +157,12 @@ function addOption() {
             class="sg-sfe-inspector-input"
             data-testid="sfe-inspector-placeholder"
             :value="selected.placeholder ?? ''"
-            @input="(e) => {
-              const val = (e.target as HTMLInputElement).value
-              patch({ placeholder: val || undefined })
-            }"
+            @input="
+              (e) => {
+                const val = (e.target as HTMLInputElement).value
+                patch({ placeholder: val || undefined })
+              }
+            "
           />
         </div>
       </div>
@@ -154,10 +174,12 @@ function addOption() {
             class="sg-sfe-inspector-input"
             data-testid="sfe-inspector-help"
             :value="selected.helpText ?? ''"
-            @input="(e) => {
-              const val = (e.target as HTMLInputElement).value
-              patch({ helpText: val || undefined })
-            }"
+            @input="
+              (e) => {
+                const val = (e.target as HTMLInputElement).value
+                patch({ helpText: val || undefined })
+              }
+            "
           />
         </div>
       </div>
@@ -174,7 +196,11 @@ function addOption() {
         </div>
       </div>
 
-      <div v-if="isLengthType || isNumericType" class="sg-sfe-inspector-row" data-testid="sfe-inspector-row">
+      <div
+        v-if="isLengthType || isNumericType"
+        class="sg-sfe-inspector-row"
+        data-testid="sfe-inspector-row"
+      >
         <label class="sg-sfe-inspector-row-label">{{ isLengthType ? 'Min length' : 'Min' }}</label>
         <div class="sg-sfe-inspector-row-control">
           <input
@@ -182,15 +208,21 @@ function addOption() {
             data-testid="sfe-inspector-min"
             type="number"
             :value="selected.min ?? ''"
-            @input="(e) => {
-              const raw = (e.target as HTMLInputElement).value
-              patch({ min: raw === '' ? undefined : Number(raw) })
-            }"
+            @input="
+              (e) => {
+                const raw = (e.target as HTMLInputElement).value
+                patch({ min: raw === '' ? undefined : Number(raw) })
+              }
+            "
           />
         </div>
       </div>
 
-      <div v-if="isLengthType || isNumericType" class="sg-sfe-inspector-row" data-testid="sfe-inspector-row">
+      <div
+        v-if="isLengthType || isNumericType"
+        class="sg-sfe-inspector-row"
+        data-testid="sfe-inspector-row"
+      >
         <label class="sg-sfe-inspector-row-label">{{ isLengthType ? 'Max length' : 'Max' }}</label>
         <div class="sg-sfe-inspector-row-control">
           <input
@@ -198,10 +230,12 @@ function addOption() {
             data-testid="sfe-inspector-max"
             type="number"
             :value="selected.max ?? ''"
-            @input="(e) => {
-              const raw = (e.target as HTMLInputElement).value
-              patch({ max: raw === '' ? undefined : Number(raw) })
-            }"
+            @input="
+              (e) => {
+                const raw = (e.target as HTMLInputElement).value
+                patch({ max: raw === '' ? undefined : Number(raw) })
+              }
+            "
           />
         </div>
       </div>
@@ -214,18 +248,24 @@ function addOption() {
             data-testid="sfe-inspector-pattern"
             :value="selected.pattern ?? ''"
             placeholder="^[A-Z].*"
-            @input="(e) => {
-              const val = (e.target as HTMLInputElement).value
-              patch({ pattern: val || undefined })
-            }"
+            @input="
+              (e) => {
+                const val = (e.target as HTMLInputElement).value
+                patch({ pattern: val || undefined })
+              }
+            "
           />
         </div>
       </div>
 
-      <div v-if="isOptionsType" class="sg-sfe-inspector-options" data-testid="sfe-inspector-options">
+      <div
+        v-if="isOptionsType"
+        class="sg-sfe-inspector-options"
+        data-testid="sfe-inspector-options"
+      >
         <div class="sg-sfe-inspector-row-label">Options</div>
         <div
-          v-for="(opt, idx) in (selected.options ?? [])"
+          v-for="(opt, idx) in selected.options ?? []"
           :key="idx"
           class="sg-sfe-inspector-option"
         >
@@ -233,29 +273,33 @@ function addOption() {
             class="sg-sfe-inspector-input"
             data-testid="sfe-inspector-option-label"
             :value="opt.label"
-            placeholder="Label"
+            :placeholder="optionLabelPlaceholder"
             @input="(e) => updateOption(idx, { label: (e.target as HTMLInputElement).value })"
           />
           <input
             class="sg-sfe-inspector-input"
             data-testid="sfe-inspector-option-value"
             :value="String(opt.value)"
-            placeholder="Value"
+            :placeholder="optionValuePlaceholder"
             @input="(e) => updateOption(idx, { value: (e.target as HTMLInputElement).value })"
           />
           <button
             type="button"
             class="sg-sfe-inspector-option-remove"
-            aria-label="Remove option"
+            :aria-label="removeOptionLabel"
             @click="removeOption(idx)"
-          >×</button>
+          >
+            ×
+          </button>
         </div>
         <button
           type="button"
           class="sg-sfe-inspector-option-add"
           data-testid="sfe-inspector-option-add"
           @click="addOption"
-        >+ Add option</button>
+        >
+          + Add option
+        </button>
       </div>
     </template>
   </div>

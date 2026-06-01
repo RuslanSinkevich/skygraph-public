@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch, onMounted, useTemplateRef } from 'vue'
 import { useTree } from '../../../composables/useTree'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import TreeNodeRow from './TreeNodeRow.vue'
 import {
   DEFAULT_INDENT,
@@ -60,6 +61,8 @@ const emit = defineEmits<{
 }>()
 
 const localeFull = computed(() => ({ ...DEFAULT_TREE_LOCALE, ...props.locale }))
+const cfg = useConfig()
+const clearSearchLabel = computed(() => cfg.value.locale?.tree?.clearSearch ?? 'Clear search')
 
 const {
   tree,
@@ -521,7 +524,7 @@ defineExpose({
         v-if="searchValue"
         type="button"
         class="sg-tree-search-clear"
-        aria-label="Clear search"
+        :aria-label="clearSearchLabel"
         @click="applySearch('')"
       >
         ×

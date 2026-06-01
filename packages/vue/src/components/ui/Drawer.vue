@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, getCurrentInstance, onBeforeUnmount, toRef, watch } from 'vue'
 import { useFocusTrap } from '../../composables/useFocusTrap'
+import { useConfig } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
 import SgTransition from './Transition.vue'
 
@@ -60,21 +61,15 @@ const titleId = `${id}-title`
 const bodyId = `${id}-body`
 const trapRef = useFocusTrap(toRef(props, 'open'))
 
-const isHorizontal = computed(
-  () => props.placement === 'left' || props.placement === 'right',
-)
+const isHorizontal = computed(() => props.placement === 'left' || props.placement === 'right')
 
 const sizeStyle = computed(() => {
   const w = typeof props.width === 'number' ? `${props.width}px` : props.width
   const h = typeof props.height === 'number' ? `${props.height}px` : props.height
-  return isHorizontal.value
-    ? { width: w, height: '100%' }
-    : { width: '100%', height: h }
+  return isHorizontal.value ? { width: w, height: '100%' } : { width: '100%', height: h }
 })
 
-const transitionName = computed(
-  () => PLACEMENT_TRANSITION[props.placement] ?? 'sg-slide-right',
-)
+const transitionName = computed(() => PLACEMENT_TRANSITION[props.placement] ?? 'sg-slide-right')
 
 function onClose() {
   emit('close')
@@ -97,14 +92,15 @@ onBeforeUnmount(() => {
   document.removeEventListener('keydown', handleKeyDown)
 })
 
-const drawerClasses = computed(() =>
-  ['sg-drawer', `sg-drawer-${props.placement}`].join(' '),
-)
+const drawerClasses = computed(() => ['sg-drawer', `sg-drawer-${props.placement}`].join(' '))
 
 const instance = getCurrentInstance()
 const hasFooterSlot = computed<boolean>(
   () => !!(instance?.slots as Record<string, unknown> | undefined)?.footer,
 )
+
+const cfg = useConfig()
+const closeAriaLabel = computed(() => cfg.value.locale?.drawer?.closeAriaLabel ?? 'Close')
 </script>
 
 <template>
@@ -123,17 +119,15 @@ const hasFooterSlot = computed<boolean>(
         <div v-if="hasFooterSlot">
           <slot name="footer" />
         </div>
-        <button v-if="closable" type="button" aria-label="Close" @click="onClose">×</button>
+        <button v-if="closable" type="button" :aria-label="closeAriaLabel" @click="onClose">
+          ×
+        </button>
       </div>
     </template>
     <template v-else>
       <SgTransition :visible="open" name="sg-fade" :duration="300">
         <div class="sg-drawer-root">
-          <div
-            v-if="mask"
-            class="sg-drawer-mask"
-            @click="maskClosable ? onClose() : undefined"
-          />
+          <div v-if="mask" class="sg-drawer-mask" @click="maskClosable ? onClose() : undefined" />
           <SgTransition :visible="open" :name="transitionName" :duration="300">
             <div
               ref="trapRef"
@@ -152,7 +146,7 @@ const hasFooterSlot = computed<boolean>(
                   v-if="closable"
                   type="text"
                   class="sg-drawer-close"
-                  aria-label="Close"
+                  :aria-label="closeAriaLabel"
                   @click="onClose"
                 >
                   ×

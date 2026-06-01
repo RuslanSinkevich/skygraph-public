@@ -305,10 +305,11 @@ function itemCls(item: TransferItem, selected: string[]): string {
               :disabled="disabled || item.disabled"
               @click.stop
               @change="() => toggleItem(item, 'left')"
-            />
-            <span :class="unstyled ? '' : 'sg-transfer-list-item-text'">
-              <slot name="item" :item="item" side="left">{{ item.title }}</slot>
-            </span>
+            >
+              <span :class="unstyled ? '' : 'sg-transfer-list-item-text'">
+                <slot name="item" :item="item" side="left">{{ item.title }}</slot>
+              </span>
+            </SgCheckbox>
           </li>
         </ul>
       </div>
@@ -386,10 +387,11 @@ function itemCls(item: TransferItem, selected: string[]): string {
               :disabled="disabled || item.disabled"
               @click.stop
               @change="() => toggleItem(item, 'right')"
-            />
-            <span :class="unstyled ? '' : 'sg-transfer-list-item-text'">
-              <slot name="item" :item="item" side="right">{{ item.title }}</slot>
-            </span>
+            >
+              <span :class="unstyled ? '' : 'sg-transfer-list-item-text'">
+                <slot name="item" :item="item" side="right">{{ item.title }}</slot>
+              </span>
+            </SgCheckbox>
           </li>
         </ul>
       </div>

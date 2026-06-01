@@ -1,4 +1,25 @@
+/* Checkbox — custom box element on top of a visually-hidden native input.
+ *
+ * The native `<input type="checkbox">` is kept in the DOM (for keyboard,
+ * form-association, accessibility, indeterminate) but visually hidden.
+ * A sibling `.sg-checkbox-box` element paints the actual UI so demos
+ * can rebrand through dedicated `--sg-checkbox-*` tokens without
+ * fighting the browser's `accent-color` limitations.
+ */
+
 .sg-checkbox {
+  /* Component-local tokens. Override these (not the globals) to rebrand
+   * one group of checkboxes — keeps `--sg-color-primary` intact for the
+   * rest of the page. */
+  --sg-checkbox-size: 16px;
+  --sg-checkbox-radius: 4px;
+  --sg-checkbox-border: var(--sg-color-border);
+  --sg-checkbox-border-hover: var(--sg-color-primary);
+  --sg-checkbox-bg: var(--sg-color-bg);
+  --sg-checkbox-bg-checked: var(--sg-color-primary);
+  --sg-checkbox-color-checked: var(--sg-color-white);
+
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: var(--sg-padding-sm);
@@ -13,11 +34,75 @@
   cursor: not-allowed;
 }
 
+/* Visually hide the native checkbox but keep it focusable & screen-
+ * readable. Pointer events are forwarded to the wrapping <label>. */
 .sg-checkbox-input {
-  width: 16px;
-  height: 16px;
-  accent-color: var(--sg-color-primary);
-  cursor: inherit;
+  position: absolute;
+  width: var(--sg-checkbox-size);
+  height: var(--sg-checkbox-size);
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.sg-checkbox-box {
+  position: relative;
+  flex-shrink: 0;
+  display: inline-block;
+  width: var(--sg-checkbox-size);
+  height: var(--sg-checkbox-size);
+  border: 1px solid var(--sg-checkbox-border);
+  border-radius: var(--sg-checkbox-radius);
+  background: var(--sg-checkbox-bg);
+  transition:
+    background var(--sg-transition-duration) var(--sg-transition-timing),
+    border-color var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-checkbox:hover .sg-checkbox-box {
+  border-color: var(--sg-checkbox-border-hover);
+}
+
+.sg-checkbox-input:focus-visible ~ .sg-checkbox-box {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 2px;
+}
+
+.sg-checkbox-input:checked ~ .sg-checkbox-box,
+.sg-checkbox-input:indeterminate ~ .sg-checkbox-box {
+  background: var(--sg-checkbox-bg-checked);
+  border-color: var(--sg-checkbox-bg-checked);
+}
+
+/* Tick (checked) */
+.sg-checkbox-input:checked ~ .sg-checkbox-box::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--sg-checkbox-color-checked);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Bar (indeterminate) */
+.sg-checkbox-input:indeterminate ~ .sg-checkbox-box::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  right: 3px;
+  top: 50%;
+  height: 2px;
+  background: var(--sg-checkbox-color-checked);
+  transform: translateY(-50%);
+}
+
+.sg-checkbox-disabled .sg-checkbox-box {
+  background: var(--sg-color-bg-disabled, var(--sg-color-bg-secondary));
+  border-color: var(--sg-color-border);
+  opacity: 0.6;
 }
 
 .sg-checkbox-label {

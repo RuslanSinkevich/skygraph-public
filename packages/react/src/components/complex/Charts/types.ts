@@ -1,10 +1,7 @@
 import type { CSSProperties } from 'react'
 import type { PrintableProp } from '../../../utils/print'
 import type { ChartActionsProp } from './ChartHoverToolbar'
-import type {
-  ChartContextMenuHandler,
-  ChartSeriesContextMenuHandler,
-} from './chartContextMenu'
+import type { ChartContextMenuHandler, ChartSeriesContextMenuHandler } from './chartContextMenu'
 
 /** A single category along the X axis. */
 export type ChartCategory = string | number
@@ -197,7 +194,71 @@ export function normalizePadding(p: BaseChartProps['padding']): [number, number,
   return [...p]
 }
 
-export function chartBounds(values: readonly (readonly ChartValue[])[]): { min: number; max: number } {
+/**
+ * Default formatter used by Y-axis tick labels when consumers don't supply
+ * their own. Exposed so {@link estimateYAxisLabelWidth} can probe sizing
+ * without coupling to the renderer.
+ */
+export function defaultYTickFormatter(value: number): string {
+  if (Number.isInteger(value)) return String(value)
+  if (Math.abs(value) >= 1000) return value.toFixed(0)
+  if (Math.abs(value) >= 1) return value.toFixed(2).replace(/\.?0+$/, '')
+  return value.toFixed(2)
+}
+
+/**
+ * Estimate the rendered width (in user-space px) of the widest Y-axis tick
+ * label produced for the [`min`, `max`] range. Heuristic — assumes a ~6.5 px
+ * tabular digit metric at the 11 px font-size used in `ChartAxes`. Used by
+ * the chart components to grow the left padding so multi-digit labels like
+ * "2617" don't clip against the SVG edge.
+ */
+export function estimateYAxisLabelWidth(
+  min: number,
+  max: number,
+  tickCount: number | undefined,
+  formatter?: (value: number) => string,
+): number {
+  const fmt = formatter ?? defaultYTickFormatter
+  const count = Math.max(2, tickCount ?? 5)
+  let maxLen = 0
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1)
+    const value = min + t * (max - min)
+    const s = fmt(value)
+    if (s.length > maxLen) maxLen = s.length
+  }
+  // ~7 px per glyph at font-size 11 (SVG text in ChartAxes). Conservative
+  // upper bound — wide system fonts (e.g. Windows Segoe UI) can render digits
+  // a touch wider than the geometric ideal.
+  return maxLen * 7
+}
+
+/**
+ * Resolve effective chart padding. When the user did not supply `padding`,
+ * grow the left side so Y-axis tick labels fit. User-supplied padding is
+ * honoured verbatim. Returns `[top, right, bottom, left]`.
+ */
+export function resolveChartPadding(
+  userPadding: BaseChartProps['padding'],
+  yAxis: YAxisOptions | undefined,
+  yMin: number,
+  yMax: number,
+): [number, number, number, number] {
+  const base = normalizePadding(userPadding)
+  if (userPadding !== undefined || !yAxis) return base
+  const labelW = estimateYAxisLabelWidth(yMin, yMax, yAxis.tickCount, yAxis.tickFormatter)
+  // TICK_LEN(4) + TICK_LABEL_GAP(6) + safety(8)
+  const need = Math.ceil(labelW + 18)
+  if (need > base[3]) base[3] = need
+  if (yAxis.label) base[3] += 16
+  return base
+}
+
+export function chartBounds(values: readonly (readonly ChartValue[])[]): {
+  min: number
+  max: number
+} {
   let min = Infinity
   let max = -Infinity
   for (const row of values) {

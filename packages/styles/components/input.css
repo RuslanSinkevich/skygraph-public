@@ -23,7 +23,8 @@
   background: var(--sg-input-bg);
   border: 1px solid var(--sg-input-border);
   border-radius: var(--sg-input-radius);
-  transition: color var(--sg-transition-duration) var(--sg-transition-timing),
+  transition:
+    color var(--sg-transition-duration) var(--sg-transition-timing),
     background var(--sg-transition-duration) var(--sg-transition-timing),
     border-color var(--sg-transition-duration) var(--sg-transition-timing),
     box-shadow var(--sg-transition-duration) var(--sg-transition-timing);
@@ -107,4 +108,78 @@
   top: 0;
   bottom: 0;
   margin: auto 0;
+}
+
+/* ---- Prefix / Suffix ---- */
+.sg-input-prefix,
+.sg-input-suffix {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--sg-color-text-secondary);
+  pointer-events: none;
+}
+
+.sg-input-prefix {
+  position: absolute;
+  left: var(--sg-padding-sm);
+  top: 0;
+  bottom: 0;
+}
+
+.sg-input-suffix {
+  position: absolute;
+  right: var(--sg-padding-sm);
+  top: 0;
+  bottom: 0;
+}
+
+.sg-input-wrapper:has(.sg-input-prefix) .sg-input {
+  padding-left: calc(var(--sg-padding-md) + 16px);
+}
+
+.sg-input-wrapper:has(.sg-input-suffix) .sg-input {
+  padding-right: calc(var(--sg-padding-md) + 16px);
+}
+
+/* ---- Clear button ---- */
+.sg-input-wrapper:has(.sg-input-clear) .sg-input {
+  padding-right: calc(var(--sg-padding-md) + 18px);
+}
+
+.sg-input-clear {
+  position: absolute;
+  right: var(--sg-padding-xs);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--sg-color-fill-tertiary);
+  color: var(--sg-color-text-secondary);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+  transition:
+    background var(--sg-transition-duration) var(--sg-transition-timing),
+    color var(--sg-transition-duration) var(--sg-transition-timing),
+    opacity var(--sg-transition-duration) var(--sg-transition-timing);
+}
+
+.sg-input-clear:hover {
+  background: var(--sg-color-fill);
+  color: var(--sg-color-text);
+  opacity: 1;
+}
+
+.sg-input-clear:focus-visible {
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: 2px;
 }

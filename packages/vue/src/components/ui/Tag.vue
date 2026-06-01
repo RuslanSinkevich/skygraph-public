@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, type CSSProperties } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface TagProps {
   /** Preset semantic color or any CSS color string. @default 'default' */
@@ -40,10 +41,11 @@ const classes = computed(() =>
 )
 
 const customStyle = computed<CSSProperties | undefined>(() =>
-  isPreset.value
-    ? undefined
-    : { background: props.color, borderColor: props.color, color: '#fff' },
+  isPreset.value ? undefined : { background: props.color, borderColor: props.color, color: '#fff' },
 )
+
+const cfg = useConfig()
+const closeLabel = computed(() => cfg.value.locale?.tag?.closeAriaLabel ?? 'Close')
 
 function handleClose(e: Event) {
   e.stopPropagation()
@@ -62,7 +64,7 @@ function handleClose(e: Event) {
       v-if="closable"
       class="sg-tag-close"
       role="button"
-      aria-label="Close"
+      :aria-label="closeLabel"
       @click="handleClose"
     >
       ×

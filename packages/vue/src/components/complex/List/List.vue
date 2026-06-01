@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="T">
 import { computed, ref, useSlots } from 'vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { ListProps, ListClassNames, ListStyles } from './types'
 
 const props = withDefaults(defineProps<ListProps<T>>(), {
@@ -35,6 +36,9 @@ defineSlots<{
 }>()
 
 const slots = useSlots()
+
+const cfg = useConfig()
+const loadingLabel = computed(() => cfg.value.locale?.list?.loading ?? 'Loading')
 
 const sCls = computed<ListClassNames>(() => props.classNames ?? {})
 const sSty = computed<ListStyles>(() => props.styles ?? {})
@@ -125,10 +129,15 @@ function handleDragEnd() {
   dropIndex.value = null
 }
 
+let listScrollRafId: number | null = null
 function handleVirtualScroll() {
-  if (virtualEl.value) {
-    scrollTop.value = virtualEl.value.scrollTop
-  }
+  if (listScrollRafId != null) return
+  listScrollRafId = requestAnimationFrame(() => {
+    listScrollRafId = null
+    if (virtualEl.value) {
+      scrollTop.value = virtualEl.value.scrollTop
+    }
+  })
 }
 
 const emptyText = computed(() => props.locale?.emptyText ?? 'No Data')
@@ -206,6 +215,7 @@ const wrapperClass = computed(() => {
     props.grid ? 'sg-list-grid' : '',
     props.selectable ? 'sg-list-selectable' : '',
     props.draggable ? 'sg-list-draggable' : '',
+    props.virtual ? 'sg-list-virtual' : '',
     gridResponsiveClass.value,
     sCls.value.root ?? '',
   ]
@@ -236,7 +246,7 @@ defineExpose({
     </div>
 
     <div v-if="loading" class="sg-list-loading-indicator" role="status" aria-live="polite">
-      <span v-if="!unstyled" class="sg-spin sg-spin-default" aria-label="Loading" />
+      <span v-if="!unstyled" class="sg-spin sg-spin-default" :aria-label="loadingLabel" />
     </div>
 
     <div

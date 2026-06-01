@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, useSlots, watch } from 'vue'
-import { useConfigWithDefaults } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 import type { SizeType } from '../../types'
 
 export interface SpinProps {
@@ -31,6 +31,9 @@ defineSlots<{
 const { resolvedSize } = useConfigWithDefaults({ size: undefined }, {})
 const realSize = computed<SizeType>(() => props.size ?? resolvedSize.value)
 
+const cfg = useConfig()
+const loadingLabel = computed(() => cfg.value.locale?.spin?.loading ?? 'Loading')
+
 const visible = ref(props.delay ? false : props.spinning)
 let timer: ReturnType<typeof setTimeout> | undefined
 
@@ -58,9 +61,7 @@ onBeforeUnmount(() => {
 })
 
 const spinSizeClass = computed(() => (realSize.value === 'middle' ? 'default' : realSize.value))
-const spinClasses = computed(() =>
-  props.unstyled ? '' : `sg-spin sg-spin-${spinSizeClass.value}`,
-)
+const spinClasses = computed(() => (props.unstyled ? '' : `sg-spin sg-spin-${spinSizeClass.value}`))
 
 const slots = useSlots()
 const hasChildren = computed(() => Boolean(slots.default))
@@ -80,20 +81,14 @@ const hasIndicator = computed(() => Boolean(slots.indicator))
         :class="spinClasses"
         role="status"
         aria-live="polite"
-        aria-label="Loading"
+        :aria-label="loadingLabel"
       />
       <div v-if="tip" :class="unstyled ? '' : 'sg-spin-tip'">{{ tip }}</div>
     </div>
   </div>
   <span v-else-if="!hasChildren" :class="unstyled ? '' : 'sg-spin-standalone'">
     <slot v-if="hasIndicator" name="indicator" />
-    <span
-      v-else
-      :class="spinClasses"
-      role="status"
-      aria-live="polite"
-      aria-label="Loading"
-    />
+    <span v-else :class="spinClasses" role="status" aria-live="polite" :aria-label="loadingLabel" />
     <div v-if="tip" :class="unstyled ? '' : 'sg-spin-tip'">{{ tip }}</div>
   </span>
   <div v-else :class="unstyled ? '' : 'sg-spin-container'">
@@ -104,7 +99,7 @@ const hasIndicator = computed(() => Boolean(slots.indicator))
         :class="spinClasses"
         role="status"
         aria-live="polite"
-        aria-label="Loading"
+        :aria-label="loadingLabel"
       />
       <div v-if="tip" :class="unstyled ? '' : 'sg-spin-tip'">{{ tip }}</div>
     </div>

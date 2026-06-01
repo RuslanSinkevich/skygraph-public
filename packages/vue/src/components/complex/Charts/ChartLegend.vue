@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import { colorForSeries, type ChartSeries } from './types'
 
 interface Props {
@@ -13,13 +14,16 @@ const props = withDefaults(defineProps<Props>(), { unstyled: false })
 const items = computed(() =>
   props.series.map((s, i) => ({ id: s.id, label: s.label, color: colorForSeries(s, i) })),
 )
+
+const cfg = useConfig()
+const legendLabel = computed(() => cfg.value.locale?.charts?.legend ?? 'Chart legend')
 </script>
 
 <template>
   <div
     :class="[!props.unstyled && 'sg-chart-legend', props.className]"
     role="list"
-    aria-label="Chart legend"
+    :aria-label="legendLabel"
   >
     <span
       v-for="item in items"

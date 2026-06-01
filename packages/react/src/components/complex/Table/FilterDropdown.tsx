@@ -412,7 +412,7 @@ function AdvancedFilterPanel({ col, t, state, actions, filterRef }: FilterTrigge
           value={draftOp}
           onChange={(v) => setDraftOp(v as FilterOperator)}
           options={ops.map((op) => ({ label: operatorLabel(op, t), value: op }))}
-          aria-label="Filter operator"
+          aria-label={t.filterOperatorAriaLabel}
         />
       </div>
       {showValueInput && (

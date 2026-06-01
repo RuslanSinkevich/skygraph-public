@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface TimePickerProps {
   /** v-model binding (Vue idiom). */
@@ -96,6 +97,10 @@ function parseTime(str: string): { h: number; m: number; s: number } | null {
   if (!isPM && upper.includes('AM') && h === 12) h = 0
   return { h, m, s }
 }
+
+const cfg = useConfig()
+const clearLabel = computed(() => cfg.value.locale?.input?.clear ?? 'Clear')
+const nowLabel = computed(() => cfg.value.locale?.calendar?.now ?? 'Now')
 
 const fmt = computed(
   () => props.format ?? (props.use12Hours ? 'hh:mm:ss A' : props.showSecond ? 'HH:mm:ss' : 'HH:mm'),
@@ -301,7 +306,7 @@ function setPm() {
             v-if="allowClear && current"
             class="sg-timepicker-clear"
             role="button"
-            aria-label="Clear"
+            :aria-label="clearLabel"
             @click="handleClear"
             >×</span
           >
@@ -381,7 +386,7 @@ function setPm() {
         </div>
       </div>
       <div v-if="showNow" class="sg-tp-footer">
-        <button type="button" class="sg-tp-now-btn" @click="handleNow">Now</button>
+        <button type="button" class="sg-tp-now-btn" @click="handleNow">{{ nowLabel }}</button>
       </div>
     </div>
   </div>

@@ -52,14 +52,19 @@ function formatTick(timeMs: number, scale: CalendarScale): string {
   }
 }
 
-function deriveRange(assignments: readonly Assignment[], step: number): { from: Date; to: Date } {
-  if (assignments.length === 0) {
-    const now = Date.now()
-    return {
-      from: new Date(alignDown(now, step)),
-      to: new Date(alignUp(now + step * 4, step)),
-    }
-  }
+/**
+ * Resolves the visible time axis. `range` is treated as the *minimum*
+ * viewport — assignments may pull it further left or right (aligned to
+ * `step` so column borders stay whole). When no `range` is provided we
+ * derive one purely from `assignments` (with one-step padding on each
+ * side for breathing room). This matches the Vue implementation so
+ * both adapters expose identical scheduling behaviour.
+ */
+function resolveRange(
+  assignments: readonly Assignment[],
+  step: number,
+  range: { from: Date; to: Date } | undefined,
+): { from: Date; to: Date } {
   let lo = Infinity
   let hi = -Infinity
   for (const a of assignments) {
@@ -67,6 +72,22 @@ function deriveRange(assignments: readonly Assignment[], step: number): { from: 
     const e = toMs(a.end)
     if (s < lo) lo = s
     if (e > hi) hi = e
+  }
+  if (range) {
+    const rangeFrom = range.from.getTime()
+    const rangeTo = range.to.getTime()
+    if (assignments.length === 0) return { from: new Date(rangeFrom), to: new Date(rangeTo) }
+    return {
+      from: new Date(alignDown(Math.min(rangeFrom, lo), step)),
+      to: new Date(alignUp(Math.max(rangeTo, hi), step)),
+    }
+  }
+  if (assignments.length === 0) {
+    const now = Date.now()
+    return {
+      from: new Date(alignDown(now, step)),
+      to: new Date(alignUp(now + step * 4, step)),
+    }
   }
   return {
     from: new Date(alignDown(lo - step, step)),
@@ -127,7 +148,7 @@ export function ResourceCalendar({
 
   const step = STEP_MS[scale]
   const resolvedRange = useMemo(
-    () => range ?? deriveRange(assignments, step),
+    () => resolveRange(assignments, step, range),
     [range, assignments, step],
   )
   const rangeStart = resolvedRange.from.getTime()

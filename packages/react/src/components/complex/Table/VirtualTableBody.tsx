@@ -154,7 +154,16 @@ export function VirtualTableBody(props: VirtualBodyProps) {
     setViewportHeight(el.clientHeight)
     setScrollTop(el.scrollTop)
 
-    const onScroll = () => setScrollTop(el.scrollTop)
+    // Synchronous scroll handler — when the user drags the scrollbar
+    // thumb, the browser moves it in sync with the pointer. If we
+    // defer the React state update to rAF, the DOM content (topPad /
+    // bottomPad) updates a frame late, which causes the browser to
+    // recalculate scroll position and the thumb drifts away from the
+    // cursor. Using synchronous updates keeps scrollHeight stable on
+    // the same frame the browser processes the scroll event.
+    const onScroll = () => {
+      setScrollTop(el.scrollTop)
+    }
     el.addEventListener('scroll', onScroll, { passive: true })
 
     let ro: ResizeObserver | null = null

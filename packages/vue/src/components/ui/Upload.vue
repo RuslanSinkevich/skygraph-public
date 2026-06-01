@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
 import SgSpin from './Spin.vue'
 
@@ -164,6 +165,11 @@ function onInputChange(e: Event) {
   target.value = ''
 }
 
+const cfg = useConfig()
+const uploadAriaLabel = computed(() => cfg.value.locale?.upload?.uploadAriaLabel ?? 'Upload file')
+const uploadText = computed(() => cfg.value.locale?.upload?.uploadText ?? 'Upload')
+const removeFileLabel = computed(() => cfg.value.locale?.upload?.removeFile ?? 'Remove file')
+
 const wrapperCls = computed(() =>
   props.unstyled
     ? ''
@@ -194,7 +200,7 @@ function itemClasses(file: UploadFile) {
       :multiple="multiple"
       :accept="accept"
       :disabled="disabled"
-      aria-label="Upload file"
+      :aria-label="uploadAriaLabel"
       style="display: none"
       @change="onInputChange"
     />
@@ -215,7 +221,7 @@ function itemClasses(file: UploadFile) {
     </div>
     <div v-else class="sg-upload-select-trigger" @click="openPicker">
       <slot>
-        <SgButton :disabled="disabled">Upload</SgButton>
+        <SgButton :disabled="disabled">{{ uploadText }}</SgButton>
       </slot>
     </div>
     <div v-if="showUploadList && files.length > 0" :class="unstyled ? '' : 'sg-upload-list'">
@@ -231,7 +237,7 @@ function itemClasses(file: UploadFile) {
           v-if="file.status !== 'uploading'"
           type="button"
           :class="unstyled ? '' : 'sg-upload-item-remove'"
-          :aria-label="`Remove file: ${file.name}`"
+          :aria-label="`${removeFileLabel}: ${file.name}`"
           @click="handleRemove(file)"
         >
           ×

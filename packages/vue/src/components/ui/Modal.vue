@@ -54,12 +54,11 @@ const hasFooterSlot = computed<boolean>(
   () => !!(instance?.slots as Record<string, unknown> | undefined)?.footer,
 )
 const cfg = useConfig()
-const okText = computed(
-  () => props.okText ?? cfg.value.locale?.modal?.okText ?? 'OK',
-)
+const okText = computed(() => props.okText ?? cfg.value.locale?.modal?.okText ?? 'OK')
 const cancelText = computed(
   () => props.cancelText ?? cfg.value.locale?.modal?.cancelText ?? 'Cancel',
 )
+const closeAriaLabel = computed(() => cfg.value.locale?.modal?.closeAriaLabel ?? 'Close')
 
 const id = genId()
 const titleId = `${id}-title`
@@ -103,9 +102,7 @@ onBeforeUnmount(() => {
 const showDefaultFooter = computed<boolean>(
   () => props.footer !== 'none' && !hasFooterSlot.value && !!props.okHandler,
 )
-const hasCustomFooter = computed<boolean>(
-  () => hasFooterSlot.value && props.footer !== 'none',
-)
+const hasCustomFooter = computed<boolean>(() => hasFooterSlot.value && props.footer !== 'none')
 </script>
 
 <template>
@@ -128,7 +125,7 @@ const hasCustomFooter = computed<boolean>(
           <SgButton :unstyled="true" @click="onClose">{{ cancelText }}</SgButton>
           <SgButton :unstyled="true" @click="onOk">{{ okText }}</SgButton>
         </div>
-        <button type="button" aria-label="Close" @click="onClose">x</button>
+        <button type="button" :aria-label="closeAriaLabel" @click="onClose">x</button>
       </div>
     </template>
     <template v-else>
@@ -152,7 +149,7 @@ const hasCustomFooter = computed<boolean>(
                 <SgButton
                   type="text"
                   class="sg-modal-close"
-                  aria-label="Close"
+                  :aria-label="closeAriaLabel"
                   @click="onClose"
                 >
                   ×

@@ -2,10 +2,13 @@
 import { ref, computed } from 'vue'
 import { useChartSize } from '../../../composables/useChartSize'
 import { printElement } from '../../../utils/print'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import {
+  DEFAULT_PALETTE,
   colorForSeries,
   resolveChartAnimation,
   type BaseChartProps,
+  type ChartSeries,
 } from './types'
 import ChartLegend from './ChartLegend.vue'
 
@@ -28,6 +31,8 @@ const props = withDefaults(defineProps<PieChartProps>(), {
 
 const rootRef = ref<HTMLDivElement | null>(null)
 const svgRef = ref<SVGSVGElement | null>(null)
+const cfg = useConfig()
+const chartLabel = computed(() => cfg.value.locale?.charts?.pieChart ?? 'Pie chart')
 const fallbackW = computed(() =>
   typeof props.width === 'number' && Number.isFinite(props.width) ? props.width : 320,
 )
@@ -45,29 +50,83 @@ const innerR = computed(() => Math.max(0, Math.min(0.95, props.innerRadius)) * r
 
 const animation = computed(() => resolveChartAnimation(props.animate))
 
-interface Slice {
+interface SliceDatum {
   id: string
   label: string
   color: string
   value: number
+}
+
+interface Slice extends SliceDatum {
   start: number
   end: number
   midAngle: number
   path: string
 }
 
+// Two supported shapes, auto-detected:
+//   1) categories + ONE series with values aligned to categories
+//      (each category becomes a slice, palette colors per category)
+//   2) N series each contributing a single value
+//      (each series becomes a slice, series.color or palette by index)
+const sliceData = computed<SliceDatum[]>(() => {
+  const cats = props.categories
+  const series = props.series
+  if (!series.length) return []
+  const first = series[0]
+  const useCategories =
+    cats.length > 0 && series.length === 1 && first != null && first.values.length === cats.length
+  if (useCategories && first) {
+    return cats.map((cat, i) => ({
+      id: `${first.id}-${i}`,
+      label: String(cat),
+      color: DEFAULT_PALETTE[i % DEFAULT_PALETTE.length]!,
+      value: Math.max(0, Number(first.values[i] ?? 0)),
+    }))
+  }
+  return series.map((s, i) => ({
+    id: s.id,
+    label: s.label,
+    color: colorForSeries(s, i),
+    value: Math.max(0, Number(s.values[0] ?? 0)),
+  }))
+})
+
 const total = computed(() => {
   let sum = 0
-  for (const s of props.series) {
-    const first = s.values[0]
-    if (first != null && first > 0) sum += first
-  }
+  for (const d of sliceData.value) if (d.value > 0) sum += d.value
   return sum
 })
+
+const legendSeries = computed<ChartSeries[]>(() =>
+  sliceData.value.map((d) => ({ id: d.id, label: d.label, color: d.color, values: [d.value] })),
+)
 
 function describeSlice(start: number, end: number): string {
   const r = radius.value
   const ir = innerR.value
+  // Full-circle case: SVG arc with identical start/end points is invisible,
+  // so split into two semicircles (or a donut ring) instead.
+  const isFullCircle = end - start >= Math.PI * 2 - 1e-6
+  if (isFullCircle) {
+    if (ir <= 0) {
+      return [
+        `M${cx.value - r},${cy.value}`,
+        `A${r},${r} 0 1 1 ${cx.value + r},${cy.value}`,
+        `A${r},${r} 0 1 1 ${cx.value - r},${cy.value}`,
+        'Z',
+      ].join(' ')
+    }
+    return [
+      `M${cx.value - r},${cy.value}`,
+      `A${r},${r} 0 1 1 ${cx.value + r},${cy.value}`,
+      `A${r},${r} 0 1 1 ${cx.value - r},${cy.value}`,
+      `M${cx.value - ir},${cy.value}`,
+      `A${ir},${ir} 0 1 0 ${cx.value + ir},${cy.value}`,
+      `A${ir},${ir} 0 1 0 ${cx.value - ir},${cy.value}`,
+      'Z',
+    ].join(' ')
+  }
   const x1 = cx.value + Math.cos(start) * r
   const y1 = cy.value + Math.sin(start) * r
   const x2 = cx.value + Math.cos(end) * r
@@ -94,18 +153,13 @@ const slices = computed<Slice[]>(() => {
   if (t === 0) return []
   let acc = -Math.PI / 2
   const result: Slice[] = []
-  for (let i = 0; i < props.series.length; i++) {
-    const s = props.series[i]
-    const v = s.values[0] ?? 0
-    if (!v || v <= 0) continue
-    const span = (v / t) * Math.PI * 2
+  for (const d of sliceData.value) {
+    if (d.value <= 0) continue
+    const span = (d.value / t) * Math.PI * 2
     const start = acc
     const end = acc + span
     result.push({
-      id: s.id,
-      label: s.label,
-      value: v,
-      color: colorForSeries(s, i),
+      ...d,
       start,
       end,
       midAngle: start + span / 2,
@@ -115,6 +169,16 @@ const slices = computed<Slice[]>(() => {
   }
   return result
 })
+
+function sliceAnimStyle(index: number, count: number) {
+  if (!animation.value.enabled) return undefined
+  const d = animation.value.duration
+  return {
+    transformOrigin: `${cx.value}px ${cy.value}px`,
+    animationDuration: `${d}ms`,
+    animationDelay: `${(index / Math.max(1, count)) * (d * 0.4)}ms`,
+  }
+}
 
 defineExpose({
   print: (opts: { fileName?: string } = {}) => {
@@ -143,21 +207,24 @@ defineExpose({
       :width="typeof props.width === 'number' ? props.width : '100%'"
       :height="props.height"
       role="img"
-      aria-label="Pie chart"
+      :aria-label="chartLabel"
     >
       <g class="sg-chart-pie-slices">
         <path
-          v-for="s in slices"
+          v-for="(s, i) in slices"
           :key="s.id"
+          :class="[animation.enabled && !props.unstyled && 'sg-chart-pie-animate']"
           :d="s.path"
           :fill="s.color"
           :data-series-id="s.id"
+          :style="sliceAnimStyle(i, slices.length)"
         >
           <title>{{ s.label }}: {{ s.value }}</title>
         </path>
+      </g>
+      <g v-if="props.labels" class="sg-chart-pie-labels">
         <text
           v-for="s in slices"
-          v-if="props.labels"
           :key="`${s.id}-label`"
           :x="cx + Math.cos(s.midAngle) * (radius * 0.7)"
           :y="cy + Math.sin(s.midAngle) * (radius * 0.7)"
@@ -170,6 +237,6 @@ defineExpose({
         </text>
       </g>
     </svg>
-    <ChartLegend v-if="props.legend" :series="props.series" :unstyled="props.unstyled" />
+    <ChartLegend v-if="props.legend" :series="legendSeries" :unstyled="props.unstyled" />
   </div>
 </template>

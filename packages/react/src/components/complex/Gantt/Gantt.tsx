@@ -5,7 +5,7 @@ import {
   type CSSProperties,
   type MouseEvent as ReactMouseEvent,
 } from 'react'
-import { routeOrthogonal, pointsToPath } from '@skygraph/core'
+import { pointsToPath } from '@skygraph/core'
 import type { GanttProps, GanttRange, GanttScale, GanttTask } from './types'
 import { useConfig } from '../../ConfigProvider'
 
@@ -33,11 +33,21 @@ function clamp(v: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, v))
 }
 
-function formatTick(timeMs: number, scale: GanttScale): string {
+function formatTick(timeMs: number, scale: GanttScale, columnWidth: number): string {
   const d = new Date(timeMs)
   switch (scale) {
     case 'day': {
       const dd = String(d.getUTCDate()).padStart(2, '0')
+      // `DD.MM` needs ~32px to render cleanly; below that drop the month
+      // and show day-of-month only, plus prepend the month at every 1st
+      // so the user still has a calendar anchor.
+      if (columnWidth < 32) {
+        if (d.getUTCDate() === 1) {
+          const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+          return `${dd}.${mm}`
+        }
+        return dd
+      }
       const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
       return `${dd}.${mm}`
     }
@@ -151,12 +161,12 @@ export function Gantt({
     for (let t = resolved.rangeStart; t < resolved.rangeEnd; t += resolved.step) {
       out.push({
         x: (t - resolved.rangeStart) * resolved.pxPerMs,
-        label: formatTick(t, scale),
+        label: formatTick(t, scale, columnWidth),
         time: t,
       })
     }
     return out
-  }, [resolved, scale])
+  }, [resolved, scale, columnWidth])
 
   const taskRects = useMemo(() => {
     return tasks.map((task) => {
@@ -176,20 +186,64 @@ export function Gantt({
     return m
   }, [taskRects])
 
+  // Gantt-specific dependency routing — `routeOrthogonal` from core picks
+  // the nearest side of each rect, which gives "bottom-of-source" /
+  // "top-of-target" exits on dependencies between adjacent rows. That
+  // looks unnatural in a Gantt: the convention is ALWAYS source-right →
+  // target-left, regardless of geometry. So we build the path by hand:
+  //
+  //   • Forward dep (target starts strictly after source ends): 3-bend Z
+  //     — right stub from source, vertical to target's row, horizontal
+  //     into target's left edge.
+  //   • Backward / overlapping dep (target's left edge sits at or before
+  //     source's right edge): 5-bend U detour under the source row, so
+  //     the link doesn't run inside either bar.
   const dependencyPaths = useMemo(() => {
     const out: Array<{ id: string; d: string }> = []
+    // Exit stub from the source's right edge; the entry stub before the
+    // target is intentionally longer (`APPROACH`) so the final horizontal
+    // segment is unmistakably "into the target" and the arrowhead has
+    // room to read even at small zoom levels.
+    const STUB = 8
+    const APPROACH = 18
     for (const r of taskRects) {
       const deps = r.task.dependencies
       if (!deps || deps.length === 0) continue
       for (const depId of deps) {
         const src = taskRectById.get(depId)
         if (!src) continue
-        // Arrow from source END → dependent START.
-        const startPt: readonly [number, number] = [src.x + src.w, src.y + src.h / 2]
-        const endPt: readonly [number, number] = [r.x, r.y + r.h / 2]
-        const points = routeOrthogonal(startPt, endPt, {
-          preferred: 'hv',
-        })
+        const sx = src.x + src.w
+        const sy = src.y + src.h / 2
+        const tx = r.x
+        const ey = r.y + r.h / 2
+
+        let points: ReadonlyArray<readonly [number, number]>
+        if (tx >= sx + STUB + APPROACH) {
+          // Forward Z — bend right after the source so the long final
+          // horizontal lives at the target's row, with at least
+          // `APPROACH` px of clean run into the target's left edge.
+          const bendX = sx + STUB
+          points = [
+            [sx, sy],
+            [bendX, sy],
+            [bendX, ey],
+            [tx, ey],
+          ]
+        } else {
+          // U detour for backward / overlapping deps. Horizontal runs
+          // along the row boundary just below the source so the link
+          // sits in the row-gap gutter instead of slicing through the
+          // next bar; entry segment is `APPROACH` wide for legibility.
+          const detourY = src.y + src.h
+          points = [
+            [sx, sy],
+            [sx + STUB, sy],
+            [sx + STUB, detourY],
+            [tx - APPROACH, detourY],
+            [tx - APPROACH, ey],
+            [tx, ey],
+          ]
+        }
         out.push({ id: `${depId}->${r.task.id}`, d: pointsToPath(points) })
       }
     }
@@ -276,13 +330,23 @@ export function Gantt({
 
   const headerHeight = rowHeight
   const gridHeight = resolved.rows.length * rowHeight
-  const totalHeight = gridHeight + headerHeight
+  // Reserve vertical space for the horizontal scrollbar that lives inside
+  // `.sg-gantt-main` (overflow-x: auto). Without this padding the
+  // scrollbar's ~14px eats into the last row's bars.
+  const SCROLLBAR_RESERVE = 14
+  const totalHeight = gridHeight + headerHeight + SCROLLBAR_RESERVE
 
+  // `minmax(0, 1fr)` is required so the main track can shrink below the
+  // intrinsic width of its child (`width: totalWidth`, often thousands of
+  // pixels) — otherwise the grid swells past the parent and the chart
+  // bleeds outside its container. The actual horizontal scrolling lives
+  // on `.sg-gantt-main` below, which keeps the sidebar pinned while the
+  // bars area scrolls.
   const wrapperStyle: CSSProperties = {
     display: 'grid',
-    gridTemplateColumns: `${sidebarWidth}px 1fr`,
+    gridTemplateColumns: `${sidebarWidth}px minmax(0, 1fr)`,
     width: '100%',
-    overflow: 'auto',
+    overflow: 'hidden',
     height: totalHeight,
     ...style,
   }
@@ -314,167 +378,177 @@ export function Gantt({
         ))}
       </div>
 
-      {/* Main: header + grid + bars */}
+      {/* Main: header + grid + bars (horizontal scroll lives here so the
+       * sidebar stays pinned while bars scroll). */}
       <div
         className={unstyled ? undefined : 'sg-gantt-main'}
-        style={{ position: 'relative', width: resolved.totalWidth, minWidth: '100%' }}
+        style={{ position: 'relative', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }}
       >
-        <div
-          className={unstyled ? undefined : 'sg-gantt-header'}
-          style={{ position: 'relative', height: headerHeight, width: resolved.totalWidth }}
-        >
-          {ticks.map((t) => (
-            <div
-              key={t.time}
-              className={unstyled ? undefined : 'sg-gantt-tick'}
-              style={{
-                position: 'absolute',
-                left: t.x,
-                top: 0,
-                width: columnWidth,
-                height: headerHeight,
-              }}
-              data-tick-time={t.time}
-            >
-              {t.label}
-            </div>
-          ))}
-        </div>
-
-        <div
-          className={unstyled ? undefined : 'sg-gantt-grid'}
-          style={{
-            position: 'relative',
-            width: resolved.totalWidth,
-            height: gridHeight,
-          }}
-        >
-          {/* Row backgrounds */}
-          {resolved.rows.map((row, i) => (
-            <div
-              key={row.key}
-              className={unstyled ? undefined : 'sg-gantt-row'}
-              style={{
-                position: 'absolute',
-                left: 0,
-                top: i * rowHeight,
-                width: resolved.totalWidth,
-                height: rowHeight,
-              }}
-              data-row-index={i}
-            />
-          ))}
-
-          {/* Dependency arrows */}
-          {dependencyPaths.length > 0 && (
-            <svg
-              className={unstyled ? undefined : 'sg-gantt-deps'}
-              width={resolved.totalWidth}
-              height={gridHeight}
-              style={{ position: 'absolute', inset: 0, pointerEvents: 'none', overflow: 'visible' }}
-              aria-hidden="true"
-            >
-              <defs>
-                <marker
-                  id="sg-gantt-arrow"
-                  viewBox="0 0 10 10"
-                  refX="8"
-                  refY="5"
-                  markerWidth="6"
-                  markerHeight="6"
-                  orient="auto"
-                >
-                  <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
-                </marker>
-              </defs>
-              {dependencyPaths.map((p) => (
-                <path
-                  key={p.id}
-                  d={p.d}
-                  className={unstyled ? undefined : 'sg-gantt-dep'}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  markerEnd="url(#sg-gantt-arrow)"
-                  data-dep-id={p.id}
-                />
-              ))}
-            </svg>
-          )}
-
-          {/* Bars */}
-          {taskRects.map(({ task, x, y, w, h }) => {
-            const barClass = unstyled
-              ? undefined
-              : [
-                  'sg-gantt-bar',
-                  draggable ? 'sg-gantt-bar-draggable' : '',
-                  resizable ? 'sg-gantt-bar-resizable' : '',
-                ]
-                  .filter(Boolean)
-                  .join(' ')
-            const progress = clamp(task.progress ?? 0, 0, 1)
-            return (
+        <div style={{ position: 'relative', width: resolved.totalWidth, minWidth: '100%' }}>
+          <div
+            className={unstyled ? undefined : 'sg-gantt-header'}
+            style={{ position: 'relative', height: headerHeight, width: resolved.totalWidth }}
+          >
+            {ticks.map((t) => (
               <div
-                key={task.id}
-                className={barClass}
+                key={t.time}
+                className={unstyled ? undefined : 'sg-gantt-tick'}
                 style={{
                   position: 'absolute',
-                  left: x,
-                  top: y + 4,
-                  width: w,
-                  height: h - 8,
-                  background: task.color,
-                  cursor: draggable ? 'grab' : undefined,
-                  userSelect: draggable || resizable ? 'none' : undefined,
+                  left: t.x,
+                  top: 0,
+                  width: columnWidth,
+                  height: headerHeight,
                 }}
-                role="button"
-                tabIndex={0}
-                aria-label={task.name}
-                data-task-id={task.id}
-                data-row-index={resolved.rowOf(task)}
-                onMouseDown={draggable ? (e) => startInteraction(e, task, 'move') : undefined}
+                data-tick-time={t.time}
               >
-                {progress > 0 && (
-                  <div
-                    className={unstyled ? undefined : 'sg-gantt-bar-progress'}
-                    style={{
-                      position: 'absolute',
-                      left: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: `${progress * 100}%`,
-                    }}
-                    data-progress={progress}
-                  />
-                )}
-                <span
-                  className={unstyled ? undefined : 'sg-gantt-bar-label'}
-                  style={{ position: 'relative', zIndex: 1 }}
-                >
-                  {task.name}
-                </span>
-                {resizable && (
-                  <div
-                    className={unstyled ? undefined : 'sg-gantt-bar-resize'}
-                    role="button"
-                    aria-label={ganttLocale?.resizeTask ?? 'Resize task'}
-                    tabIndex={-1}
-                    data-role="resize-handle"
-                    style={{
-                      position: 'absolute',
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      width: 6,
-                      cursor: 'ew-resize',
-                    }}
-                    onMouseDown={(e) => startInteraction(e, task, 'resize')}
-                  />
-                )}
+                {t.label}
               </div>
-            )
-          })}
+            ))}
+          </div>
+
+          <div
+            className={unstyled ? undefined : 'sg-gantt-grid'}
+            style={{
+              position: 'relative',
+              width: resolved.totalWidth,
+              height: gridHeight,
+            }}
+          >
+            {/* Row backgrounds */}
+            {resolved.rows.map((row, i) => (
+              <div
+                key={row.key}
+                className={unstyled ? undefined : 'sg-gantt-row'}
+                style={{
+                  position: 'absolute',
+                  left: 0,
+                  top: i * rowHeight,
+                  width: resolved.totalWidth,
+                  height: rowHeight,
+                }}
+                data-row-index={i}
+              />
+            ))}
+
+            {/* Bars */}
+            {taskRects.map(({ task, x, y, w, h }) => {
+              const barClass = unstyled
+                ? undefined
+                : [
+                    'sg-gantt-bar',
+                    draggable ? 'sg-gantt-bar-draggable' : '',
+                    resizable ? 'sg-gantt-bar-resizable' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+              const progress = clamp(task.progress ?? 0, 0, 1)
+              return (
+                <div
+                  key={task.id}
+                  className={barClass}
+                  style={{
+                    position: 'absolute',
+                    left: x,
+                    top: y + 4,
+                    width: w,
+                    height: h - 8,
+                    background: task.color,
+                    cursor: draggable ? 'grab' : undefined,
+                    userSelect: draggable || resizable ? 'none' : undefined,
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={task.name}
+                  data-task-id={task.id}
+                  data-row-index={resolved.rowOf(task)}
+                  onMouseDown={draggable ? (e) => startInteraction(e, task, 'move') : undefined}
+                >
+                  {progress > 0 && (
+                    <div
+                      className={unstyled ? undefined : 'sg-gantt-bar-progress'}
+                      style={{
+                        position: 'absolute',
+                        left: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: `${progress * 100}%`,
+                      }}
+                      data-progress={progress}
+                    />
+                  )}
+                  <span
+                    className={unstyled ? undefined : 'sg-gantt-bar-label'}
+                    style={{ position: 'relative', zIndex: 1 }}
+                  >
+                    {task.name}
+                  </span>
+                  {resizable && (
+                    <div
+                      className={unstyled ? undefined : 'sg-gantt-bar-resize'}
+                      role="button"
+                      aria-label={ganttLocale?.resizeTask ?? 'Resize task'}
+                      tabIndex={-1}
+                      data-role="resize-handle"
+                      style={{
+                        position: 'absolute',
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        width: 6,
+                        cursor: 'ew-resize',
+                      }}
+                      onMouseDown={(e) => startInteraction(e, task, 'resize')}
+                    />
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Dependency arrows — rendered AFTER bars so the arrowhead is
+             * never covered by the target bar. `pointer-events: none` lets
+             * pointer events fall through to bars beneath the SVG layer. */}
+            {dependencyPaths.length > 0 && (
+              <svg
+                className={unstyled ? undefined : 'sg-gantt-deps'}
+                width={resolved.totalWidth}
+                height={gridHeight}
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  pointerEvents: 'none',
+                  overflow: 'visible',
+                }}
+                aria-hidden="true"
+              >
+                <defs>
+                  <marker
+                    id="sg-gantt-arrow"
+                    viewBox="0 0 10 10"
+                    refX="10"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto"
+                  >
+                    <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+                  </marker>
+                </defs>
+                {dependencyPaths.map((p) => (
+                  <path
+                    key={p.id}
+                    d={p.d}
+                    className={unstyled ? undefined : 'sg-gantt-dep'}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.5}
+                    markerEnd="url(#sg-gantt-arrow)"
+                    data-dep-id={p.id}
+                  />
+                ))}
+              </svg>
+            )}
+          </div>
         </div>
       </div>
     </div>

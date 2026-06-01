@@ -14,8 +14,12 @@ import {
 export interface MenuItem {
   /** Unique key for selection and open-state tracking. */
   key: string
-  /** Visible label. */
-  label: string
+  /**
+   * Visible label. Accepts string for the common case and any `VNodeChild`
+   * (created via `h()` or `<component :is>`) when rich content is needed
+   * (e.g. keyboard shortcuts, badges). Paritet с React: `label: ReactNode`.
+   */
+  label: string | VNodeChild
   /**
    * Optional leading icon. Accepts any VNode (e.g. created with `h()` or `<component :is>`).
    * Aligns left of the label and inherits the item colour state.
@@ -173,7 +177,7 @@ const StyledMenuItem: Component = defineComponent({
       }
       if (p.item.type === 'group') {
         return h('li', { class: 'sg-menu-group', role: 'group' }, [
-          h('div', { class: 'sg-menu-group-title' }, p.item.label),
+          h('div', { class: 'sg-menu-group-title' }, p.item.label as VNode | VNode[] | string),
           h(
             'ul',
             { class: 'sg-menu-group-list', role: 'menu' },
@@ -231,7 +235,7 @@ const StyledMenuItem: Component = defineComponent({
                 )
               : null,
             !(p.inlineCollapsed && p.depth === 0)
-              ? h('span', { class: 'sg-menu-item-label' }, p.item.label)
+              ? h('span', { class: 'sg-menu-item-label' }, p.item.label as VNode | VNode[] | string)
               : null,
             hasChildren.value
               ? h('span', {

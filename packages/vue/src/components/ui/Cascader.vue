@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 /** One node in a cascader tree; children define the next column. */
 export interface CascaderOption {
@@ -67,6 +68,10 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: (string | number)[]): void
   (e: 'change', value: (string | number)[], selectedOptions: CascaderOption[]): void
 }>()
+
+const cfg = useConfig()
+const clearLabel = computed(() => cfg.value.locale?.cascader?.clear ?? 'Clear')
+const removeTagLabel = computed(() => cfg.value.locale?.cascader?.removeTag ?? 'Remove')
 
 function arraysEqual(a: (string | number)[], b: (string | number)[]): boolean {
   if (a.length !== b.length) return false
@@ -369,7 +374,7 @@ function pathLabel(values: (string | number)[]) {
             <span
               class="sg-cascader-tag-close"
               role="button"
-              aria-label="Remove"
+              :aria-label="removeTagLabel"
               @click="handleRemoveTag(i, $event)"
               >×</span
             >
@@ -391,7 +396,7 @@ function pathLabel(values: (string | number)[]) {
           v-if="allowClear && (current.length > 0 || multiValues.length > 0)"
           class="sg-cascader-clear"
           role="button"
-          aria-label="Clear"
+          :aria-label="clearLabel"
           @click="handleClear"
           >×</span
         >

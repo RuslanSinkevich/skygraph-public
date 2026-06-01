@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface SkeletonAvatar {
   size?: number
@@ -42,17 +43,15 @@ defineSlots<{
 }>()
 
 const avatarSize = computed(() =>
-  typeof props.avatar === 'object' ? props.avatar.size ?? 40 : 40,
+  typeof props.avatar === 'object' ? (props.avatar.size ?? 40) : 40,
 )
 const avatarShape = computed(() =>
-  typeof props.avatar === 'object' ? props.avatar.shape ?? 'circle' : 'circle',
+  typeof props.avatar === 'object' ? (props.avatar.shape ?? 'circle') : 'circle',
 )
 const titleWidth = computed<string | number>(() =>
-  typeof props.title === 'object' ? props.title.width ?? '38%' : '38%',
+  typeof props.title === 'object' ? (props.title.width ?? '38%') : '38%',
 )
-const rows = computed(() =>
-  typeof props.paragraph === 'object' ? props.paragraph.rows ?? 3 : 3,
-)
+const rows = computed(() => (typeof props.paragraph === 'object' ? (props.paragraph.rows ?? 3) : 3))
 const rowWidths = computed(() =>
   typeof props.paragraph === 'object' ? props.paragraph.width : undefined,
 )
@@ -68,6 +67,9 @@ function toCss(w: string | number): string {
   return typeof w === 'number' ? `${w}px` : w
 }
 
+const cfg = useConfig()
+const loadingLabel = computed(() => cfg.value.locale?.skeleton?.loading ?? 'Loading')
+
 const rootClasses = computed(() =>
   [
     'sg-skeleton',
@@ -81,15 +83,8 @@ const rootClasses = computed(() =>
 
 <template>
   <slot v-if="!loading" />
-  <div
-    v-else-if="unstyled"
-    aria-busy="true"
-    aria-label="Loading"
-  >
-    <div
-      v-if="avatar"
-      :style="{ width: `${avatarSize}px`, height: `${avatarSize}px` }"
-    />
+  <div v-else-if="unstyled" aria-busy="true" :aria-label="loadingLabel">
+    <div v-if="avatar" :style="{ width: `${avatarSize}px`, height: `${avatarSize}px` }" />
     <div>
       <div v-if="title" :style="{ width: toCss(titleWidth), height: '16px' }" />
       <template v-if="paragraph">
@@ -101,12 +96,7 @@ const rootClasses = computed(() =>
       </template>
     </div>
   </div>
-  <div
-    v-else
-    :class="rootClasses"
-    aria-busy="true"
-    aria-label="Loading"
-  >
+  <div v-else :class="rootClasses" aria-busy="true" :aria-label="loadingLabel">
     <div v-if="avatar" class="sg-skeleton-header">
       <span
         :class="['sg-skeleton-avatar', `sg-skeleton-avatar-${avatarShape}`]"
@@ -114,17 +104,9 @@ const rootClasses = computed(() =>
       />
     </div>
     <div class="sg-skeleton-content">
-      <div
-        v-if="title"
-        class="sg-skeleton-title"
-        :style="{ width: toCss(titleWidth) }"
-      />
+      <div v-if="title" class="sg-skeleton-title" :style="{ width: toCss(titleWidth) }" />
       <ul v-if="paragraph" class="sg-skeleton-paragraph">
-        <li
-          v-for="i in rows"
-          :key="i"
-          :style="{ width: toCss(getRowWidth(i - 1, rows)) }"
-        />
+        <li v-for="i in rows" :key="i" :style="{ width: toCss(getRowWidth(i - 1, rows)) }" />
       </ul>
     </div>
   </div>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import type { GanttProps, GanttResource, GanttScale, GanttTask } from './types'
+import { computed, onBeforeUnmount, ref, type CSSProperties } from 'vue'
+import { pointsToPath } from '@skygraph/core'
+import { useConfig } from '../../ui/ConfigProvider.vue'
+import type { GanttProps, GanttRange, GanttScale, GanttTask } from './types'
 
 const props = withDefaults(defineProps<GanttProps>(), {
   scale: 'day',
@@ -16,265 +18,495 @@ const emit = defineEmits<{
   (e: 'task-change', task: GanttTask): void
 }>()
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000
+const cfg = useConfig()
+const ganttLabel = computed(() => cfg.value.locale?.gantt?.ariaLabel ?? 'Gantt chart')
+const resizeTaskLabel = computed(() => cfg.value.locale?.gantt?.resizeTask ?? 'Resize task')
 
-const stepMs = (scale: GanttScale): number => {
+const DAY = 86_400_000
+const STEP_MS: Record<GanttScale, number> = {
+  day: DAY,
+  week: 7 * DAY,
+  month: 30 * DAY,
+  quarter: 90 * DAY,
+}
+
+const toMs = (v: Date | number): number => (v instanceof Date ? v.getTime() : v)
+const alignDown = (t: number, step: number): number => Math.floor(t / step) * step
+const alignUp = (t: number, step: number): number => Math.ceil(t / step) * step
+const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v))
+
+function formatTick(timeMs: number, scale: GanttScale, columnWidth: number): string {
+  const d = new Date(timeMs)
   switch (scale) {
-    case 'day':
-      return MS_PER_DAY
-    case 'week':
-      return MS_PER_DAY * 7
-    case 'month':
-      return MS_PER_DAY * 30
-    case 'quarter':
-      return MS_PER_DAY * 90
+    case 'day': {
+      const dd = String(d.getUTCDate()).padStart(2, '0')
+      if (columnWidth < 32) {
+        if (d.getUTCDate() === 1) {
+          const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+          return `${dd}.${mm}`
+        }
+        return dd
+      }
+      const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+      return `${dd}.${mm}`
+    }
+    case 'week': {
+      const dd = String(d.getUTCDate()).padStart(2, '0')
+      const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+      return `W ${dd}.${mm}`
+    }
+    case 'month': {
+      const mm = String(d.getUTCMonth() + 1).padStart(2, '0')
+      return `${mm}.${d.getUTCFullYear()}`
+    }
+    case 'quarter': {
+      const q = Math.floor(d.getUTCMonth() / 3) + 1
+      return `Q${q} ${d.getUTCFullYear()}`
+    }
   }
 }
 
-const toMs = (d: Date | number): number => (d instanceof Date ? d.getTime() : d)
-
-const computedRange = computed(() => {
-  if (props.range) return { from: props.range.from.getTime(), to: props.range.to.getTime() }
-  if (props.tasks.length === 0) {
+function deriveRange(tasks: readonly GanttTask[], step: number): GanttRange {
+  if (tasks.length === 0) {
     const now = Date.now()
-    return { from: now, to: now + MS_PER_DAY * 7 }
+    return { from: new Date(alignDown(now, step)), to: new Date(alignUp(now + step, step)) }
   }
-  let min = Infinity
-  let max = -Infinity
-  for (const t of props.tasks) {
+  let lo = Infinity
+  let hi = -Infinity
+  for (const t of tasks) {
     const s = toMs(t.start)
     const e = toMs(t.end)
-    if (s < min) min = s
-    if (e > max) max = e
+    if (s < lo) lo = s
+    if (e > hi) hi = e
   }
-  const step = stepMs(props.scale)
-  return { from: min - step, to: max + step }
-})
-
-const totalMs = computed(() => computedRange.value.to - computedRange.value.from)
-
-const rows = computed<{ key: string; label: string; tasks: GanttTask[] }[]>(() => {
-  if (!props.resources || props.resources.length === 0) {
-    return props.tasks.map((t) => ({ key: t.id, label: t.name, tasks: [t] }))
-  }
-  return props.resources.map((res: GanttResource) => ({
-    key: res.id,
-    label: res.name,
-    tasks: props.tasks.filter((t) => t.resourceId === res.id),
-  }))
-})
-
-const totalSteps = computed(() => Math.max(1, Math.ceil(totalMs.value / stepMs(props.scale))))
-const ganttWidth = computed(() => totalSteps.value * props.columnWidth)
-
-const headerTicks = computed(() => {
-  const arr: { x: number; label: string }[] = []
-  const step = stepMs(props.scale)
-  for (let i = 0; i <= totalSteps.value; i++) {
-    const t = computedRange.value.from + i * step
-    const d = new Date(t)
-    let label = ''
-    switch (props.scale) {
-      case 'day':
-        label = `${d.getUTCDate()}`
-        break
-      case 'week':
-        label = `W${Math.ceil((d.getUTCDate() + 6) / 7)}`
-        break
-      case 'month':
-        label = `${String(d.getUTCMonth() + 1).padStart(2, '0')}`
-        break
-      case 'quarter':
-        label = `Q${Math.ceil((d.getUTCMonth() + 1) / 3)}`
-        break
-    }
-    arr.push({ x: i * props.columnWidth, label })
-  }
-  return arr
-})
-
-const taskBarStyle = (task: GanttTask) => {
-  const start = toMs(task.start)
-  const end = toMs(task.end)
-  const x = ((start - computedRange.value.from) / totalMs.value) * ganttWidth.value
-  const width = Math.max(8, ((end - start) / totalMs.value) * ganttWidth.value)
   return {
-    left: `${x}px`,
-    width: `${width}px`,
-    background: task.color ?? 'var(--sg-color-primary, #1677ff)',
+    from: new Date(alignDown(lo - step, step)),
+    to: new Date(alignUp(hi + step, step)),
   }
 }
+
+const resolved = computed(() => {
+  const step = STEP_MS[props.scale]
+  const r = props.range ?? deriveRange(props.tasks, step)
+  const rangeStart = r.from.getTime()
+  const rangeEnd = r.to.getTime()
+  const pxPerMs = props.columnWidth / step
+  const totalWidth = (rangeEnd - rangeStart) * pxPerMs
+
+  let rowsList: Array<{ key: string; label: string }>
+  let rowOf: (task: GanttTask) => number
+  if (props.resources && props.resources.length > 0) {
+    const list = props.resources
+    rowsList = list.map((res) => ({ key: res.id, label: res.name }))
+    const idx = new Map(list.map((res, i) => [res.id, i]))
+    rowOf = (t) => (t.resourceId ? (idx.get(t.resourceId) ?? 0) : 0)
+  } else {
+    rowsList = props.tasks.map((t) => ({ key: t.id, label: t.name }))
+    const idx = new Map(props.tasks.map((t, i) => [t.id, i]))
+    rowOf = (t) => idx.get(t.id) ?? 0
+  }
+
+  return { rangeStart, rangeEnd, step, totalWidth, pxPerMs, rows: rowsList, rowOf }
+})
+
+const ticks = computed(() => {
+  const out: Array<{ x: number; label: string; time: number }> = []
+  const { rangeStart, rangeEnd, step, pxPerMs } = resolved.value
+  for (let t = rangeStart; t < rangeEnd; t += step) {
+    out.push({
+      x: (t - rangeStart) * pxPerMs,
+      label: formatTick(t, props.scale, props.columnWidth),
+      time: t,
+    })
+  }
+  return out
+})
+
+interface TaskRect {
+  task: GanttTask
+  x: number
+  y: number
+  w: number
+  h: number
+  row: number
+}
+
+const taskRects = computed<TaskRect[]>(() => {
+  const { rangeStart, pxPerMs, rowOf } = resolved.value
+  const rowHeight = props.rowHeight
+  return props.tasks.map((task) => {
+    const startMs = toMs(task.start)
+    const endMs = toMs(task.end)
+    const x = (startMs - rangeStart) * pxPerMs
+    const w = Math.max(2, (endMs - startMs) * pxPerMs)
+    const row = rowOf(task)
+    const y = row * rowHeight
+    return { task, x, y, w, h: rowHeight, row }
+  })
+})
+
+const taskRectById = computed(() => {
+  const m = new Map<string, TaskRect>()
+  for (const r of taskRects.value) m.set(r.task.id, r)
+  return m
+})
+
+// Gantt-specific dependency routing — always source-right → target-left
+// regardless of geometry (standard Gantt convention).
+//   • Forward dep: 3-bend Z (right stub from source, vertical to target
+//     row, horizontal into target's left edge).
+//   • Backward / overlapping dep: 5-bend U detour along the row boundary
+//     just below the source, with a generous final approach segment.
+const dependencyPaths = computed(() => {
+  const out: Array<{ id: string; d: string }> = []
+  const STUB = 8
+  const APPROACH = 18
+  for (const r of taskRects.value) {
+    const deps = r.task.dependencies
+    if (!deps || deps.length === 0) continue
+    for (const depId of deps) {
+      const src = taskRectById.value.get(depId)
+      if (!src) continue
+      const sx = src.x + src.w
+      const sy = src.y + src.h / 2
+      const tx = r.x
+      const ey = r.y + r.h / 2
+
+      let points: ReadonlyArray<readonly [number, number]>
+      if (tx >= sx + STUB + APPROACH) {
+        const bendX = sx + STUB
+        points = [
+          [sx, sy],
+          [bendX, sy],
+          [bendX, ey],
+          [tx, ey],
+        ]
+      } else {
+        const detourY = src.y + src.h
+        points = [
+          [sx, sy],
+          [sx + STUB, sy],
+          [sx + STUB, detourY],
+          [tx - APPROACH, detourY],
+          [tx - APPROACH, ey],
+          [tx, ey],
+        ]
+      }
+      out.push({ id: `${depId}->${r.task.id}`, d: pointsToPath(points) })
+    }
+  }
+  return out
+})
+
+const headerHeight = computed(() => props.rowHeight)
+const gridHeight = computed(() => resolved.value.rows.length * props.rowHeight)
+// Reserve vertical space for the horizontal scrollbar that lives inside
+// `.sg-gantt-main` (overflow-x: auto). Without this padding the
+// scrollbar's ~14px eats into the last row's bars.
+const SCROLLBAR_RESERVE = 14
+const totalHeight = computed(() => gridHeight.value + headerHeight.value + SCROLLBAR_RESERVE)
+
+// `minmax(0, 1fr)` lets the main track shrink below the intrinsic width
+// of its child (`width: totalWidth`, often thousands of px) — without it
+// the whole grid swells past the parent and the chart bleeds outside its
+// container. Horizontal scrolling lives on `.sg-gantt-main` so the
+// sidebar stays pinned while bars scroll.
+const wrapperStyle = computed<CSSProperties>(() => ({
+  display: 'grid',
+  gridTemplateColumns: `${props.sidebarWidth}px minmax(0, 1fr)`,
+  width: '100%',
+  overflow: 'hidden',
+  height: `${totalHeight.value}px`,
+  ...(props.style ?? {}),
+}))
+
+const wrapperClass = computed(() =>
+  props.unstyled ? props.className : ['sg-gantt', props.className].filter(Boolean).join(' '),
+)
 
 interface DragSession {
-  type: 'move' | 'resize'
+  kind: 'move' | 'resize'
   taskId: string
-  startX: number
-  origin: { start: number; end: number }
+  startClientX: number
+  origStart: number
+  origEnd: number
+  lastStart: number
+  lastEnd: number
+  pointerId: number
+  captureTarget: Element | null
 }
 
-let dragSession: DragSession | null = null
+const dragSession = ref<DragSession | null>(null)
 
-const onBarPointerDown = (e: PointerEvent, task: GanttTask) => {
-  if (!props.draggable) return
-  ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
-  dragSession = {
-    type: 'move',
-    taskId: task.id,
-    startX: e.clientX,
-    origin: { start: toMs(task.start), end: toMs(task.end) },
-  }
-}
-
-const onResizePointerDown = (e: PointerEvent, task: GanttTask) => {
-  if (!props.resizable) return
+function startInteraction(e: PointerEvent, task: GanttTask, kind: 'move' | 'resize') {
+  // `e.button === undefined` happens in synthetic events fired by test
+  // runners (jsdom doesn't populate `button` for `Event('pointerdown')`)
+  // — treat that as the primary button to keep drag tests reliable.
+  if (e.button !== undefined && e.button !== 0) return
+  if (kind === 'move' && !props.draggable) return
+  if (kind === 'resize' && !props.resizable) return
+  e.preventDefault()
   e.stopPropagation()
-  ;(e.target as HTMLElement).setPointerCapture?.(e.pointerId)
-  dragSession = {
-    type: 'resize',
+
+  const target = e.currentTarget as Element | null
+  target?.setPointerCapture?.(e.pointerId)
+
+  dragSession.value = {
+    kind,
     taskId: task.id,
-    startX: e.clientX,
-    origin: { start: toMs(task.start), end: toMs(task.end) },
+    startClientX: e.clientX,
+    origStart: toMs(task.start),
+    origEnd: toMs(task.end),
+    lastStart: toMs(task.start),
+    lastEnd: toMs(task.end),
+    pointerId: e.pointerId,
+    captureTarget: target,
   }
 }
 
-const onPointerMove = (e: PointerEvent) => {
-  const ds = dragSession
-  if (!ds) return
-  const dxPx = e.clientX - ds.startX
-  const dxMs = (dxPx / ganttWidth.value) * totalMs.value
-  const step = stepMs(props.scale)
-  const snappedDx = Math.round(dxMs / step) * step
-  const task = props.tasks.find((t) => t.id === ds.taskId)
+function onWrapperPointerMove(e: PointerEvent) {
+  const d = dragSession.value
+  if (!d) return
+  const task = props.tasks.find((t) => t.id === d.taskId)
   if (!task) return
-  const next: GanttTask =
-    ds.type === 'move'
-      ? { ...task, start: ds.origin.start + snappedDx, end: ds.origin.end + snappedDx }
-      : { ...task, end: Math.max(ds.origin.start + step, ds.origin.end + snappedDx) }
-  emit('task-change', next)
+  const { step, pxPerMs } = resolved.value
+  const dxPx = e.clientX - d.startClientX
+  const dxMs = dxPx / pxPerMs
+  const snappedDx = Math.round(dxMs / step) * step
+  let nextStart = d.origStart
+  let nextEnd = d.origEnd
+  if (d.kind === 'move') {
+    nextStart = d.origStart + snappedDx
+    nextEnd = d.origEnd + snappedDx
+  } else {
+    nextEnd = Math.max(d.origStart + step, d.origEnd + snappedDx)
+  }
+  if (nextStart === d.lastStart && nextEnd === d.lastEnd) return
+  d.lastStart = nextStart
+  d.lastEnd = nextEnd
+  emit('task-change', { ...task, start: nextStart, end: nextEnd })
 }
 
-const onPointerUp = () => {
-  dragSession = null
+function onWrapperPointerUp() {
+  const d = dragSession.value
+  if (d) {
+    d.captureTarget?.releasePointerCapture?.(d.pointerId)
+  }
+  dragSession.value = null
 }
+
+onBeforeUnmount(() => {
+  dragSession.value = null
+})
 
 const containerRef = ref<HTMLDivElement | null>(null)
-
 defineExpose({ containerRef })
 </script>
 
 <template>
   <div
     ref="containerRef"
-    :class="[!props.unstyled && 'sg-gantt', props.className]"
-    :style="{ display: 'flex', overflow: 'auto', ...(props.style ?? {}) }"
-    role="grid"
-    aria-label="Gantt chart"
-    @pointermove="onPointerMove"
-    @pointerup="onPointerUp"
+    :class="wrapperClass"
+    :style="wrapperStyle"
+    role="region"
+    :aria-label="ganttLabel"
+    :data-scale="props.scale"
+    @pointermove="onWrapperPointerMove"
+    @pointerup="onWrapperPointerUp"
+    @pointercancel="onWrapperPointerUp"
   >
-    <div class="sg-gantt-sidebar" :style="{ width: `${props.sidebarWidth}px`, flexShrink: 0 }">
+    <!-- Sidebar (task / resource list) -->
+    <div
+      :class="props.unstyled ? undefined : 'sg-gantt-sidebar'"
+      :style="{ width: `${props.sidebarWidth}px` }"
+    >
       <div
-        :class="!props.unstyled ? 'sg-gantt-sidebar-header' : undefined"
-        :style="{ height: `${props.rowHeight}px` }"
+        :class="props.unstyled ? undefined : 'sg-gantt-sidebar-header'"
+        :style="{ height: `${headerHeight}px` }"
       />
       <div
-        v-for="row in rows"
+        v-for="(row, i) in resolved.rows"
         :key="row.key"
-        :class="!props.unstyled ? 'sg-gantt-sidebar-row' : undefined"
+        :class="props.unstyled ? undefined : 'sg-gantt-sidebar-row'"
         :style="{ height: `${props.rowHeight}px` }"
+        :data-row-index="i"
+        :data-row-key="row.key"
       >
         {{ row.label }}
       </div>
     </div>
-    <div class="sg-gantt-body" :style="{ position: 'relative', flex: 1 }">
+
+    <!-- Main: header + grid + bars (horizontal scroll lives here so the
+       sidebar stays pinned while bars scroll). -->
+    <div
+      :class="props.unstyled ? undefined : 'sg-gantt-main'"
+      :style="{ position: 'relative', overflowX: 'auto', overflowY: 'hidden', minWidth: 0 }"
+    >
       <div
-        :class="!props.unstyled ? 'sg-gantt-header' : undefined"
         :style="{
-          height: `${props.rowHeight}px`,
-          width: `${ganttWidth}px`,
           position: 'relative',
-          borderBottom: '1px solid #e0e0e0',
+          width: `${resolved.totalWidth}px`,
+          minWidth: '100%',
         }"
       >
         <div
-          v-for="(t, i) in headerTicks"
-          :key="i"
+          :class="props.unstyled ? undefined : 'sg-gantt-header'"
           :style="{
-            position: 'absolute',
-            left: `${t.x}px`,
-            top: 0,
-            bottom: 0,
-            width: `${props.columnWidth}px`,
-            borderLeft: '1px solid #e0e0e0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '10px',
-            color: '#888',
+            position: 'relative',
+            height: `${headerHeight}px`,
+            width: `${resolved.totalWidth}px`,
           }"
         >
-          {{ t.label }}
-        </div>
-      </div>
-      <div
-        v-for="row in rows"
-        :key="row.key"
-        :data-row-key="row.key"
-        :class="!props.unstyled ? 'sg-gantt-row' : undefined"
-        :style="{
-          position: 'relative',
-          height: `${props.rowHeight}px`,
-          width: `${ganttWidth}px`,
-          borderBottom: '1px solid #f0f0f0',
-        }"
-      >
-        <div
-          v-for="task in row.tasks"
-          :key="task.id"
-          :data-task-id="task.id"
-          :class="!props.unstyled ? 'sg-gantt-bar' : undefined"
-          :style="{
-            position: 'absolute',
-            top: '4px',
-            height: `${props.rowHeight - 8}px`,
-            borderRadius: '4px',
-            color: '#fff',
-            padding: '0 6px',
-            fontSize: '11px',
-            display: 'flex',
-            alignItems: 'center',
-            cursor: props.draggable ? 'move' : 'default',
-            ...taskBarStyle(task),
-          }"
-          @pointerdown="(e) => onBarPointerDown(e, task)"
-        >
-          <span class="sg-gantt-bar-label">{{ task.name }}</span>
           <div
-            v-if="props.resizable"
-            class="sg-gantt-bar-resize"
+            v-for="t in ticks"
+            :key="t.time"
+            :class="props.unstyled ? undefined : 'sg-gantt-tick'"
             :style="{
               position: 'absolute',
-              right: 0,
+              left: `${t.x}px`,
               top: 0,
-              bottom: 0,
-              width: '6px',
-              cursor: 'ew-resize',
+              width: `${props.columnWidth}px`,
+              height: `${headerHeight}px`,
             }"
-            @pointerdown="(e) => onResizePointerDown(e, task)"
-          />
+            :data-tick-time="t.time"
+          >
+            {{ t.label }}
+          </div>
+        </div>
+
+        <div
+          :class="props.unstyled ? undefined : 'sg-gantt-grid'"
+          :style="{
+            position: 'relative',
+            width: `${resolved.totalWidth}px`,
+            height: `${gridHeight}px`,
+          }"
+        >
+          <!-- Row backgrounds -->
           <div
-            v-if="task.progress !== undefined"
-            class="sg-gantt-bar-progress"
+            v-for="(row, i) in resolved.rows"
+            :key="row.key"
+            :class="props.unstyled ? undefined : 'sg-gantt-row'"
             :style="{
               position: 'absolute',
               left: 0,
-              top: 0,
-              bottom: 0,
-              width: `${(task.progress ?? 0) * 100}%`,
-              background: 'rgba(255,255,255,0.3)',
-              pointerEvents: 'none',
+              top: `${i * props.rowHeight}px`,
+              width: `${resolved.totalWidth}px`,
+              height: `${props.rowHeight}px`,
             }"
+            :data-row-index="i"
           />
+
+          <!-- Bars -->
+          <div
+            v-for="rect in taskRects"
+            :key="rect.task.id"
+            :class="
+              props.unstyled
+                ? undefined
+                : [
+                    'sg-gantt-bar',
+                    props.draggable ? 'sg-gantt-bar-draggable' : '',
+                    props.resizable ? 'sg-gantt-bar-resizable' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
+            "
+            :style="{
+              position: 'absolute',
+              left: `${rect.x}px`,
+              top: `${rect.y + 4}px`,
+              width: `${rect.w}px`,
+              height: `${rect.h - 8}px`,
+              background: rect.task.color,
+              cursor: props.draggable ? 'grab' : undefined,
+              userSelect: props.draggable || props.resizable ? 'none' : undefined,
+            }"
+            role="button"
+            tabindex="0"
+            :aria-label="rect.task.name"
+            :data-task-id="rect.task.id"
+            :data-row-index="rect.row"
+            @pointerdown="startInteraction($event, rect.task, 'move')"
+          >
+            <div
+              v-if="(rect.task.progress ?? 0) > 0"
+              :class="props.unstyled ? undefined : 'sg-gantt-bar-progress'"
+              :style="{
+                position: 'absolute',
+                left: 0,
+                top: 0,
+                bottom: 0,
+                width: `${clamp(rect.task.progress ?? 0, 0, 1) * 100}%`,
+              }"
+              :data-progress="clamp(rect.task.progress ?? 0, 0, 1)"
+            />
+            <span
+              :class="props.unstyled ? undefined : 'sg-gantt-bar-label'"
+              :style="{ position: 'relative', zIndex: 1 }"
+            >
+              {{ rect.task.name }}
+            </span>
+            <div
+              v-if="props.resizable"
+              :class="props.unstyled ? undefined : 'sg-gantt-bar-resize'"
+              role="button"
+              :aria-label="resizeTaskLabel"
+              tabindex="-1"
+              data-role="resize-handle"
+              :style="{
+                position: 'absolute',
+                right: 0,
+                top: 0,
+                bottom: 0,
+                width: '6px',
+                cursor: 'ew-resize',
+              }"
+              @pointerdown="startInteraction($event, rect.task, 'resize')"
+            />
+          </div>
+
+          <!-- Dependency arrows — rendered AFTER bars so the arrowhead is
+             never covered by the target bar. `pointer-events: none` lets
+             pointer events fall through to the bars beneath. -->
+          <svg
+            v-if="dependencyPaths.length > 0"
+            :class="props.unstyled ? undefined : 'sg-gantt-deps'"
+            :width="resolved.totalWidth"
+            :height="gridHeight"
+            :style="{
+              position: 'absolute',
+              inset: 0,
+              pointerEvents: 'none',
+              overflow: 'visible',
+            }"
+            aria-hidden="true"
+          >
+            <defs>
+              <marker
+                id="sg-gantt-arrow"
+                viewBox="0 0 10 10"
+                refX="10"
+                refY="5"
+                markerWidth="6"
+                markerHeight="6"
+                orient="auto"
+              >
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor" />
+              </marker>
+            </defs>
+            <path
+              v-for="p in dependencyPaths"
+              :key="p.id"
+              :d="p.d"
+              :class="props.unstyled ? undefined : 'sg-gantt-dep'"
+              fill="none"
+              stroke="currentColor"
+              :stroke-width="1.5"
+              marker-end="url(#sg-gantt-arrow)"
+              :data-dep-id="p.id"
+            />
+          </svg>
         </div>
       </div>
     </div>

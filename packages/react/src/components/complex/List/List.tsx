@@ -169,9 +169,20 @@ function ListInner<T = any>({
     setDropIndex(null)
   }, [])
 
+  const scrollRafRef = React.useRef<number | null>(null)
   const handleVirtualScroll = React.useCallback(() => {
-    if (virtualRef.current) {
-      setScrollTop(virtualRef.current.scrollTop)
+    if (scrollRafRef.current != null) return
+    scrollRafRef.current = requestAnimationFrame(() => {
+      scrollRafRef.current = null
+      if (virtualRef.current) {
+        setScrollTop(virtualRef.current.scrollTop)
+      }
+    })
+  }, [])
+
+  React.useEffect(() => {
+    return () => {
+      if (scrollRafRef.current != null) cancelAnimationFrame(scrollRafRef.current)
     }
   }, [])
 

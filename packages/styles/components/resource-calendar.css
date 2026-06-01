@@ -71,6 +71,11 @@
 .sg-rcal-main {
   background: var(--sg-color-bg);
   position: relative;
+  /* Clip absolutely positioned blocks (assignments / ticks) so they
+   * can't bleed onto the sidebar when their dates fall outside the
+   * visible `range`. Interactive drag also clamps to range, so this
+   * is a safety net for props-supplied out-of-range assignments. */
+  overflow: hidden;
 }
 
 .sg-rcal-header {
@@ -183,7 +188,7 @@
   transform: none;
   box-shadow:
     0 0 0 1px var(--sg-rcal-conflict-color),
-    0 2px 6px rgba(245, 34, 45, 0.20);
+    0 2px 6px rgba(245, 34, 45, 0.2);
 }
 
 .sg-rcal-assignment-draggable {

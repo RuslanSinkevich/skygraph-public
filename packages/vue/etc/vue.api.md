@@ -20,6 +20,7 @@ import { RendererElement } from 'vue';
 import { RendererNode } from 'vue';
 import { ShallowUnwrapRef } from 'vue';
 import { VNode } from 'vue';
+import { VNodeChild } from 'vue';
 import { VNodeProps } from 'vue';
 
 // @public (undocumented)
@@ -32,6 +33,7 @@ export interface AutoCompleteOption {
 export interface AutoCompleteProps {
     defaultValue?: string;
     disabled?: boolean;
+    loading?: boolean;
     modelValue?: string;
     options: AutoCompleteOption[];
     placeholder?: string;
@@ -185,11 +187,23 @@ export interface ButtonProps {
 }
 
 // @public (undocumented)
+export interface CalendarCellSlotProps {
+    // (undocumented)
+    date: Date;
+    // (undocumented)
+    type: 'date' | 'month';
+}
+
+// @public (undocumented)
 export interface CalendarEvent {
+    // (undocumented)
+    color?: string;
     // (undocumented)
     date: Date;
     // (undocumented)
     id?: string;
+    // (undocumented)
+    key?: string;
     // (undocumented)
     title: string;
     // (undocumented)
@@ -197,12 +211,42 @@ export interface CalendarEvent {
 }
 
 // @public (undocumented)
+export interface CalendarHeaderSlotProps {
+    // (undocumented)
+    onChange: (date: Date) => void;
+    // (undocumented)
+    onTypeChange: (type: 'month' | 'year') => void;
+    // (undocumented)
+    type: 'month' | 'year';
+    // (undocumented)
+    value: Date;
+}
+
+// @public (undocumented)
+export interface CalendarLocale {
+    dayNames?: string[];
+    monthNames?: string[];
+    today?: string;
+    week?: string;
+}
+
+// @public (undocumented)
 export interface CalendarProps {
+    defaultMultipleValue?: Date[];
+    defaultRangeValue?: [Date | null, Date | null];
     defaultValue?: Date;
     disabledDate?: (d: Date) => boolean;
     events?: CalendarEvent[];
-    mode?: 'month' | 'week' | 'year';
+    fullscreen?: boolean;
+    locale?: CalendarLocale;
+    maxEvents?: number;
+    mode?: 'month' | 'year';
     modelValue?: Date;
+    multipleSelection?: boolean;
+    multipleValue?: Date[];
+    rangeSelection?: boolean;
+    rangeValue?: [Date | null, Date | null];
+    showWeekNumber?: boolean;
     showWeekNumbers?: boolean;
     unstyled?: boolean;
     value?: Date;
@@ -219,15 +263,12 @@ export interface CarouselProps {
     unstyled?: boolean;
 }
 
-// @public (undocumented)
+// @public
 export interface CascaderOption {
-    // (undocumented)
     children?: CascaderOption[];
-    // (undocumented)
     disabled?: boolean;
-    // (undocumented)
+    isLeaf?: boolean;
     label: string;
-    // (undocumented)
     value: string | number;
 }
 
@@ -237,16 +278,24 @@ export interface CascaderProps {
     changeOnSelect?: boolean;
     defaultValue?: (string | number)[];
     disabled?: boolean;
-    displayRender?: (labels: string[]) => string;
+    displayRender?: (labels: string[], selectedOptions: CascaderOption[]) => string;
     expandTrigger?: 'click' | 'hover';
+    loadData?: (selectedOptions: CascaderOption[]) => void;
+    maxTagCount?: number;
     modelValue?: (string | number)[];
+    multiple?: boolean;
     options: CascaderOption[];
     placeholder?: string;
-    showSearch?: boolean;
+    showSearch?: boolean | {
+        filter?: CascaderSearchFilter;
+    };
     size?: 'small' | 'middle' | 'large';
     unstyled?: boolean;
     value?: (string | number)[];
 }
+
+// @public (undocumented)
+export type CascaderSearchFilter = (inputValue: string, path: CascaderOption[]) => boolean;
 
 // @public (undocumented)
 export interface CellPosition {
@@ -415,6 +464,7 @@ export interface CheckboxProps {
     defaultChecked?: boolean;
     disabled?: boolean;
     indeterminate?: boolean;
+    loading?: boolean;
     modelValue?: boolean;
     unstyled?: boolean;
 }
@@ -657,6 +707,21 @@ export interface DataGridSummaryRow<R = Record<string, unknown>> {
     render: (columnKey: string, data: R[]) => string | number | null;
 }
 
+// @public
+export interface DatePickerLocale {
+    // (undocumented)
+    nextMonth?: string;
+    // (undocumented)
+    nextYear?: string;
+    // (undocumented)
+    prevMonth?: string;
+    // (undocumented)
+    prevYear?: string;
+}
+
+// @public (undocumented)
+export type DatePickerMode = 'date' | 'month' | 'year';
+
 // @public (undocumented)
 export interface DatePickerProps {
     allowClear?: boolean;
@@ -664,15 +729,26 @@ export interface DatePickerProps {
     disabled?: boolean;
     disabledDate?: (d: Date) => boolean;
     format?: string;
+    inputReadOnly?: boolean;
+    loading?: boolean;
     modelValue?: Date | null;
     open?: boolean;
-    picker?: 'date' | 'month' | 'year';
+    picker?: DatePickerMode;
     placeholder?: string;
-    showTime?: boolean;
+    placement?: 'bottomLeft' | 'bottomRight' | 'topLeft' | 'topRight';
+    presets?: DatePreset[];
+    showNow?: boolean;
+    showTime?: boolean | ShowTimeConfig;
     showToday?: boolean;
     size?: 'small' | 'middle' | 'large';
     unstyled?: boolean;
     value?: Date | null;
+}
+
+// @public (undocumented)
+export interface DatePreset {
+    label: string;
+    value: Date | [Date, Date];
 }
 
 // @public
@@ -723,9 +799,67 @@ export interface DescriptionsProps {
 }
 
 // @public
+export interface DiagramCanvasContextPoint {
+    // (undocumented)
+    screenX: number;
+    // (undocumented)
+    screenY: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
+export interface DiagramDropPoint {
+    // (undocumented)
+    dataTransfer: DataTransfer | null;
+    // (undocumented)
+    screenX: number;
+    // (undocumented)
+    screenY: number;
+    // (undocumented)
+    x: number;
+    // (undocumented)
+    y: number;
+}
+
+// @public
+export interface DiagramEdgeAction {
+    // (undocumented)
+    hidden?: (edge: GraphEdge) => boolean;
+    // (undocumented)
+    icon?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label?: string;
+    // Warning: (ae-forgotten-export) The symbol "GraphEdge" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    onClick: (edge: GraphEdge, event: MouseEvent) => void;
+}
+
+// @public
 export interface DiagramExpose {
     // (undocumented)
     print: (opts?: PrintOptions) => void;
+}
+
+// @public
+export interface DiagramNodeAction {
+    // (undocumented)
+    hidden?: (node: GraphNode) => boolean;
+    // (undocumented)
+    icon?: string;
+    // (undocumented)
+    id: string;
+    // (undocumented)
+    label?: string;
+    // Warning: (ae-forgotten-export) The symbol "GraphNode" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    onClick: (node: GraphNode, event: MouseEvent) => void;
 }
 
 // @public (undocumented)
@@ -737,16 +871,38 @@ export type DiagramNodeRenderProps = {
 export interface DiagramProps {
     // (undocumented)
     className?: string;
+    defaultSelection?: readonly NodeId[];
+    // Warning: (ae-forgotten-export) The symbol "NodeId" needs to be exported by the entry point index.d.ts
+    draggable?: boolean | ((id: NodeId, x: number, y: number) => void);
+    // @deprecated (undocumented)
     draggableNodes?: boolean;
+    dropTypes?: readonly string[] | '*' | null;
+    edgeActions?: readonly DiagramEdgeAction[];
+    edgeArrows?: boolean;
     fileName?: string;
     // (undocumented)
     graph: GraphEngine;
     // (undocumented)
     height?: number | string;
+    nodeActions?: readonly DiagramNodeAction[];
+    panable?: boolean;
+    // @deprecated (undocumented)
     panZoom?: boolean;
-    // Warning: (ae-forgotten-export) The symbol "NodeId" needs to be exported by the entry point index.d.ts
+    routeAroundNodes?: boolean;
+    routingOptions?: {
+        gridSize?: number;
+        inflate?: number;
+        maxNodes?: number;
+        cornerRadius?: number;
+        curvature?: number;
+        stepPosition?: number;
+        stubLength?: number;
+    };
+    // @deprecated (undocumented)
     selectedNodeIds?: readonly NodeId[];
+    selection?: readonly NodeId[];
     selectionMode?: DiagramSelectionMode;
+    snapToGrid?: number;
     // (undocumented)
     state: GraphState;
     // (undocumented)
@@ -755,10 +911,11 @@ export interface DiagramProps {
     unstyled?: boolean;
     // (undocumented)
     width?: number | string;
+    zoomable?: boolean;
 }
 
-// @public (undocumented)
-export type DiagramSelectionMode = 'single' | 'multi';
+// @public
+export type DiagramSelectionMode = 'single' | 'multi' | 'lasso';
 
 // @public
 export interface DownloadPngOptions {
@@ -1293,7 +1450,6 @@ export interface GraphEngine {
     childrenOf(id: NodeId | null): NodeId[]
     clearHistory(): void
     edgesOf(id: NodeId): EdgeId[]
-    // Warning: (ae-forgotten-export) The symbol "GraphEdge" needs to be exported by the entry point index.d.ts
     getEdge(id: EdgeId): GraphEdge | undefined
     getNode(id: NodeId): GraphNode | undefined
     // Warning: (ae-forgotten-export) The symbol "OBB" needs to be exported by the entry point index.d.ts
@@ -1388,6 +1544,7 @@ export interface InputGroupProps {
 export interface InputNumberProps {
     defaultValue?: number;
     disabled?: boolean;
+    loading?: boolean;
     max?: number;
     min?: number;
     modelValue?: number | null;
@@ -1636,8 +1793,10 @@ export interface MentionsProps {
     modelValue?: string;
     options?: MentionOption[];
     placeholder?: string;
+    placement?: 'top' | 'bottom';
     prefix?: string | string[];
     rows?: number;
+    size?: SizeType;
     unstyled?: boolean;
     value?: string;
 }
@@ -1647,6 +1806,7 @@ export interface MenuItem {
     children?: MenuItem[];
     danger?: boolean;
     disabled?: boolean;
+    icon?: VNodeChild;
     key: string;
     label: string;
     type?: 'group' | 'divider';
@@ -1840,6 +2000,7 @@ export interface RadioGroupProps {
     defaultValue?: string | number;
     direction?: 'horizontal' | 'vertical';
     disabled?: boolean;
+    loading?: boolean;
     modelValue?: string | number;
     options: RadioOption[];
     unstyled?: boolean;
@@ -1854,6 +2015,26 @@ export interface RadioOption {
     label: string;
     // (undocumented)
     value: string | number;
+}
+
+// @public (undocumented)
+export interface RangePickerProps {
+    allowClear?: boolean;
+    defaultValue?: [Date, Date];
+    disabled?: boolean;
+    disabledDate?: (d: Date) => boolean;
+    format?: string;
+    loading?: boolean;
+    modelValue?: [Date | null, Date | null];
+    open?: boolean;
+    placeholder?: [string, string];
+    placement?: 'bottomLeft' | 'bottomRight' | 'topLeft' | 'topRight';
+    presets?: DatePreset[];
+    separator?: string;
+    showTime?: boolean | ShowTimeConfig;
+    size?: 'small' | 'middle' | 'large';
+    unstyled?: boolean;
+    value?: [Date | null, Date | null];
 }
 
 // @public (undocumented)
@@ -1979,7 +2160,7 @@ export interface RovingTabIndexOptions {
 // @public (undocumented)
 export type RowId = string
 
-// @public (undocumented)
+// @public
 export interface RowSelectionConfig {
     // (undocumented)
     onChange?: (keys: RowId[], rows: Array<Record<string, unknown>>) => void;
@@ -2145,18 +2326,17 @@ export interface SearchInputProps {
     value?: string;
 }
 
+// Warning: (ae-forgotten-export) The symbol "SegmentedOptionObject" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export type SegmentedOption = string | {
-    label: string;
-    value: string;
-    disabled?: boolean;
-};
+export type SegmentedOption = string | SegmentedOptionObject;
 
 // @public (undocumented)
 export interface SegmentedProps {
     block?: boolean;
     defaultValue?: string;
     disabled?: boolean;
+    modelValue?: string;
     // (undocumented)
     options: SegmentedOption[];
     size?: SizeType;
@@ -2181,6 +2361,8 @@ export interface SelectOption {
     // (undocumented)
     label: string;
     // (undocumented)
+    loading?: boolean;
+    // (undocumented)
     value: string | number;
 }
 
@@ -2188,6 +2370,7 @@ export interface SelectOption {
 export interface SelectProps {
     defaultValue?: string | number | (string | number)[];
     disabled?: boolean;
+    loading?: boolean;
     modelValue?: string | number | (string | number)[];
     multiple?: boolean;
     options: SelectOption[];
@@ -2238,6 +2421,7 @@ export const SgAutoComplete: DefineComponent<AutoCompleteProps, {}, {}, {}, {}, 
 }>, {
     size: "small" | "middle" | "large";
     disabled: boolean;
+    loading: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
 }, HTMLDivElement>;
@@ -2245,19 +2429,19 @@ export const SgAutoComplete: DefineComponent<AutoCompleteProps, {}, {}, {}, {}, 
 // @public (undocumented)
 export const SgAutoField: DefineComponent<AutoFieldProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<AutoFieldProps> & Readonly<{}>, {}, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_31" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_30" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_30" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_36" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_35" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_35" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgAvatar: __VLS_WithTemplateSlots_31<typeof __VLS_component_30, __VLS_TemplateResult_30["slots"]>;
+export const SgAvatar: __VLS_WithTemplateSlots_36<typeof __VLS_component_35, __VLS_TemplateResult_35["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_29" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_28" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_28" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_34" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_33" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_33" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgBadge: __VLS_WithTemplateSlots_29<typeof __VLS_component_28, __VLS_TemplateResult_28["slots"]>;
+export const SgBadge: __VLS_WithTemplateSlots_34<typeof __VLS_component_33, __VLS_TemplateResult_33["slots"]>;
 
 // Warning: (ae-forgotten-export) The symbol "BarChartProps" needs to be exported by the entry point index.d.ts
 //
@@ -2280,36 +2464,41 @@ export const SgBarChart: DefineComponent<BarChartProps, {
     svgRef: SVGSVGElement;
 }, HTMLDivElement>;
 
-// @public (undocumented)
-export const SgBreadcrumb: DefineComponent<BreadcrumbProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
-    itemClick: (item: BreadcrumbItem, index: number) => any;
-}, string, PublicProps, Readonly<BreadcrumbProps> & Readonly<{
-    onItemClick?: ((item: BreadcrumbItem, index: number) => any) | undefined;
-}>, {
-    separator: string;
-}, {}, {}, {}, string, ComponentProvideOptions, false, {}, any>;
-
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_33" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_32" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_32" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_30" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_29" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_29" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgButton: __VLS_WithTemplateSlots_33<typeof __VLS_component_32, __VLS_TemplateResult_32["slots"]>;
+export const SgBreadcrumb: __VLS_WithTemplateSlots_30<typeof __VLS_component_29, __VLS_TemplateResult_29["slots"]>;
 
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_39" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_38" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_38" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const SgCalendar: DefineComponent<CalendarProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
-    select: (value: Date) => any;
-    "update:modelValue": (value: Date) => any;
-    panelChange: (value: Date, mode: "month" | "week" | "year") => any;
-}, string, PublicProps, Readonly<CalendarProps> & Readonly<{
-    onSelect?: ((value: Date) => any) | undefined;
-    "onUpdate:modelValue"?: ((value: Date) => any) | undefined;
-    onPanelChange?: ((value: Date, mode: "month" | "week" | "year") => any) | undefined;
-}>, {
-    mode: "month" | "week" | "year";
-    weekStartDay: number;
-    showWeekNumbers: boolean;
-}, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
+export const SgButton: __VLS_WithTemplateSlots_39<typeof __VLS_component_38, __VLS_TemplateResult_38["slots"]>;
+
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_17" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_17" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_17" needs to be exported by the entry point index.d.ts
+//
+// @public (undocumented)
+export const SgCalendar: __VLS_WithTemplateSlots_17<typeof __VLS_component_17, __VLS_TemplateResult_17["slots"]>;
+
+// @public
+export interface SgCalendarLocale {
+    dayNames?: string[];
+    month?: string;
+    monthNames?: string[];
+    nextMonth?: string;
+    nextYear?: string;
+    now?: string;
+    prevMonth?: string;
+    prevYear?: string;
+    today?: string;
+    week?: string;
+    year?: string;
+}
 
 // @public (undocumented)
 export const SgCarousel: DefineComponent<ExtractPropTypes<    {
@@ -2384,12 +2573,16 @@ export const SgCascader: DefineComponent<CascaderProps, {}, {}, {}, {}, Componen
     size: "small" | "middle" | "large";
     disabled: boolean;
     placeholder: string;
-    showSearch: boolean;
     allowClear: boolean;
+    multiple: boolean;
+    showSearch: boolean | {
+        filter?: CascaderSearchFilter;
+    };
     expandTrigger: "click" | "hover";
     changeOnSelect: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
+    searchInputRef: HTMLInputElement;
 }, HTMLDivElement>;
 
 // Warning: (ae-forgotten-export) The symbol "Props_2" needs to be exported by the entry point index.d.ts
@@ -2430,12 +2623,12 @@ export const SgChartLegend: DefineComponent<Props, {}, {}, {}, {}, ComponentOpti
 // @public (undocumented)
 export const SgCheckbox: __VLS_WithTemplateSlots_15<typeof __VLS_component_15, __VLS_TemplateResult_15["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_32" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_31" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_31" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_38" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_37" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_37" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgCollapse: __VLS_WithTemplateSlots_32<typeof __VLS_component_31, __VLS_TemplateResult_31["slots"]>;
+export const SgCollapse: __VLS_WithTemplateSlots_38<typeof __VLS_component_37, __VLS_TemplateResult_37["slots"]>;
 
 // @public (undocumented)
 export const SgColorPicker: DefineComponent<ColorPickerProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
@@ -2449,10 +2642,13 @@ export const SgColorPicker: DefineComponent<ColorPickerProps, {}, {}, {}, {}, Co
 }>, {
     size: "small" | "middle" | "large";
     disabled: boolean;
+    open: boolean;
     trigger: "click" | "hover";
     format: "hex" | "rgb";
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
+    satPanelRef: HTMLDivElement;
+    hueBarRef: HTMLDivElement;
 }, HTMLDivElement>;
 
 // @public
@@ -2466,10 +2662,10 @@ export interface SgConfig {
 // @public (undocumented)
 export const sgConfigKey: InjectionKey<ComputedRef<SgConfig>>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_18" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_20" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgConfigProvider: __VLS_WithTemplateSlots_18<DefineComponent<ExtractPropTypes<    {
+export const SgConfigProvider: __VLS_WithTemplateSlots_20<DefineComponent<ExtractPropTypes<    {
     size: {
         type: PropType<SizeType>;
         default: undefined;
@@ -2578,39 +2774,52 @@ export const SgDataGrid: DefineComponent<__VLS_Props, {
     "onSelected-rows-change"?: ((payload: Set<string | number>) => any) | undefined;
 }>, {
     height: number | string;
+    loading: boolean;
     emptyText: string;
     rowSelection: boolean;
-    width: number | string;
-    loading: boolean;
-    overscan: number;
-    rowHeight: number;
-    headerHeight: number;
-    showRowNumber: boolean;
     striped: boolean;
     highlightOnHover: boolean;
+    rowHeight: number;
+    width: number | string;
+    overscan: number;
+    headerHeight: number;
+    showRowNumber: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     containerRef: HTMLDivElement;
 }, HTMLDivElement>;
 
 // @public (undocumented)
 export const SgDatePicker: DefineComponent<DatePickerProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
+    blur: () => any;
     change: (value: Date | null, dateString: string) => any;
     "update:modelValue": (value: Date | null) => any;
     openChange: (open: boolean) => any;
+    calendarChange: (value: Date | null) => any;
 }, string, PublicProps, Readonly<DatePickerProps> & Readonly<{
+    onBlur?: (() => any) | undefined;
     onChange?: ((value: Date | null, dateString: string) => any) | undefined;
     "onUpdate:modelValue"?: ((value: Date | null) => any) | undefined;
     onOpenChange?: ((open: boolean) => any) | undefined;
+    onCalendarChange?: ((value: Date | null) => any) | undefined;
 }>, {
     size: "small" | "middle" | "large";
     disabled: boolean;
     placeholder: string;
     allowClear: boolean;
-    picker: "date" | "month" | "year";
-    showTime: boolean;
+    loading: boolean;
+    open: boolean;
+    picker: DatePickerMode;
+    showTime: boolean | ShowTimeConfig;
     showToday: boolean;
+    showNow: boolean;
+    placement: "bottomLeft" | "bottomRight" | "topLeft" | "topRight";
+    inputReadOnly: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
+    inputRef: HTMLInputElement;
+    hourColRef: HTMLDivElement;
+    minuteColRef: HTMLDivElement;
+    secondColRef: HTMLDivElement;
 }, HTMLDivElement>;
 
 // @public (undocumented)
@@ -2628,26 +2837,26 @@ export const SgDescriptions: DefineComponent<DescriptionsProps, {}, {}, {}, {}, 
 // @public (undocumented)
 export const SgDiagram: __VLS_WithTemplateSlots_2<typeof __VLS_component_2, __VLS_TemplateResult_2["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_21" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_20" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_20" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_23" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_22" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_22" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgDrawer: __VLS_WithTemplateSlots_21<typeof __VLS_component_20, __VLS_TemplateResult_20["slots"]>;
+export const SgDrawer: __VLS_WithTemplateSlots_23<typeof __VLS_component_22, __VLS_TemplateResult_22["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_28" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_27" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_27" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_31" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_30" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_30" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgDropdown: __VLS_WithTemplateSlots_28<typeof __VLS_component_27, __VLS_TemplateResult_27["slots"]>;
+export const SgDropdown: __VLS_WithTemplateSlots_31<typeof __VLS_component_30, __VLS_TemplateResult_30["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_25" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_24" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_24" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_27" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_26" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_26" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgEmpty: __VLS_WithTemplateSlots_25<typeof __VLS_component_24, __VLS_TemplateResult_24["slots"]>;
+export const SgEmpty: __VLS_WithTemplateSlots_27<typeof __VLS_component_26, __VLS_TemplateResult_26["slots"]>;
 
 // Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_5" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "__VLS_component_5" needs to be exported by the entry point index.d.ts
@@ -2693,8 +2902,8 @@ export const SgGantt: DefineComponent<GanttProps, {
     "onTask-change"?: ((task: GanttTask) => any) | undefined;
 }>, {
     unstyled: boolean;
-    draggable: boolean;
     rowHeight: number;
+    draggable: boolean;
     columnWidth: number;
     scale: GanttScale;
     resizable: boolean;
@@ -2739,6 +2948,7 @@ export const SgInputNumber: DefineComponent<InputNumberProps, {}, {}, {}, {}, Co
 }>, {
     size: "small" | "middle" | "large";
     disabled: boolean;
+    loading: boolean;
     step: number;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLSpanElement>;
 
@@ -2771,6 +2981,7 @@ export const SgLineChart: DefineComponent<LineChartProps, {
     height: number;
     unstyled: boolean;
     width: number | string;
+    crosshair: LineChartCrosshair;
     markers: boolean;
     strokeWidth: number;
     fileName: string;
@@ -2823,18 +3034,78 @@ export const SgList: <T>(__VLS_props: NonNullable<Awaited<typeof __VLS_setup>>["
 
 // @public
 export interface SgLocale {
+    // Warning: (ae-forgotten-export) The symbol "BreadcrumbLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    breadcrumb?: BreadcrumbLocale;
+    // (undocumented)
+    calendar?: SgCalendarLocale;
+    // Warning: (ae-forgotten-export) The symbol "CarouselLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    carousel?: CarouselLocale;
+    // Warning: (ae-forgotten-export) The symbol "CascaderLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    cascader?: CascaderLocale;
+    // Warning: (ae-forgotten-export) The symbol "ChartsLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    charts?: ChartsLocale;
+    // Warning: (ae-forgotten-export) The symbol "ColorPickerLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    colorPicker?: ColorPickerLocale;
+    // Warning: (ae-forgotten-export) The symbol "DashboardLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    dashboard?: DashboardLocale;
+    // Warning: (ae-forgotten-export) The symbol "DataGridLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    dataGrid?: DataGridLocale;
+    // (undocumented)
+    datePicker?: DatePickerLocale;
+    // Warning: (ae-forgotten-export) The symbol "DiagramLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    diagram?: DiagramLocale;
+    // Warning: (ae-forgotten-export) The symbol "DrawerLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    drawer?: DrawerLocale;
     // Warning: (ae-forgotten-export) The symbol "EmptyLocale" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     empty?: EmptyLocale;
+    // Warning: (ae-forgotten-export) The symbol "FormLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    form?: FormLocale;
+    // Warning: (ae-forgotten-export) The symbol "GanttLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    gantt?: GanttLocale;
     // (undocumented)
     inlineEdit?: InlineEditLocale;
+    // Warning: (ae-forgotten-export) The symbol "InputLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    input?: InputLocale;
     // (undocumented)
     inputPassword?: InputPasswordLocale;
+    // Warning: (ae-forgotten-export) The symbol "ListLocale_2" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    list?: ListLocale_2;
     // Warning: (ae-forgotten-export) The symbol "ModalLocale" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
     modal?: ModalLocale;
+    // Warning: (ae-forgotten-export) The symbol "NotificationLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    notification?: NotificationLocale;
     // Warning: (ae-forgotten-export) The symbol "PaginationLocale" needs to be exported by the entry point index.d.ts
     //
     // (undocumented)
@@ -2845,10 +3116,58 @@ export interface SgLocale {
     //
     // (undocumented)
     popconfirm?: PopconfirmLocale;
+    // Warning: (ae-forgotten-export) The symbol "RateLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    rate?: RateLocale;
+    // Warning: (ae-forgotten-export) The symbol "ResourceCalendarLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    resourceCalendar?: ResourceCalendarLocale;
+    // Warning: (ae-forgotten-export) The symbol "SchemaFormEditorLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    schemaFormEditor?: SchemaFormEditorLocale;
     // (undocumented)
     searchInput?: SearchInputLocale;
+    // Warning: (ae-forgotten-export) The symbol "SkeletonLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    skeleton?: SkeletonLocale;
+    // Warning: (ae-forgotten-export) The symbol "SpinLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    spin?: SpinLocale;
+    // Warning: (ae-forgotten-export) The symbol "TableLocale_2" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    table?: TableLocale_2;
+    // Warning: (ae-forgotten-export) The symbol "TagLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    tag?: TagLocale;
     // (undocumented)
     tagInput?: TagInputLocale;
+    // Warning: (ae-forgotten-export) The symbol "TimelineLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    timeline?: TimelineLocale;
+    // Warning: (ae-forgotten-export) The symbol "TransferLocale_2" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    transfer?: TransferLocale_2;
+    // Warning: (ae-forgotten-export) The symbol "TreeLocale_2" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    tree?: TreeLocale_2;
+    // Warning: (ae-forgotten-export) The symbol "TreeSelectLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    treeSelect?: TreeSelectLocale;
+    // Warning: (ae-forgotten-export) The symbol "UploadLocale" needs to be exported by the entry point index.d.ts
+    //
+    // (undocumented)
+    upload?: UploadLocale;
 }
 
 // @public (undocumented)
@@ -2863,12 +3182,13 @@ export const SgMentions: DefineComponent<MentionsProps, {}, {}, {}, {}, Componen
     onChange?: ((value: string) => any) | undefined;
     "onUpdate:modelValue"?: ((value: string) => any) | undefined;
 }>, {
-    disabled: boolean;
-    rows: number;
-    options: MentionOption[];
     prefix: string | string[];
+    options: MentionOption[];
+    rows: number;
+    placement: "top" | "bottom";
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     textareaRef: HTMLTextAreaElement;
+    dropdownRef: HTMLDivElement;
 }, HTMLDivElement>;
 
 // @public (undocumented)
@@ -2954,20 +3274,20 @@ export const SgMenu: DefineComponent<ExtractPropTypes<    {
 }>, {
     selectedKeys: string[] | undefined;
     unstyled: boolean;
-    defaultSelectedKeys: string[];
     mode: "vertical" | "horizontal" | "inline";
+    defaultSelectedKeys: string[];
     openKeys: string[] | undefined;
     inlineCollapsed: boolean;
     defaultOpenKeys: string[];
     theme: "dark" | "light";
 }, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_20" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_19" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_19" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_22" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_21" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_21" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgModal: __VLS_WithTemplateSlots_20<typeof __VLS_component_19, __VLS_TemplateResult_19["slots"]>;
+export const SgModal: __VLS_WithTemplateSlots_22<typeof __VLS_component_21, __VLS_TemplateResult_21["slots"]>;
 
 // @public
 export const SgNotificationContainer: DefineComponent<ExtractPropTypes<    {
@@ -2992,7 +3312,7 @@ export const SgNotificationContainer: DefineComponent<ExtractPropTypes<    {
     };
 }>> & Readonly<{}>, {
     unstyled: boolean;
-    placement: "topRight" | "topLeft" | "bottomRight" | "bottomLeft";
+    placement: "bottomLeft" | "bottomRight" | "topLeft" | "topRight";
 }, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
 
 // @public (undocumented)
@@ -3119,12 +3439,12 @@ export const SgPieChart: DefineComponent<PieChartProps, {
 // @public (undocumented)
 export const SgPinInput: DefineComponent<PinInputProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
     change: (v: string) => any;
-    complete: (v: string) => any;
     "update:modelValue": (v: string) => any;
+    complete: (v: string) => any;
 }, string, PublicProps, Readonly<PinInputProps> & Readonly<{
     onChange?: ((v: string) => any) | undefined;
-    onComplete?: ((v: string) => any) | undefined;
     "onUpdate:modelValue"?: ((v: string) => any) | undefined;
+    onComplete?: ((v: string) => any) | undefined;
 }>, {
     length: number;
     mask: boolean;
@@ -3133,12 +3453,12 @@ export const SgPinInput: DefineComponent<PinInputProps, {}, {}, {}, {}, Componen
     autoFocus: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_22" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_21" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_21" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_24" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_23" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_23" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgPopconfirm: __VLS_WithTemplateSlots_22<typeof __VLS_component_21, __VLS_TemplateResult_21["slots"]>;
+export const SgPopconfirm: __VLS_WithTemplateSlots_24<typeof __VLS_component_23, __VLS_TemplateResult_23["slots"]>;
 
 // @public (undocumented)
 export const SgProgress: DefineComponent<ProgressProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<ProgressProps> & Readonly<{}>, {
@@ -3157,8 +3477,38 @@ export const SgRadio: DefineComponent<RadioGroupProps, {}, {}, {}, {}, Component
     "onUpdate:modelValue"?: ((value: string | number) => any) | undefined;
 }>, {
     direction: "horizontal" | "vertical";
+    value: string | number;
     disabled: boolean;
-}, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
+    modelValue: string | number;
+    unstyled: boolean;
+    loading: boolean;
+    defaultValue: string | number;
+}, {}, {}, {}, string, ComponentProvideOptions, false, {
+    wrapperRef: HTMLDivElement;
+}, HTMLDivElement>;
+
+// @public (undocumented)
+export const SgRangePicker: DefineComponent<RangePickerProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
+    change: (value: [Date | null, Date | null], dateStrings: [string, string]) => any;
+    "update:modelValue": (value: [Date | null, Date | null]) => any;
+    openChange: (open: boolean) => any;
+}, string, PublicProps, Readonly<RangePickerProps> & Readonly<{
+    onChange?: ((value: [Date | null, Date | null], dateStrings: [string, string]) => any) | undefined;
+    "onUpdate:modelValue"?: ((value: [Date | null, Date | null]) => any) | undefined;
+    onOpenChange?: ((open: boolean) => any) | undefined;
+}>, {
+    size: "small" | "middle" | "large";
+    disabled: boolean;
+    placeholder: [string, string];
+    allowClear: boolean;
+    loading: boolean;
+    open: boolean;
+    separator: string;
+    showTime: boolean | ShowTimeConfig;
+    placement: "bottomLeft" | "bottomRight" | "topLeft" | "topRight";
+}, {}, {}, {}, string, ComponentProvideOptions, false, {
+    wrapperRef: HTMLDivElement;
+}, HTMLDivElement>;
 
 // @public (undocumented)
 export const SgRate: DefineComponent<RateProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
@@ -3182,28 +3532,30 @@ export const SgResourceCalendar: DefineComponent<ResourceCalendarProps, {}, {}, 
         b: ResourceCalendarAssignment;
     }[]) => any;
     "assignment-change": (next: ResourceCalendarAssignment) => any;
+    assignmentChange: (next: ResourceCalendarAssignment) => any;
 }, string, PublicProps, Readonly<ResourceCalendarProps> & Readonly<{
     onConflict?: ((conflicts: {
         a: ResourceCalendarAssignment;
         b: ResourceCalendarAssignment;
     }[]) => any) | undefined;
     "onAssignment-change"?: ((next: ResourceCalendarAssignment) => any) | undefined;
+    onAssignmentChange?: ((next: ResourceCalendarAssignment) => any) | undefined;
 }>, {
     unstyled: boolean;
-    draggable: boolean;
     rowHeight: number;
+    draggable: boolean;
     columnWidth: number;
     scale: ResourceCalendarScale;
     resizable: boolean;
     sidebarWidth: number;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_24" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_23" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_23" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_26" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_25" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_25" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgResult: __VLS_WithTemplateSlots_24<typeof __VLS_component_23, __VLS_TemplateResult_23["slots"]>;
+export const SgResult: __VLS_WithTemplateSlots_26<typeof __VLS_component_25, __VLS_TemplateResult_25["slots"]>;
 
 // Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_10" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "__VLS_component_10" needs to be exported by the entry point index.d.ts
@@ -3260,77 +3612,12 @@ export const SgSearchInput: DefineComponent<SearchInputProps, {}, {}, {}, {}, Co
     inputRef: HTMLInputElement;
 }, any>;
 
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_33" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_32" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_32" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const SgSegmented: DefineComponent<ExtractPropTypes<    {
-    options: {
-        type: PropType<SegmentedOption[]>;
-        required: true;
-    };
-    value: {
-        type: StringConstructor;
-        default: undefined;
-    };
-    defaultValue: {
-        type: StringConstructor;
-        default: undefined;
-    };
-    size: {
-        type: PropType<SizeType>;
-        default: undefined;
-    };
-    disabled: {
-        type: BooleanConstructor;
-        default: undefined;
-    };
-    block: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    unstyled: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-}>, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
-    change: (value: string) => any;
-}, string, PublicProps, Readonly<ExtractPropTypes<    {
-    options: {
-        type: PropType<SegmentedOption[]>;
-        required: true;
-    };
-    value: {
-        type: StringConstructor;
-        default: undefined;
-    };
-    defaultValue: {
-        type: StringConstructor;
-        default: undefined;
-    };
-    size: {
-        type: PropType<SizeType>;
-        default: undefined;
-    };
-    disabled: {
-        type: BooleanConstructor;
-        default: undefined;
-    };
-    block: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-    unstyled: {
-        type: BooleanConstructor;
-        default: boolean;
-    };
-}>> & Readonly<{
-    onChange?: ((value: string) => any) | undefined;
-}>, {
-    size: SizeType;
-    value: string;
-    disabled: boolean;
-    unstyled: boolean;
-    block: boolean;
-    defaultValue: string;
-}, {}, {}, {}, string, ComponentProvideOptions, true, {}, any>;
+export const SgSegmented: __VLS_WithTemplateSlots_33<typeof __VLS_component_32, __VLS_TemplateResult_32["slots"]>;
 
 // @public (undocumented)
 export const SgSelect: DefineComponent<SelectProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
@@ -3345,17 +3632,18 @@ export const SgSelect: DefineComponent<SelectProps, {}, {}, {}, {}, ComponentOpt
     size: "small" | "middle" | "large";
     disabled: boolean;
     placeholder: string;
+    loading: boolean;
     multiple: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
 }, any>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_26" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_25" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_25" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_28" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_27" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_27" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgSkeleton: __VLS_WithTemplateSlots_26<typeof __VLS_component_25, __VLS_TemplateResult_25["slots"]>;
+export const SgSkeleton: __VLS_WithTemplateSlots_28<typeof __VLS_component_27, __VLS_TemplateResult_27["slots"]>;
 
 // @public (undocumented)
 export const SgSlider: DefineComponent<SliderProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
@@ -3366,30 +3654,27 @@ export const SgSlider: DefineComponent<SliderProps, {}, {}, {}, {}, ComponentOpt
     "onUpdate:modelValue"?: ((value: number) => any) | undefined;
 }>, {
     disabled: boolean;
+    defaultValue: number;
+    step: number;
     min: number;
     max: number;
-    step: number;
-    defaultValue: number;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     trackRef: HTMLDivElement;
 }, HTMLDivElement>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_19" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_18" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_18" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_21" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_20" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_20" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgSpin: __VLS_WithTemplateSlots_19<typeof __VLS_component_18, __VLS_TemplateResult_18["slots"]>;
+export const SgSpin: __VLS_WithTemplateSlots_21<typeof __VLS_component_20, __VLS_TemplateResult_20["slots"]>;
 
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_32" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_31" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_31" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const SgSteps: DefineComponent<StepsProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
-    change: (current: number) => any;
-}, string, PublicProps, Readonly<StepsProps> & Readonly<{
-    onChange?: ((current: number) => any) | undefined;
-}>, {
-    direction: "horizontal" | "vertical";
-    type: "default" | "navigation";
-}, {}, {}, {}, string, ComponentProvideOptions, false, {}, any>;
+export const SgSteps: __VLS_WithTemplateSlots_32<typeof __VLS_component_31, __VLS_TemplateResult_31["slots"]>;
 
 // Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_11" needs to be exported by the entry point index.d.ts
 // Warning: (ae-forgotten-export) The symbol "__VLS_component_11" needs to be exported by the entry point index.d.ts
@@ -3412,19 +3697,19 @@ export const SgSwitch: __VLS_WithTemplateSlots_16<typeof __VLS_component_16, __V
 // @public (undocumented)
 export const SgTable: __VLS_WithTemplateSlots<typeof __VLS_component, __VLS_TemplateResult["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_27" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_26" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_26" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_29" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_28" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_28" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgTabs: __VLS_WithTemplateSlots_27<typeof __VLS_component_26, __VLS_TemplateResult_26["slots"]>;
+export const SgTabs: __VLS_WithTemplateSlots_29<typeof __VLS_component_28, __VLS_TemplateResult_28["slots"]>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_30" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_29" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_29" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_35" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_34" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_34" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgTag: __VLS_WithTemplateSlots_30<typeof __VLS_component_29, __VLS_TemplateResult_29["slots"]>;
+export const SgTag: __VLS_WithTemplateSlots_35<typeof __VLS_component_34, __VLS_TemplateResult_34["slots"]>;
 
 // @public (undocumented)
 export const SgTagInput: DefineComponent<TagInputProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
@@ -3460,13 +3745,16 @@ export const SgTextarea: DefineComponent<TextareaProps, {}, {}, {}, {}, Componen
 }>, {
     size: "small" | "middle" | "large";
     disabled: boolean;
+    loading: boolean;
     rows: number;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
 
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_37" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_36" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_36" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const SgTimeline: DefineComponent<TimelineProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {}, string, PublicProps, Readonly<TimelineProps> & Readonly<{}>, {
-    mode: "left" | "right" | "alternate";
-}, {}, {}, {}, string, ComponentProvideOptions, false, {}, any>;
+export const SgTimeline: __VLS_WithTemplateSlots_37<typeof __VLS_component_36, __VLS_TemplateResult_36["slots"]>;
 
 // @public (undocumented)
 export const SgTimePicker: DefineComponent<TimePickerProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
@@ -3482,38 +3770,60 @@ export const SgTimePicker: DefineComponent<TimePickerProps, {}, {}, {}, {}, Comp
     disabled: boolean;
     placeholder: string;
     allowClear: boolean;
+    loading: boolean;
+    open: boolean;
+    showNow: boolean;
     use12Hours: boolean;
     hourStep: number;
     minuteStep: number;
     secondStep: number;
     showSecond: boolean;
-    showNow: boolean;
+}, {}, {}, {}, string, ComponentProvideOptions, false, {
+    wrapperRef: HTMLDivElement;
+    hourColRef: HTMLDivElement;
+    minuteColRef: HTMLDivElement;
+    secondColRef: HTMLDivElement;
+}, HTMLDivElement>;
+
+// @public (undocumented)
+export const SgTimeRangePicker: DefineComponent<TimeRangePickerProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
+    change: (value: [string, string]) => any;
+    "update:modelValue": (value: [string, string]) => any;
+    openChange: (open: boolean) => any;
+}, string, PublicProps, Readonly<TimeRangePickerProps> & Readonly<{
+    onChange?: ((value: [string, string]) => any) | undefined;
+    "onUpdate:modelValue"?: ((value: [string, string]) => any) | undefined;
+    onOpenChange?: ((open: boolean) => any) | undefined;
+}>, {
+    size: "small" | "middle" | "large";
+    disabled: boolean;
+    placeholder: [string, string];
+    allowClear: boolean;
+    loading: boolean;
+    open: boolean;
+    separator: string;
+    use12Hours: boolean;
+    hourStep: number;
+    minuteStep: number;
+    secondStep: number;
+    showSecond: boolean;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
 }, HTMLDivElement>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_23" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_22" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_22" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_25" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_24" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_24" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgTooltip: __VLS_WithTemplateSlots_23<typeof __VLS_component_22, __VLS_TemplateResult_22["slots"]>;
+export const SgTooltip: __VLS_WithTemplateSlots_25<typeof __VLS_component_24, __VLS_TemplateResult_24["slots"]>;
 
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_19" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_19" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_19" needs to be exported by the entry point index.d.ts
+//
 // @public (undocumented)
-export const SgTransfer: DefineComponent<TransferProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
-    change: (keys: string[], direction: "left" | "right", moveKeys: string[]) => any;
-    "update:modelValue": (keys: string[]) => any;
-    selectChange: (leftKeys: string[], rightKeys: string[]) => any;
-}, string, PublicProps, Readonly<TransferProps> & Readonly<{
-    onChange?: ((keys: string[], direction: "left" | "right", moveKeys: string[]) => any) | undefined;
-    "onUpdate:modelValue"?: ((keys: string[]) => any) | undefined;
-    onSelectChange?: ((leftKeys: string[], rightKeys: string[]) => any) | undefined;
-}>, {
-    disabled: boolean;
-    showSearch: boolean;
-    titles: [string, string];
-    oneWay: boolean;
-}, {}, {}, {}, string, ComponentProvideOptions, false, {}, HTMLDivElement>;
+export const SgTransfer: __VLS_WithTemplateSlots_19<typeof __VLS_component_19, __VLS_TemplateResult_19["slots"]>;
 
 // @public
 export const SgTransition: DefineComponent<ExtractPropTypes<    {
@@ -3637,6 +3947,8 @@ export const SgTree: DefineComponent<TreeProps, {
         event: MouseEvent;
         node: TreeNodeData;
     }) => any;
+    edit: (info: TreeEditInfo) => any;
+    editCancel: (key: TreeKey) => any;
     "update:expandedKeys": (keys: TreeKey[]) => any;
     "update:checkedKeys": (keys: TreeKey[]) => any;
     "update:selectedKeys": (keys: TreeKey[]) => any;
@@ -3656,6 +3968,8 @@ export const SgTree: DefineComponent<TreeProps, {
         event: MouseEvent;
         node: TreeNodeData;
     }) => any) | undefined;
+    onEdit?: ((info: TreeEditInfo) => any) | undefined;
+    onEditCancel?: ((key: TreeKey) => any) | undefined;
     "onUpdate:expandedKeys"?: ((keys: TreeKey[]) => any) | undefined;
     "onUpdate:checkedKeys"?: ((keys: TreeKey[]) => any) | undefined;
     "onUpdate:selectedKeys"?: ((keys: TreeKey[]) => any) | undefined;
@@ -3665,16 +3979,16 @@ export const SgTree: DefineComponent<TreeProps, {
     selectable: boolean;
     checkable: boolean;
     unstyled: boolean;
+    multiple: boolean;
+    virtual: boolean;
     indentSize: number;
     blockNode: boolean;
     directory: boolean;
     animated: boolean;
     draggable: boolean | ((node: TreeNodeData) => boolean);
     checkStrictly: boolean;
-    multiple: boolean;
     defaultExpandAll: boolean;
     autoExpandParent: boolean;
-    virtual: boolean;
     showSearch: boolean;
     defaultSearchValue: string;
     highlightSearch: boolean;
@@ -3701,6 +4015,8 @@ export const SgTreeNodeRow: DefineComponent<TreeNodeRowProps, {}, {}, {}, {}, Co
     rightClick: (evt: MouseEvent, node: TreeNodeData) => any;
     loadData: (node: TreeNodeData) => any;
     focusNode: (key: TreeKey | null) => any;
+    edit: (key: TreeKey, value: string, oldValue: string) => any;
+    editCancel: (key: TreeKey) => any;
 }, string, PublicProps, Readonly<TreeNodeRowProps> & Readonly<{
     onSelect?: ((key: TreeKey) => any) | undefined;
     onDrop?: ((evt: DragEvent, key: TreeKey) => any) | undefined;
@@ -3713,37 +4029,49 @@ export const SgTreeNodeRow: DefineComponent<TreeNodeRowProps, {}, {}, {}, {}, Co
     onRightClick?: ((evt: MouseEvent, node: TreeNodeData) => any) | undefined;
     onLoadData?: ((node: TreeNodeData) => any) | undefined;
     onFocusNode?: ((key: TreeKey | null) => any) | undefined;
+    onEdit?: ((key: TreeKey, value: string, oldValue: string) => any) | undefined;
+    onEditCancel?: ((key: TreeKey) => any) | undefined;
 }>, {}, {}, {}, {}, string, ComponentProvideOptions, false, {
     rowEl: HTMLDivElement;
+    editInput: HTMLInputElement;
 }, HTMLDivElement>;
 
 // @public (undocumented)
 export const SgTreeSelect: DefineComponent<TreeSelectProps, {}, {}, {}, {}, ComponentOptionsMixin, ComponentOptionsMixin, {} & {
-    search: (text: string) => any;
-    change: (value: string | number | (string | number)[]) => any;
-    "update:modelValue": (value: string | number | (string | number)[]) => any;
+    search: (value: string) => any;
+    change: (value: TreeKey | TreeKey[], label: string[], extra: {
+        triggerNode: TreeNodeData;
+    }) => any;
+    "update:modelValue": (value: TreeKey | TreeKey[]) => any;
 }, string, PublicProps, Readonly<TreeSelectProps> & Readonly<{
-    onSearch?: ((text: string) => any) | undefined;
-    onChange?: ((value: string | number | (string | number)[]) => any) | undefined;
-    "onUpdate:modelValue"?: ((value: string | number | (string | number)[]) => any) | undefined;
+    onSearch?: ((value: string) => any) | undefined;
+    onChange?: ((value: TreeKey | TreeKey[], label: string[], extra: {
+        triggerNode: TreeNodeData;
+    }) => any) | undefined;
+    "onUpdate:modelValue"?: ((value: TreeKey | TreeKey[]) => any) | undefined;
 }>, {
     size: "small" | "middle" | "large";
     disabled: boolean;
     placeholder: string;
+    allowClear: boolean;
     multiple: boolean;
     showSearch: boolean;
-    allowClear: boolean;
     treeCheckable: boolean;
+    treeCheckStrictly: boolean;
+    treeDefaultExpandAll: boolean;
+    treeLine: boolean;
+    showCheckedStrategy: TreeSelectStrategy;
 }, {}, {}, {}, string, ComponentProvideOptions, false, {
     wrapperRef: HTMLDivElement;
+    searchRef: HTMLInputElement;
 }, HTMLDivElement>;
 
-// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_17" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_component_17" needs to be exported by the entry point index.d.ts
-// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_17" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_WithTemplateSlots_18" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_component_18" needs to be exported by the entry point index.d.ts
+// Warning: (ae-forgotten-export) The symbol "__VLS_TemplateResult_18" needs to be exported by the entry point index.d.ts
 //
 // @public (undocumented)
-export const SgUpload: __VLS_WithTemplateSlots_17<typeof __VLS_component_17, __VLS_TemplateResult_17["slots"]>;
+export const SgUpload: __VLS_WithTemplateSlots_18<typeof __VLS_component_18, __VLS_TemplateResult_18["slots"]>;
 
 // Warning: (ae-forgotten-export) The symbol "__VLS_PrettifyLocal_2" needs to be exported by the entry point index.d.ts
 //
@@ -3771,6 +4099,15 @@ export const SgVirtualList: <T>(__VLS_props: NonNullable<Awaited<typeof __VLS_se
 }>) => VNode & {
     __ctx?: Awaited<typeof __VLS_setup>;
 };
+
+// @public (undocumented)
+export interface ShowTimeConfig {
+    defaultValue?: Date;
+    format?: string;
+    hourStep?: number;
+    minuteStep?: number;
+    secondStep?: number;
+}
 
 // @public
 export type SizeType = 'small' | 'middle' | 'large';
@@ -3824,12 +4161,14 @@ export interface SpinProps {
 // @public (undocumented)
 export interface StepItem {
     description?: string;
+    icon?: string;
     status?: 'wait' | 'process' | 'finish' | 'error';
     title: string;
 }
 
 // @public (undocumented)
 export interface StepsProps {
+    clickable?: boolean;
     current: number;
     direction?: 'horizontal' | 'vertical';
     items: StepItem[];
@@ -3842,6 +4181,7 @@ export interface StepsProps {
 export interface SubmitButtonProps {
     disabled?: boolean;
     loading?: boolean;
+    unstyled?: boolean;
 }
 
 // @public (undocumented)
@@ -3849,6 +4189,7 @@ export interface SwitchProps {
     checked?: boolean;
     defaultChecked?: boolean;
     disabled?: boolean;
+    loading?: boolean;
     modelValue?: boolean;
     size?: 'small' | 'middle' | 'large';
     unstyled?: boolean;
@@ -3863,19 +4204,39 @@ export interface TabItem {
     loading?: boolean;
 }
 
+// @public
+export type TableAggregateType = 'sum' | 'avg' | 'count' | 'min' | 'max';
+
+// @public
+export interface TableCellSpan {
+    // (undocumented)
+    colSpan?: number;
+    // (undocumented)
+    rowSpan?: number;
+}
+
 // @public (undocumented)
 export type TableClassNames = Partial<Record<TableSlot, string>>;
 
 // @public (undocumented)
 export interface TableColumn {
+    aggregate?: TableAggregateType | ((values: unknown[]) => unknown);
     align?: 'left' | 'center' | 'right';
+    children?: TableColumn[];
+    editable?: boolean;
+    filterMultiple?: boolean;
     filters?: Array<{
         text: string;
         value: unknown;
     }>;
+    fixed?: 'left' | 'right';
+    headerClassName?: string;
     hidden?: boolean;
     key: string;
+    minWidth?: number;
+    onCell?: (row: Record<string, unknown>, rowIndex: number) => TableCellSpan;
     onFilter?: (value: unknown, row: Record<string, unknown>) => boolean;
+    resizable?: boolean;
     sortable?: boolean;
     title: string;
     width?: number;
@@ -3955,16 +4316,40 @@ export interface TableEngine {
     updateCell(id: RowId, column: string, value: unknown): void
 }
 
+// @public
+export interface TableExpandableConfig {
+    defaultExpandedRowKeys?: RowId[];
+    expandedKeys?: RowId[];
+    expandedRowRender: (row: Record<string, unknown>, id: RowId) => unknown;
+    onExpand?: (expanded: boolean, id: RowId) => void;
+    rowExpandable?: (row: Record<string, unknown>) => boolean;
+}
+
+// @public
+export interface TableFilterDropdownSlotProps {
+    clearFilters: () => void;
+    close: () => void;
+    confirm: () => void;
+    selectedKeys: unknown[];
+    setSelectedKeys: (keys: unknown[]) => void;
+}
+
 // @public (undocumented)
 export interface TableLocale {
     // (undocumented)
     emptyText?: string;
+    // (undocumented)
+    expandIcon?: string;
+    // (undocumented)
+    filterAll?: string;
     // (undocumented)
     filterConfirm?: string;
     // (undocumented)
     filterIcon?: string;
     // (undocumented)
     filterReset?: string;
+    // (undocumented)
+    loadingText?: string;
     // (undocumented)
     searchPlaceholder?: string;
     // (undocumented)
@@ -3995,16 +4380,33 @@ export interface TableProps {
         id: RowId;
         data: Record<string, unknown>;
     }>;
+    expandable?: TableExpandableConfig;
+    footer?: boolean;
+    highlightOnHover?: boolean;
+    loading?: boolean;
     locale?: TableLocale;
+    onCellEdit?: (id: RowId, column: string, value: unknown) => void;
     pageSize?: number;
     rowClassName?: string | ((row: Record<string, unknown>, id: RowId) => string);
     rowSelection?: RowSelectionConfig;
+    scroll?: {
+        x?: number | string;
+        y?: number | string;
+    };
     searchable?: boolean;
+    searchValue?: string;
     showPagination?: boolean;
     size?: 'small' | 'middle' | 'large';
     sticky?: boolean;
+    striped?: boolean;
     styles?: TableStyles;
+    summary?: (data: Array<{
+        id: RowId;
+        data: Record<string, unknown>;
+    }>) => TableSummaryCell[][];
+    tree?: TableTreeConfig;
     unstyled?: boolean;
+    virtual?: boolean | TableVirtualConfig;
 }
 
 // @public (undocumented)
@@ -4034,6 +4436,31 @@ export interface TableState {
 
 // @public (undocumented)
 export type TableStyles = Partial<Record<TableSlot, Record<string, string | number>>>;
+
+// @public
+export interface TableSummaryCell {
+    // (undocumented)
+    align?: 'left' | 'center' | 'right';
+    // (undocumented)
+    colSpan?: number;
+    // (undocumented)
+    content: unknown;
+}
+
+// @public
+export interface TableTreeConfig {
+    childrenColumnName?: string;
+    defaultExpandAllRows?: boolean;
+    indentSize?: number;
+}
+
+// @public
+export interface TableVirtualConfig {
+    estimateRowHeight?: (row: Record<string, unknown>, id: RowId) => number;
+    height?: number | string;
+    overscan?: number;
+    rowHeight?: number | ((row: Record<string, unknown>, id: RowId) => number);
+}
 
 // @public (undocumented)
 export interface TabsProps {
@@ -4096,6 +4523,7 @@ export interface TextareaProps {
     defaultValue?: string;
     disabled?: boolean;
     id?: string;
+    loading?: boolean;
     maxLength?: number;
     modelValue?: string;
     placeholder?: string;
@@ -4149,8 +4577,12 @@ export interface TimePickerProps {
     allowClear?: boolean;
     defaultValue?: string;
     disabled?: boolean;
+    disabledHours?: () => number[];
+    disabledMinutes?: (hour: number) => number[];
+    disabledSeconds?: (hour: number, minute: number) => number[];
     format?: string;
     hourStep?: number;
+    loading?: boolean;
     minuteStep?: number;
     modelValue?: string;
     open?: boolean;
@@ -4165,9 +4597,30 @@ export interface TimePickerProps {
 }
 
 // @public (undocumented)
+export interface TimeRangePickerProps {
+    allowClear?: boolean;
+    defaultValue?: [string, string];
+    disabled?: boolean;
+    format?: string;
+    hourStep?: number;
+    loading?: boolean;
+    minuteStep?: number;
+    modelValue?: [string, string];
+    open?: boolean;
+    placeholder?: [string, string];
+    secondStep?: number;
+    separator?: string;
+    showSecond?: boolean;
+    size?: 'small' | 'middle' | 'large';
+    unstyled?: boolean;
+    use12Hours?: boolean;
+    value?: [string, string];
+}
+
+// @public (undocumented)
 export interface TooltipProps {
     placement?: 'top' | 'bottom' | 'left' | 'right';
-    title: string;
+    title?: string;
     unstyled?: boolean;
 }
 
@@ -4188,9 +4641,16 @@ export interface TransferProps {
     dataSource: TransferItem[];
     defaultTargetKeys?: string[];
     disabled?: boolean;
+    listHeight?: number;
+    // Warning: (ae-forgotten-export) The symbol "TransferLocale" needs to be exported by the entry point index.d.ts
+    locale?: TransferLocale;
     modelValue?: string[];
     oneWay?: boolean;
+    pagination?: boolean | {
+        pageSize?: number;
+    };
     showSearch?: boolean;
+    showSelectAll?: boolean;
     targetKeys?: string[];
     titles?: [string, string];
     unstyled?: boolean;
@@ -4206,6 +4666,18 @@ export interface TransitionProps {
     name?: string;
     unmountOnExit?: boolean;
     visible: boolean;
+}
+
+// @public (undocumented)
+export interface TreeEditInfo {
+    // (undocumented)
+    key: TreeKey;
+    // (undocumented)
+    node: TreeNodeData;
+    // (undocumented)
+    oldValue: string;
+    // (undocumented)
+    value: string;
 }
 
 // @public (undocumented)
@@ -4302,6 +4774,17 @@ export interface TreeLocale {
 }
 
 // @public (undocumented)
+export interface TreeNodeAction {
+    danger?: boolean;
+    disabled?: boolean | ((node: TreeNodeData) => boolean);
+    icon?: string;
+    key: string;
+    onClick: (node: TreeNodeData, key: TreeKey) => void;
+    title?: string;
+    visible?: (node: TreeNodeData) => boolean;
+}
+
+// @public (undocumented)
 export interface TreeNodeData {
     // (undocumented)
     [field: string]: unknown
@@ -4324,7 +4807,11 @@ export interface TreeNodeData {
 }
 
 // @public (undocumented)
+export type TreeNodeStatus = 'default' | 'success' | 'warning' | 'error' | 'info';
+
+// @public (undocumented)
 export interface TreeProps {
+    actions?: TreeNodeAction[];
     allowDrop?: (info: {
         dragNode: TreeNodeData;
         dropNode: TreeNodeData;
@@ -4345,6 +4832,7 @@ export interface TreeProps {
     directory?: boolean;
     disabled?: boolean;
     draggable?: boolean | ((node: TreeNodeData) => boolean);
+    editable?: boolean | ((node: TreeNodeData) => boolean);
     expandedKeys?: TreeKey[];
     fieldNames?: TreeFieldNames;
     filterTreeNode?: (node: TreeNodeData, searchValue: string) => boolean;
@@ -4355,10 +4843,12 @@ export interface TreeProps {
     loadData?: (node: TreeNodeData) => Promise<void>;
     locale?: TreeLocale;
     multiple?: boolean;
+    nodeStatus?: (node: TreeNodeData) => TreeNodeStatus;
     scrollToKey?: TreeKey;
     searchValue?: string;
     selectable?: boolean;
     selectedKeys?: TreeKey[];
+    showLine?: boolean;
     showSearch?: boolean;
     showToolbar?: boolean;
     treeData: TreeNodeData[];
@@ -4366,35 +4856,35 @@ export interface TreeProps {
     virtual?: boolean;
 }
 
-// @public (undocumented)
-export interface TreeSelectNode {
-    // (undocumented)
-    children?: TreeSelectNode[];
-    // (undocumented)
-    disabled?: boolean;
-    // (undocumented)
-    label: string;
-    // (undocumented)
-    selectable?: boolean;
-    // (undocumented)
-    value: string | number;
-}
+// @public
+export type TreeSelectNode = TreeNodeData;
 
 // @public (undocumented)
 export interface TreeSelectProps {
     allowClear?: boolean;
-    defaultExpandedKeys?: (string | number)[];
-    defaultValue?: (string | number) | (string | number)[];
+    className?: string;
+    // @deprecated (undocumented)
+    defaultExpandedKeys?: TreeKey[];
+    defaultValue?: TreeKey | TreeKey[];
     disabled?: boolean;
-    modelValue?: (string | number) | (string | number)[];
+    dropdownStyle?: Record<string, string | number>;
+    fieldNames?: TreeFieldNames;
+    filterTreeNode?: (inputValue: string, treeNode: TreeNodeData) => boolean;
+    maxTagCount?: number;
+    modelValue?: TreeKey | TreeKey[];
     multiple?: boolean;
     placeholder?: string;
+    showCheckedStrategy?: TreeSelectStrategy;
     showSearch?: boolean;
     size?: 'small' | 'middle' | 'large';
     treeCheckable?: boolean;
-    treeData: TreeSelectNode[];
+    treeCheckStrictly?: boolean;
+    treeData: TreeNodeData[];
+    treeDefaultExpandAll?: boolean;
+    treeDefaultExpandedKeys?: TreeKey[];
+    treeLine?: boolean;
     unstyled?: boolean;
-    value?: (string | number) | (string | number)[];
+    value?: TreeKey | TreeKey[];
 }
 
 // @public (undocumented)
@@ -4906,13 +5396,14 @@ export function zodToJsonSchema(schema: ZodObjectSchema): JSONSchema;
 
 // Warnings were encountered during analysis:
 //
-// dist/index.d.ts:2217:5 - (ae-forgotten-export) The symbol "GraphNode" needs to be exported by the entry point index.d.ts
-// dist/index.d.ts:4272:1 - (ae-forgotten-export) The symbol "Row" needs to be exported by the entry point index.d.ts
-// dist/index.d.ts:5171:1 - (ae-forgotten-export) The symbol "handleExpandAll" needs to be exported by the entry point index.d.ts
-// dist/index.d.ts:5172:1 - (ae-forgotten-export) The symbol "handleCollapseAll" needs to be exported by the entry point index.d.ts
-// dist/index.d.ts:5173:1 - (ae-forgotten-export) The symbol "handleCheckAll" needs to be exported by the entry point index.d.ts
-// dist/index.d.ts:5174:1 - (ae-forgotten-export) The symbol "handleUncheckAll" needs to be exported by the entry point index.d.ts
-// dist/index.d.ts:5175:1 - (ae-forgotten-export) The symbol "scrollToFocused" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:5181:1 - (ae-forgotten-export) The symbol "Row" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:5348:1 - (ae-forgotten-export) The symbol "LineChartCrosshair" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:6096:1 - (ae-forgotten-export) The symbol "handleExpandAll" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:6097:1 - (ae-forgotten-export) The symbol "handleCollapseAll" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:6098:1 - (ae-forgotten-export) The symbol "handleCheckAll" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:6099:1 - (ae-forgotten-export) The symbol "handleUncheckAll" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:6100:1 - (ae-forgotten-export) The symbol "scrollToFocused" needs to be exported by the entry point index.d.ts
+// dist/index.d.ts:6225:1 - (ae-forgotten-export) The symbol "TreeSelectStrategy" needs to be exported by the entry point index.d.ts
 
 // (No @packageDocumentation comment for this package)
 

@@ -71,6 +71,25 @@
   position: relative;
 }
 
+/* Mobile fallback — when there's no explicit `scroll.x`, the table tries
+ * to flex into the available width which, on narrow viewports, collapses
+ * cells into illegible vertical stacks. Forcing horizontal overflow with
+ * `width: max-content` on the inner grid restores tabular layout and
+ * exposes a native horizontal scrollbar so users can pan instead of
+ * losing data. Only applies when `.sg-table-scroll-x` wasn't already set
+ * (which means the consumer opted-in to a controlled scroll width). */
+@media (max-width: 640px) {
+  .sg-table-scroll:not(.sg-table-scroll-x) {
+    overflow-x: auto;
+  }
+  .sg-table-scroll:not(.sg-table-scroll-x) .sg-table-grid,
+  .sg-table-scroll:not(.sg-table-scroll-x) .sg-table-pinned-top,
+  .sg-table-scroll:not(.sg-table-scroll-x) .sg-table-pinned-bottom {
+    min-width: 100%;
+    width: max-content;
+  }
+}
+
 /* Grid base.
  * The grid carries a solid base background so body cells (transparent by
  * default) and fixed-sticky cells draw over the same colour. Without this,
@@ -117,6 +136,19 @@
   display: flex;
   align-items: center;
   gap: var(--sg-padding-xs);
+  /* В узких колонках с одновременно sortable + filters заголовок мог
+   * "наезжать" на filter-trigger / resize-handle: длинный title + ▲▼
+   * не помещались, sort и filter сливались. Скрываем переполнение и
+   * усекаем сам title через .sg-table-th-title — иконки всегда видны. */
+  overflow: hidden;
+}
+
+.sg-table-th-title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .sg-table-th-sortable {
@@ -143,6 +175,13 @@
   line-height: 8px;
   color: var(--sg-color-text-quaternary, var(--sg-color-text-tertiary));
   transition: color var(--sg-transition-duration);
+  /* Defensive: keep the sort glyph compact even if the locale ships a long
+   * aria-quality label instead of a single ▲/▼ glyph. The cell would
+   * otherwise stretch by the full label width and clash with the column
+   * title or filter trigger. */
+  max-width: 1em;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sg-table-sort-current {
@@ -604,6 +643,11 @@
  * changes — that drift is what shows up as the scrollbar thumb lagging
  * behind the cursor while the user drags it. Locking visible row cells to
  * the configured `rowHeight` removes the mismatch entirely. */
+.sg-table-grid-virtual-fixed {
+  /* Overridden inline by Table when `rowHeight` is set */
+  --sg-virtual-row-height: var(--sg-height-md);
+}
+
 .sg-table-grid-virtual-fixed .sg-table-row[data-sg-virtual-row-index] > .sg-table-td {
   height: var(--sg-virtual-row-height);
   min-height: 0;

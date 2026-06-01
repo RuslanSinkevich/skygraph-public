@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
+
 export interface BreadcrumbItem {
   /** Segment label. */
   title: string
@@ -27,6 +30,9 @@ defineSlots<{
   item(props: { item: BreadcrumbItem; index: number }): unknown
 }>()
 
+const cfg = useConfig()
+const navAriaLabel = computed(() => cfg.value.locale?.breadcrumb?.ariaLabel ?? 'Breadcrumb')
+
 function onClick(item: BreadcrumbItem, idx: number, e: Event) {
   if (item.href) {
     // Allow navigation by default; consumers may emit too.
@@ -38,7 +44,7 @@ function onClick(item: BreadcrumbItem, idx: number, e: Event) {
 </script>
 
 <template>
-  <nav v-if="unstyled" aria-label="Breadcrumb">
+  <nav v-if="unstyled" :aria-label="navAriaLabel">
     <span v-for="(item, i) in items" :key="i">
       <a v-if="item.href" :href="item.href" @click="onClick(item, i, $event)">
         <slot name="item" :item="item" :index="i">{{ item.title }}</slot>
@@ -49,7 +55,7 @@ function onClick(item: BreadcrumbItem, idx: number, e: Event) {
       <span v-if="i < items.length - 1">{{ separator }}</span>
     </span>
   </nav>
-  <nav v-else class="sg-breadcrumb" aria-label="Breadcrumb">
+  <nav v-else class="sg-breadcrumb" :aria-label="navAriaLabel">
     <template v-for="(item, i) in items" :key="i">
       <a
         v-if="item.href"

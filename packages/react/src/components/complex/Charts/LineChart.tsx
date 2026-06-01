@@ -3,7 +3,7 @@ import {
   chartBounds,
   chartDataKey,
   colorForSeries,
-  normalizePadding,
+  resolveChartPadding,
   resolveChartAnimation,
 } from './types'
 import { ChartLegend } from './ChartLegend'
@@ -90,7 +90,12 @@ function LineChartInner(
   const chartsLocale = useConfig().locale?.charts
   const { rootRef } = useChartPrint<Element>(forwardedRef, printable)
   const svgRef = useRef<SVGSVGElement | null>(null)
-  const [pt, pr, pb, pl] = normalizePadding(padding)
+
+  const { min, max } = useMemo(() => chartBounds(series.map((s) => s.values)), [series])
+  const [pt, pr, pb, pl] = useMemo(
+    () => resolveChartPadding(padding, yAxis, min, max),
+    [padding, yAxis, min, max],
+  )
 
   const fallbackW = typeof width === 'number' && Number.isFinite(width) ? width : 600
   const fallbackH = typeof height === 'number' && Number.isFinite(height) ? height : 200
@@ -99,8 +104,6 @@ function LineChartInner(
   const viewH = measured.height
   const plotW = Math.max(0, viewW - pl - pr)
   const plotH = Math.max(0, viewH - pt - pb)
-
-  const { min, max } = useMemo(() => chartBounds(series.map((s) => s.values)), [series])
 
   const range = max - min || 1
   const xStep = categories.length > 1 ? plotW / (categories.length - 1) : 0

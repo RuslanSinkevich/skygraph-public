@@ -7,6 +7,123 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2026-05-31] — core 0.5.0 · react 0.5.0 · vue 0.6.0 · styles 0.2.0 · skygraph-react/vue 0.6.0
+
+### Diagram — floating edges (xyflow / mxGraph port)
+
+The custom anchor-honouring resolver from the previous round was
+producing too many edge cases (corner anchors fighting the geometry,
+endpoint-on-the-wrong-side artifacts when nodes were dragged across
+each other, orthogonal routes looping back over their own source
+node). It's replaced now with a direct port of the floating-edges
+algorithm used by every mainstream diagram library:
+
+- **xyflow / React Flow** — `getNodeIntersection` /
+  `getEdgePosition` from the FloatingEdges example. The algebraic
+  form derives from
+  [math.stackexchange.com/q/1724792](https://math.stackexchange.com/questions/1724792)
+  and parametrises the rectangle as the manhattan-norm rhombus
+  `|x| + |y| = 1`, solving for the unit intersection in one step.
+- **mxGraph / draw.io** — `mxPerimeter.RectanglePerimeter`. Same
+  geometry, formulated through `atan2` instead of the rhombus
+  parametrisation; both produce identical points for axis-aligned
+  rectangles.
+
+Anchor information from `GraphEdge.from / to` is now **ignored at the
+render layer**. It remains meaningful in the engine model (still
+returned from `graph.anchorsOf`, still serialised, still drives the
+public types) — but `<Diagram>` derives the connection point purely
+from the two bounding boxes. This is the contract every mainstream
+library settled on for the same reason: it's the only formulation
+that survives arbitrary drag-around-the-canvas without producing
+artifacts.
+
+- **`@skygraph/core`: `getNodeIntersection(box, targetCenter)`** —
+  intersection of the segment `centre(box) → targetCenter` with the
+  rectangle perimeter. Direct port of xyflow's function with
+  citations.
+- **`@skygraph/core`: `getEdgePosition(box, point)`** — classifies
+  which face an intersection lands on (`top` / `right` / `bottom` /
+  `left`). Used by `getBezierPath` to keep control handles
+  perpendicular to the chosen face.
+- **`@skygraph/core`: `resolveEdgeEndpoint(sourceBox, targetBox,
+  padding)`** — single entry point used by `<Diagram>`. Wraps the
+  pair above, pushes the resulting point `padding` units outward
+  along the chosen side so the arrowhead has a clean gap between
+  path tip and node border.
+- **`@skygraph/core`: `computeEdgeEndpoint` REMOVED.** The
+  anchor-honouring resolver from the previous changeset is gone —
+  it was the source of the corner-anchor artifacts. If you were
+  depending on it directly (no consumers in-tree did),
+  `resolveEdgeEndpoint(sourceBox, targetBox)` is the replacement.
+- **`@skygraph/react` + `@skygraph/vue`: `<Diagram>`** routes every
+  edge via `resolveEdgeEndpoint` with `ENDPOINT_PADDING = 8`. The
+  old two-pass anchor resolution + `localOriginOffset` helpers are
+  gone. The orthogonal router no longer receives `sourceBounds` /
+  `targetBounds` either, because the endpoints already sit outside
+  the bboxes — re-deriving an "exit side" on top of an already-
+  outside-the-box point produced visible loops around the source
+  node (visible on the OrthogonalRouting demo in the previous
+  iteration). The router now consumes obstacles only, when
+  `routeAroundNodes` is on.
+- **Tests**: `computeEdgeEndpoint` tests replaced with 14 new cases
+  for the three new functions — straight side picking (left / right /
+  top / bottom), padding offset, symmetry of source↔target swap,
+  degenerate boxes, coinciding centres, two-edges-from-same-node
+  fan-out. Total core suite 426 tests (was 420 + the now-removed 9
+  + the new 14). React `diagram.test.tsx` 40/40, Vue diagram suites
+  7/7, all 51 Vue test files pass (762 tests).
+
+### Diagram — edge routing overhaul
+
+- **`@skygraph/core`: orthogonal router now emits React Flow-style
+  smoothstep paths** when `sourceBounds` / `targetBounds` are provided.
+  Connectors exit each node perpendicular to the chosen face, take a
+  configurable mid-bend (`stepPosition`, default `0.5`), and enter the
+  target the same way — replacing the legacy single-bend L-route that
+  cut diagonals through node corners. The behaviour matches
+  `getSmoothStepPath` in `xyflow/xyflow`, including the same handling
+  of opposite / same / perpendicular handle pairs.
+- **`@skygraph/core`: `floatingAnchor(box, opposite)`** computes the
+  perimeter intersection between the box centre and the opposite
+  endpoint. This is the "FloatingEdges" trick used by React Flow's
+  showcase: the connection point slides along the border as nodes are
+  dragged around, so every edge always exits the face nearest to its
+  partner. Available alongside `nearestSide` and the new `inferSide`.
+- **`@skygraph/core`: `inferSide(box, anchor, opposite)`** combines
+  the anchor's actual position on the bbox with a geometry fallback.
+  Returns `{ side, confident }` — `confident: true` when the anchor
+  itself dictates the side (border / corner), `false` when we fell back
+  to pure geometry. Corner anchors (`ne` / `nw` / etc.) are
+  disambiguated by which face points more strongly at the opposite
+  endpoint.
+- **`@skygraph/core`: `RouteOrthogonalOptions.stepPosition` /
+  `stubLength`** expose React Flow's smoothstep knobs. `stubLength`
+  default raised from `8` to `20` (matches React Flow's `offset = 20`)
+  so the perpendicular run before the first bend is visible at typical
+  zoom levels.
+- **`@skygraph/react` + `@skygraph/vue`: `<Diagram>` `routing: 'bezier'`
+  switches to floating anchors** — the connection point now slides
+  along the perimeter toward the other node regardless of which anchor
+  the consumer picked. This dissolves the "spaghetti" pattern on dense
+  graphs where every edge previously exited the same corner. Border
+  anchors on orthogonal edges still win (the consumer's intent),
+  interior anchors slide via `floatingAnchor`. `routingOptions` gains
+  `stepPosition` and `stubLength`.
+- **`@skygraph/react` + `@skygraph/vue`: `<Diagram>` orthogonal
+  edges** also gained the floating-anchor pass for interior anchors
+  (the only realistic source is a centre anchor on an ellipse). Border
+  anchors (`nw` / `ne` / `s = 0.25` etc.) keep their exact placement.
+- **`examples/demo[-vue]/src/demos/diagram/LargeGraph.demo`** switched
+  from `straight` to `bezier` routing. With floating anchors the 400
+  random edges now fan out around each node instead of bunching at a
+  single corner, and the result is legible even before zooming in.
+- **Tests:** 14 new cases in `packages/core/src/__tests__/graph.test.ts`
+  covering `inferSide` (border / corner / interior), `floatingAnchor`
+  (each side, perimeter contact, diagonal degenerate case) and the
+  new smoothstep core (opposite / perpendicular sides, `stepPosition`
+  sliding).
+
 ### Public surface — meta-packages + skygraph-public repo
 
 - **New packages:** `skygraph-react` and `skygraph-vue` ship as

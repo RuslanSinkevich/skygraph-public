@@ -301,6 +301,7 @@ export const DEFAULT_LOCALE: Required<TableLocale> = {
   filterOpEndsWith: 'ends with',
   filterOpIsEmpty: 'is empty',
   filterOpIsNotEmpty: 'is not empty',
+  filterOperatorAriaLabel: 'Filter operator',
 }
 
 export const DEFAULT_COL_WIDTH = 150

@@ -6,6 +6,7 @@ import SgAutoField from '../SchemaForm/AutoField.vue'
 import { useForm } from '../../../composables/useForm'
 import { editorSchemaToJsonSchema, createFieldFromPaletteType } from './adapters/jsonSchema'
 import { jsonSchemaToRules, jsonSchemaToDefaults } from '../../../adapters/jsonSchemaAdapter'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import { PALETTE_DATA_TYPE } from './palette'
 import type { SchemaEditorStore } from './useSchemaEditor'
 import type { FieldType } from '../SchemaForm/AutoField.vue'
@@ -28,6 +29,20 @@ const defaults = computed(() => jsonSchemaToDefaults(jsonSchema.value))
 
 const dropIndicator = ref<number | null>(null)
 const draggingId = ref<string | null>(null)
+
+const cfg = useConfig()
+const moveUpLabel = computed(
+  () => cfg.value.locale?.schemaFormEditor?.moveFieldUp ?? 'Move field up',
+)
+const moveDownLabel = computed(
+  () => cfg.value.locale?.schemaFormEditor?.moveFieldDown ?? 'Move field down',
+)
+const duplicateLabel = computed(
+  () => cfg.value.locale?.schemaFormEditor?.duplicateField ?? 'Duplicate field',
+)
+const deleteLabel = computed(
+  () => cfg.value.locale?.schemaFormEditor?.deleteField ?? 'Delete field',
+)
 
 const form = useForm({ defaultValues: defaults.value })
 
@@ -159,30 +174,38 @@ function handleFieldDragLeave() {
               type="button"
               class="sg-sfe-canvas-field-toolbar-btn"
               data-testid="sfe-action-up"
-              aria-label="Move field up"
+              :aria-label="moveUpLabel"
               @click="store.moveFieldUp(field.id)"
-            >↑</button>
+            >
+              ↑
+            </button>
             <button
               type="button"
               class="sg-sfe-canvas-field-toolbar-btn"
               data-testid="sfe-action-down"
-              aria-label="Move field down"
+              :aria-label="moveDownLabel"
               @click="store.moveFieldDown(field.id)"
-            >↓</button>
+            >
+              ↓
+            </button>
             <button
               type="button"
               class="sg-sfe-canvas-field-toolbar-btn"
               data-testid="sfe-action-duplicate"
-              aria-label="Duplicate field"
+              :aria-label="duplicateLabel"
               @click="store.duplicateField(field.id)"
-            >⎘</button>
+            >
+              ⎘
+            </button>
             <button
               type="button"
               class="sg-sfe-canvas-field-toolbar-btn sg-sfe-canvas-field-toolbar-btn-danger"
               data-testid="sfe-action-delete"
-              aria-label="Delete field"
+              :aria-label="deleteLabel"
               @click="store.removeField(field.id)"
-            >×</button>
+            >
+              ×
+            </button>
           </div>
           <div class="sg-sfe-canvas-field-inner">
             <SgField :name="field.name" :label="field.label" :rules="rulesMap[field.name]">

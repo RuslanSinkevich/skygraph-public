@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, type CSSProperties } from 'vue'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { EventTimelineProps, TimelineEvent, TimelineGroupBy } from './types'
 
 const props = withDefaults(defineProps<EventTimelineProps>(), {
@@ -81,6 +82,9 @@ const wrapperStyle = computed<CSSProperties>(() => ({
   flexDirection: props.orientation === 'horizontal' ? 'row' : 'column',
   ...(props.style ?? {}),
 }))
+
+const cfg = useConfig()
+const timelineLabel = computed(() => cfg.value.locale?.timeline?.ariaLabel ?? 'Timeline')
 </script>
 
 <template>
@@ -88,7 +92,7 @@ const wrapperStyle = computed<CSSProperties>(() => ({
     :class="wrapperClass"
     :style="wrapperStyle"
     role="list"
-    aria-label="Timeline"
+    :aria-label="timelineLabel"
     :data-orientation="props.orientation"
     :data-group-by="props.groupBy ?? 'none'"
   >
