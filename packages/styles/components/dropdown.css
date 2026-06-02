@@ -20,8 +20,14 @@
 }
 
 @keyframes sg-dropdown-in {
-  from { opacity: 0; transform: scaleY(0.8); }
-  to { opacity: 1; transform: scaleY(1); }
+  from {
+    opacity: 0;
+    transform: scaleY(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scaleY(1);
+  }
 }
 
 /* Placement variants — both camelCase (legacy, generated as
@@ -69,6 +75,12 @@
   background: var(--sg-color-bg-hover);
 }
 
+.sg-dropdown-item-focused {
+  background: var(--sg-color-bg-hover);
+  outline: 2px solid var(--sg-color-primary);
+  outline-offset: -2px;
+}
+
 .sg-dropdown-item-disabled {
   color: var(--sg-color-text-disabled);
   cursor: not-allowed;
@@ -82,8 +94,13 @@
   color: var(--sg-color-error);
 }
 
-.sg-dropdown-item-danger:hover {
+.sg-dropdown-item-danger:hover,
+.sg-dropdown-item-danger.sg-dropdown-item-focused {
   background: var(--sg-color-error-bg);
+}
+
+.sg-dropdown-item-danger.sg-dropdown-item-focused {
+  outline-color: var(--sg-color-error);
 }
 
 .sg-dropdown-divider {

@@ -136,6 +136,12 @@
   --sg-color-tooltip-bg: rgba(0, 0, 0, 0.85);
   --sg-color-tooltip-text: #ffffff;
 
+  /* Skeleton — base bar fill + shimmer highlight (light theme).
+   * Kept distinct from --sg-color-bg-hover so loading placeholders stay
+   * clearly visible on white surfaces and don't fight the hover palette. */
+  --sg-skeleton-bg: #e2e8f0;
+  --sg-skeleton-shimmer: #f8fafc;
+
   /* === Visualization layer (light) ===
    * Re-mappable per theme. Components use these via `var(--sg-*)` so
    * dark theme overrides cascade automatically. */
@@ -236,6 +242,10 @@
   --sg-color-overlay: rgba(0, 0, 0, 0.65);
   --sg-color-tooltip-bg: #434343;
   --sg-color-tooltip-text: #ffffff;
+
+  /* Skeleton — dark theme bars need brighter fills to stay readable. */
+  --sg-skeleton-bg: rgba(255, 255, 255, 0.08);
+  --sg-skeleton-shimmer: rgba(255, 255, 255, 0.18);
 
   /* === Visualization layer (dark) ===
    * Shadows are stronger and use lower-alpha bright tints; canvas grid

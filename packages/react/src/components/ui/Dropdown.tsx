@@ -120,13 +120,21 @@ export function Dropdown({
         break
       case 'ArrowDown':
         e.preventDefault()
-        if (!open) setOpen(true)
-        else setFocusedIndex((i) => getNextMenuIndex(i, 1))
+        if (!open) {
+          setOpen(true)
+          setFocusedIndex(getNextMenuIndex(-1, 1))
+        } else {
+          setFocusedIndex((i) => getNextMenuIndex(i, 1))
+        }
         break
       case 'ArrowUp':
         e.preventDefault()
-        if (!open) setOpen(true)
-        else setFocusedIndex((i) => getNextMenuIndex(i, -1))
+        if (!open) {
+          setOpen(true)
+          setFocusedIndex(getNextMenuIndex(items.length, -1))
+        } else {
+          setFocusedIndex((i) => getNextMenuIndex(i, -1))
+        }
         break
       case 'Home':
         if (open) {
@@ -145,16 +153,24 @@ export function Dropdown({
 
   if (unstyled) {
     return (
-      <div ref={ref} className={className} style={{ position: 'relative', display: 'inline-block' }}>
+      <div
+        ref={ref}
+        className={className}
+        style={{ position: 'relative', display: 'inline-block' }}
+      >
         <div onClick={handleClick} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
           {children}
         </div>
         {open && (
           <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
             {items.map((item) =>
-              item.divider ? <hr key={item.key} /> : (
-                <div key={item.key} onClick={() => handleSelect(item)}>{item.label}</div>
-              )
+              item.divider ? (
+                <hr key={item.key} />
+              ) : (
+                <div key={item.key} onClick={() => handleSelect(item)}>
+                  {item.label}
+                </div>
+              ),
             )}
           </div>
         )}
@@ -200,12 +216,14 @@ export function Dropdown({
                   item.disabled ? 'sg-dropdown-item-disabled' : '',
                   item.danger ? 'sg-dropdown-item-danger' : '',
                   idx === focusedIndex ? 'sg-dropdown-item-focused' : '',
-                ].filter(Boolean).join(' ')}
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
                 onClick={() => handleSelect(item)}
               >
                 {item.label}
               </div>
-            )
+            ),
           )}
         </div>
       </Transition>

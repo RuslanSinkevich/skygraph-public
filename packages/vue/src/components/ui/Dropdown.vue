@@ -116,13 +116,21 @@ function handleKeyDown(e: KeyboardEvent) {
       break
     case 'ArrowDown':
       e.preventDefault()
-      if (!open.value) open.value = true
-      else focusedIndex.value = getNextMenuIndex(focusedIndex.value, 1)
+      if (!open.value) {
+        open.value = true
+        focusedIndex.value = getNextMenuIndex(-1, 1)
+      } else {
+        focusedIndex.value = getNextMenuIndex(focusedIndex.value, 1)
+      }
       break
     case 'ArrowUp':
       e.preventDefault()
-      if (!open.value) open.value = true
-      else focusedIndex.value = getNextMenuIndex(focusedIndex.value, -1)
+      if (!open.value) {
+        open.value = true
+        focusedIndex.value = getNextMenuIndex(props.items.length, -1)
+      } else {
+        focusedIndex.value = getNextMenuIndex(focusedIndex.value, -1)
+      }
       break
     case 'Home':
       if (open.value) {

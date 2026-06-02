@@ -10,7 +10,7 @@
 
 .sg-skeleton-avatar {
   display: block;
-  background: var(--sg-color-bg-hover);
+  background: var(--sg-skeleton-bg, var(--sg-color-bg-hover));
 }
 
 .sg-skeleton-avatar-circle {
@@ -29,7 +29,7 @@
 .sg-skeleton-title {
   height: 16px;
   margin-bottom: var(--sg-margin-md);
-  background: var(--sg-color-bg-hover);
+  background: var(--sg-skeleton-bg, var(--sg-color-bg-hover));
   border-radius: var(--sg-border-radius-sm);
 }
 
@@ -44,25 +44,29 @@
 
 .sg-skeleton-paragraph li {
   height: 16px;
-  background: var(--sg-color-bg-hover);
+  background: var(--sg-skeleton-bg, var(--sg-color-bg-hover));
   border-radius: var(--sg-border-radius-sm);
 }
 
-/* Pulse animation */
+/* Pulse animation — gradient sweeps the shimmer highlight across the bar. */
 .sg-skeleton-active .sg-skeleton-avatar,
 .sg-skeleton-active .sg-skeleton-title,
 .sg-skeleton-active .sg-skeleton-paragraph li {
   animation: sg-skeleton-pulse 1.5s ease-in-out infinite;
   background: linear-gradient(
     90deg,
-    var(--sg-color-bg-hover) 25%,
-    var(--sg-color-bg-secondary) 37%,
-    var(--sg-color-bg-hover) 63%
+    var(--sg-skeleton-bg, var(--sg-color-bg-hover)) 25%,
+    var(--sg-skeleton-shimmer, var(--sg-color-bg-secondary)) 37%,
+    var(--sg-skeleton-bg, var(--sg-color-bg-hover)) 63%
   );
   background-size: 400% 100%;
 }
 
 @keyframes sg-skeleton-pulse {
-  0% { background-position: 100% 50%; }
-  100% { background-position: 0 50%; }
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
 }
