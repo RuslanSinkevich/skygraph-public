@@ -9,6 +9,7 @@ export type {
   FormLocale,
   UploadLocale,
   TransferLocale,
+  InputLocale,
   InputPasswordLocale,
   SearchInputLocale,
   InlineEditLocale,
@@ -33,8 +34,21 @@ export type {
 } from './types'
 
 // ConfigProvider
-export { ConfigProvider, useConfig } from './components/ConfigProvider'
-export type { SgConfig, ConfigProviderProps } from './components/ConfigProvider'
+export {
+  ConfigProvider,
+  useConfig,
+  useConfigWithDefaults,
+  buildThemeVars,
+} from './components/ConfigProvider'
+export type {
+  SgConfig,
+  ConfigProviderProps,
+  ThemeConfig,
+  SgThemeToken,
+  CSPConfig,
+  RenderEmptyHandler,
+  Direction,
+} from './components/ConfigProvider'
 
 // Locale presets
 export { en_US, ru_RU, zh_CN, de_DE, fr_FR, es_ES } from './locales'

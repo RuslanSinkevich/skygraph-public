@@ -1,6 +1,7 @@
 <script lang="ts">
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, h, type PropType } from 'vue'
 import SgTransition from './Transition.vue'
+import { useConfig } from './ConfigProvider.vue'
 
 /** Visual variant for notification styling and icon. */
 export type NotificationType = 'success' | 'error' | 'warning' | 'info'
@@ -114,10 +115,11 @@ const NotificationContainer = defineComponent({
     )
 
     const containerClass = computed(() =>
-      props.unstyled
-        ? undefined
-        : `sg-notification-container sg-notification-${props.placement}`,
+      props.unstyled ? undefined : `sg-notification-container sg-notification-${props.placement}`,
     )
+
+    const cfg = useConfig()
+    const closeAriaLabel = computed(() => cfg.value.locale?.notification?.closeAriaLabel ?? 'Close')
 
     const close = (item: NotificationItem) => {
       removeNotification(item.id)
@@ -142,7 +144,11 @@ const NotificationContainer = defineComponent({
                 item.description ? h('div', item.description) : null,
                 h(
                   'button',
-                  { type: 'button', onClick: () => close(item) },
+                  {
+                    type: 'button',
+                    'aria-label': closeAriaLabel.value,
+                    onClick: () => close(item),
+                  },
                   '×',
                 ),
               ])
@@ -155,17 +161,9 @@ const NotificationContainer = defineComponent({
                 [
                   h('div', { class: 'sg-notification-icon' }, TYPE_ICONS[type]),
                   h('div', { class: 'sg-notification-content' }, [
-                    h(
-                      'div',
-                      { class: 'sg-notification-message' },
-                      item.message,
-                    ),
+                    h('div', { class: 'sg-notification-message' }, item.message),
                     item.description
-                      ? h(
-                          'div',
-                          { class: 'sg-notification-description' },
-                          item.description,
-                        )
+                      ? h('div', { class: 'sg-notification-description' }, item.description)
                       : null,
                   ]),
                   h(
@@ -173,7 +171,7 @@ const NotificationContainer = defineComponent({
                     {
                       class: 'sg-notification-close',
                       type: 'button',
-                      'aria-label': 'Close',
+                      'aria-label': closeAriaLabel.value,
                       onClick: () => close(item),
                     },
                     '×',

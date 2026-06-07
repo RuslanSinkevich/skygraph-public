@@ -73,6 +73,9 @@ export const zh_CN: SgLocale = {
     prevMonth: '上个月',
     nextMonth: '下个月',
   },
+  input: {
+    clear: '清除',
+  },
   inputPassword: {
     showPassword: '显示密码',
     hidePassword: '隐藏密码',

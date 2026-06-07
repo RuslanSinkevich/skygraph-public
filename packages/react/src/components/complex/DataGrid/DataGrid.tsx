@@ -1,4 +1,11 @@
-import React, { forwardRef, useImperativeHandle, useCallback, useRef, useMemo, useState } from 'react'
+import React, {
+  forwardRef,
+  useImperativeHandle,
+  useCallback,
+  useRef,
+  useMemo,
+  useState,
+} from 'react'
 import { useVirtualScroll } from '../../../hooks/useVirtualScroll'
 import { Spin } from '../../ui/Spin'
 import { Checkbox } from '../../ui/Checkbox'
@@ -74,7 +81,11 @@ function DefaultEditor({ value, onChange, onCommit, onCancel }: CellEditorProps)
   )
 }
 
-function isCellInRange(row: number, col: number, range: { start: CellPosition; end: CellPosition } | null): boolean {
+function isCellInRange(
+  row: number,
+  col: number,
+  range: { start: CellPosition; end: CellPosition } | null,
+): boolean {
   if (!range) return false
   const minRow = Math.min(range.start.row, range.end.row)
   const maxRow = Math.max(range.start.row, range.end.row)
@@ -122,7 +133,9 @@ function ContextMenuPopup({
               cls.contextMenuItem,
               item.danger ? cls.contextMenuDanger : '',
               item.disabled ? cls.contextMenuDisabled : '',
-            ].filter(Boolean).join(' ')}
+            ]
+              .filter(Boolean)
+              .join(' ')}
             onClick={() => {
               if (!item.disabled) {
                 item.onClick()
@@ -205,7 +218,11 @@ function DataGridInner<R extends Record<string, unknown>>(
 
   const [dragOverCol, setDragOverCol] = useState<string | null>(null)
 
-  const { range, containerRef: scrollRef, scrollToIndex } = useVirtualScroll({
+  const {
+    range,
+    containerRef: scrollRef,
+    scrollToIndex,
+  } = useVirtualScroll({
     itemCount: data.length,
     itemHeight: rowHeight,
     overscan,
@@ -219,18 +236,9 @@ function DataGridInner<R extends Record<string, unknown>>(
     [rowKey],
   )
 
-  const frozenLeft = useMemo(
-    () => columns.filter((c) => c.frozen === 'left'),
-    [columns],
-  )
-  const frozenRight = useMemo(
-    () => columns.filter((c) => c.frozen === 'right'),
-    [columns],
-  )
-  const scrollable = useMemo(
-    () => columns.filter((c) => !c.frozen),
-    [columns],
-  )
+  const frozenLeft = useMemo(() => columns.filter((c) => c.frozen === 'left'), [columns])
+  const frozenRight = useMemo(() => columns.filter((c) => c.frozen === 'right'), [columns])
+  const scrollable = useMemo(() => columns.filter((c) => !c.frozen), [columns])
 
   const orderedColumns = useMemo(() => {
     const base = [...frozenLeft, ...scrollable, ...frozenRight]
@@ -247,7 +255,8 @@ function DataGridInner<R extends Record<string, unknown>>(
     return ordered
   }, [frozenLeft, scrollable, frozenRight, columnOrder])
 
-  const extraColsWidth = (rowSelection ? SELECTION_COL_WIDTH : 0) + (showRowNumber ? ROW_NUMBER_COL_WIDTH : 0)
+  const extraColsWidth =
+    (rowSelection ? SELECTION_COL_WIDTH : 0) + (showRowNumber ? ROW_NUMBER_COL_WIDTH : 0)
 
   const totalWidth = useMemo(
     () => orderedColumns.reduce((sum, col) => sum + getColumnWidth(col.key), 0) + extraColsWidth,
@@ -383,8 +392,21 @@ function DataGridInner<R extends Record<string, unknown>>(
           break
       }
     },
-    [activeCell, editingCell, navigate, startEditing, setActiveCell, onCopy, onPaste,
-     orderedColumns, data, rowSelection, selectedRows, handleSelectRow, handleSelectAll],
+    [
+      activeCell,
+      editingCell,
+      navigate,
+      startEditing,
+      setActiveCell,
+      onCopy,
+      onPaste,
+      orderedColumns,
+      data,
+      rowSelection,
+      selectedRows,
+      handleSelectRow,
+      handleSelectAll,
+    ],
   )
 
   const handleSort = useCallback(
@@ -479,9 +501,7 @@ function DataGridInner<R extends Record<string, unknown>>(
       const isEditing = editingCell?.row === rowIndex && editingCell?.col === colIndex
       const isSelected = isCellInRange(rowIndex, colIndex, selection)
 
-      const rawValue = col.formula
-        ? col.formula(row)
-        : (row[col.key] as CellValue)
+      const rawValue = col.formula ? col.formula(row) : (row[col.key] as CellValue)
 
       const extraClass = cellClassName?.(rawValue, row, rowIndex, col) ?? ''
       const extraStyle = cellStyleFn?.(rawValue, row, rowIndex, col)
@@ -538,10 +558,20 @@ function DataGridInner<R extends Record<string, unknown>>(
       )
     },
     [
-      activeCell, editingCell, selection, getColumnWidth,
-      handleCellClick, handleCellDoubleClick, handleCommitEdit,
-      handleCancelEdit, editValueRef, cellClassName, cellStyleFn,
-      handleCellContextMenu, rowSelection, showRowNumber,
+      activeCell,
+      editingCell,
+      selection,
+      getColumnWidth,
+      handleCellClick,
+      handleCellDoubleClick,
+      handleCommitEdit,
+      handleCancelEdit,
+      editValueRef,
+      cellClassName,
+      cellStyleFn,
+      handleCellContextMenu,
+      rowSelection,
+      showRowNumber,
     ],
   )
 
@@ -553,13 +583,22 @@ function DataGridInner<R extends Record<string, unknown>>(
     striped ? 'sg-datagrid--striped' : '',
     loading ? 'sg-datagrid--loading' : '',
     className ?? '',
-  ].filter(Boolean).join(' ')
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <div
       ref={containerRef}
       className={rootCls}
-      style={{ width, height, display: 'flex', flexDirection: 'column', position: 'relative', ...style }}
+      style={{
+        width,
+        height,
+        display: 'flex',
+        flexDirection: 'column',
+        position: 'relative',
+        ...style,
+      }}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="grid"
@@ -580,7 +619,13 @@ function DataGridInner<R extends Record<string, unknown>>(
         {rowSelection && (
           <div
             className={`${cls.headerCell} ${cls.selectionCell}`}
-            style={{ width: SELECTION_COL_WIDTH, minWidth: SELECTION_COL_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            style={{
+              width: SELECTION_COL_WIDTH,
+              minWidth: SELECTION_COL_WIDTH,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
             role="columnheader"
           >
             <Checkbox
@@ -593,7 +638,14 @@ function DataGridInner<R extends Record<string, unknown>>(
         {showRowNumber && (
           <div
             className={`${cls.headerCell} ${cls.rowNumberCell}`}
-            style={{ width: ROW_NUMBER_COL_WIDTH, minWidth: ROW_NUMBER_COL_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center', userSelect: 'none' }}
+            style={{
+              width: ROW_NUMBER_COL_WIDTH,
+              minWidth: ROW_NUMBER_COL_WIDTH,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              userSelect: 'none',
+            }}
             role="columnheader"
           >
             #
@@ -685,7 +737,10 @@ function DataGridInner<R extends Record<string, unknown>>(
               if (!row) return null
               const rKey = getRowKey(row, vi.index)
               const isRowSelected = selectedRows?.has(rKey) ?? false
-              const rowExtraClass = typeof rowClassName === 'function' ? rowClassName(row, vi.index) : (rowClassName ?? '')
+              const rowExtraClass =
+                typeof rowClassName === 'function'
+                  ? rowClassName(row, vi.index)
+                  : (rowClassName ?? '')
 
               const rowCls = [
                 cls.row,
@@ -693,7 +748,9 @@ function DataGridInner<R extends Record<string, unknown>>(
                 highlightOnHover ? cls.rowHoverable : '',
                 isRowSelected ? cls.rowSelected : '',
                 rowExtraClass,
-              ].filter(Boolean).join(' ')
+              ]
+                .filter(Boolean)
+                .join(' ')
 
               return (
                 <div
@@ -715,7 +772,13 @@ function DataGridInner<R extends Record<string, unknown>>(
                   {rowSelection && (
                     <div
                       className={`${cls.cell} ${cls.selectionCell}`}
-                      style={{ width: SELECTION_COL_WIDTH, minWidth: SELECTION_COL_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      style={{
+                        width: SELECTION_COL_WIDTH,
+                        minWidth: SELECTION_COL_WIDTH,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       <Checkbox
@@ -727,7 +790,14 @@ function DataGridInner<R extends Record<string, unknown>>(
                   {showRowNumber && (
                     <div
                       className={`${cls.cell} ${cls.rowNumberCell}`}
-                      style={{ width: ROW_NUMBER_COL_WIDTH, minWidth: ROW_NUMBER_COL_WIDTH, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--sg-text-tertiary, #999)' }}
+                      style={{
+                        width: ROW_NUMBER_COL_WIDTH,
+                        minWidth: ROW_NUMBER_COL_WIDTH,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'var(--sg-color-text-tertiary, #999)',
+                      }}
                     >
                       {vi.index + 1}
                     </div>
@@ -750,10 +820,16 @@ function DataGridInner<R extends Record<string, unknown>>(
               style={{ display: 'flex', height: rowHeight }}
             >
               {rowSelection && (
-                <div className={`${cls.summaryCell}`} style={{ width: SELECTION_COL_WIDTH, minWidth: SELECTION_COL_WIDTH }} />
+                <div
+                  className={`${cls.summaryCell}`}
+                  style={{ width: SELECTION_COL_WIDTH, minWidth: SELECTION_COL_WIDTH }}
+                />
               )}
               {showRowNumber && (
-                <div className={`${cls.summaryCell}`} style={{ width: ROW_NUMBER_COL_WIDTH, minWidth: ROW_NUMBER_COL_WIDTH }} />
+                <div
+                  className={`${cls.summaryCell}`}
+                  style={{ width: ROW_NUMBER_COL_WIDTH, minWidth: ROW_NUMBER_COL_WIDTH }}
+                />
               )}
               {orderedColumns.map((col) => (
                 <div
@@ -784,7 +860,18 @@ function DataGridInner<R extends Record<string, unknown>>(
 
       {/* Loading */}
       {loading && (
-        <div className={cls.loading} style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255,255,255,0.6)', zIndex: 10 }}>
+        <div
+          className={cls.loading}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'rgba(255,255,255,0.6)',
+            zIndex: 10,
+          }}
+        >
           <Spin size="large" />
         </div>
       )}

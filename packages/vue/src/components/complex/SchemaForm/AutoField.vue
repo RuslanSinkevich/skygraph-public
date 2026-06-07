@@ -80,66 +80,11 @@ const fieldStateClass = computed(() => ({
 }))
 </script>
 
-<style>
-/*
- * AutoField inputs use plain HTML elements (no `SgInput` wrapping) so they
- * stay framework-agnostic and round-trip native form behaviour. Painting
- * them through `<style>` blocks keeps the CSS scoped to the SchemaForm
- * package while still mirroring the React reference (`AutoField.tsx`
- * inline `inputStyle`).
- */
-.sg-autofield-input {
-  width: 100%;
-  padding: 6px 12px;
-  border: 1px solid var(--sg-color-border, #d9d9d9);
-  border-radius: var(--sg-border-radius, 6px);
-  background: var(--sg-color-bg-container, #fff);
-  color: var(--sg-color-text);
-  font-size: 14px;
-  font-family: inherit;
-  line-height: 1.4;
-  box-sizing: border-box;
-  outline: none;
-  transition: border-color var(--sg-transition-duration) var(--sg-transition-timing);
-}
-
-.sg-autofield-input:disabled {
-  background: var(--sg-color-bg-disabled, #f5f5f5);
-  color: var(--sg-color-text-disabled);
-  cursor: not-allowed;
-}
-
-.sg-autofield-input:focus,
-.sg-autofield-input:focus-visible {
-  border-color: var(--sg-color-primary);
-  box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
-}
-
-.sg-autofield-input-error {
-  border-color: var(--sg-color-error, #ff4d4f);
-}
-
-.sg-autofield-input-warning {
-  border-color: var(--sg-color-warning, #faad14);
-}
-
-.sg-autofield-input-textarea {
-  min-height: 80px;
-  resize: vertical;
-}
-
-.sg-autofield-input-color {
-  width: 48px;
-  height: 32px;
-  padding: 2px;
-}
-</style>
-
 <template>
   <div class="sg-autofield">
     <label
       v-if="inferredType !== 'boolean' && inferredType !== 'switch' && label"
-      style="font-weight: 500; font-size: 14px"
+      class="sg-autofield-label"
     >
       {{ label }}
     </label>
@@ -206,7 +151,7 @@ const fieldStateClass = computed(() => ({
     <select
       v-else-if="inferredType === 'multiselect'"
       multiple
-      class="sg-autofield-input"
+      class="sg-autofield-input sg-autofield-input-multiple"
       :class="fieldStateClass"
       :value="Array.isArray(value) ? (value as (string | number)[]).map(String) : []"
       :disabled="isDisabled"
@@ -312,8 +257,8 @@ const fieldStateClass = computed(() => ({
           fontSize: '20px',
           color:
             i <= (typeof value === 'number' ? value : 0)
-              ? 'var(--sg-warning, #faad14)'
-              : 'var(--sg-border, #d9d9d9)',
+              ? 'var(--sg-color-warning, #faad14)'
+              : 'var(--sg-color-border, #d9d9d9)',
           padding: 0,
         }"
         @click="!isDisabled && handleChange(i)"
@@ -353,11 +298,11 @@ const fieldStateClass = computed(() => ({
       v-if="hasErrors"
       :id="errorId"
       role="alert"
-      style="color: var(--sg-error, #ff4d4f); font-size: 12px"
+      style="color: var(--sg-color-error, #ff4d4f); font-size: 12px"
     >
       {{ meta.errors.join('; ') }}
     </span>
-    <span v-else-if="hasWarnings" style="color: var(--sg-warning, #faad14); font-size: 12px">
+    <span v-else-if="hasWarnings" style="color: var(--sg-color-warning, #faad14); font-size: 12px">
       {{ meta.warnings.join('; ') }}
     </span>
   </div>

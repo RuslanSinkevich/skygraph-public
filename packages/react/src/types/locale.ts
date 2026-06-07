@@ -232,6 +232,12 @@ export interface CalendarLocale {
   nextMonth?: string
 }
 
+/** Locale strings shared by Input-family `clear` (×) buttons. */
+export interface InputLocale {
+  /** Accessible label for the clear (×) button. */
+  clear?: string
+}
+
 /** Locale strings for the InputPassword component. */
 export interface InputPasswordLocale {
   /** Accessible label for the visibility toggle when password is hidden. */
@@ -445,6 +451,8 @@ export interface SgLocale {
   transfer?: TransferLocale
   /** Calendar locale overrides. */
   calendar?: CalendarLocale
+  /** Input locale overrides (clear button label). */
+  input?: InputLocale
   /** InputPassword locale overrides. */
   inputPassword?: InputPasswordLocale
   /** SearchInput locale overrides. */

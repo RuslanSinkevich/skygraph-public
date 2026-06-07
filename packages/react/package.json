@@ -1,7 +1,7 @@
 {
   "name": "@skygraph/react",
-  "version": "0.5.1",
-  "description": "SkyGraph React adapter — hooks, components and UI",
+  "version": "0.5.3",
+  "description": "SkyGraph React adapter вЂ” hooks, components and UI",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",

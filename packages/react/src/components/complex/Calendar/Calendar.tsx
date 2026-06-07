@@ -672,7 +672,9 @@ export function Calendar(props: CalendarProps) {
                           <span
                             key={ev.key ?? ei}
                             className="sg-calendar-event-dot"
-                            style={{ backgroundColor: ev.color ?? 'var(--sg-primary, #1677ff)' }}
+                            style={{
+                              backgroundColor: ev.color ?? 'var(--sg-color-primary, #1677ff)',
+                            }}
                             title={ev.title}
                           />
                         ))}

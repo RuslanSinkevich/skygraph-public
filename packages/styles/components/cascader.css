@@ -18,11 +18,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: var(--sg-height-md);
+  /* Shares the `--sg-input-*` family with `Input` so scoped overrides
+   * (height / radius / bg / border) re-skin the trigger. */
+  min-height: var(--sg-input-height, var(--sg-height-md));
   padding: var(--sg-padding-xs) var(--sg-padding-md);
-  background: var(--sg-color-bg-container);
-  border: 1px solid var(--sg-color-border);
-  border-radius: var(--sg-border-radius);
+  color: var(--sg-input-color, var(--sg-color-text));
+  background: var(--sg-input-bg, var(--sg-color-bg-container));
+  border: 1px solid var(--sg-input-border, var(--sg-color-border));
+  border-radius: var(--sg-input-radius, var(--sg-border-radius));
   cursor: pointer;
   transition: border-color var(--sg-transition-duration) var(--sg-transition-timing);
   gap: var(--sg-padding-xs);
@@ -67,7 +70,7 @@
 }
 
 .sg-cascader-selection-item {
-  color: var(--sg-color-text);
+  color: var(--sg-input-color, var(--sg-color-text));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -244,6 +247,11 @@
   background: transparent;
 }
 
+.sg-cascader-option-loading {
+  color: var(--sg-color-text-tertiary);
+  cursor: wait;
+}
+
 .sg-cascader-option-label {
   flex: 1;
   overflow: hidden;
@@ -261,8 +269,12 @@
 }
 
 @keyframes sg-cascader-spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .sg-cascader-option-check {

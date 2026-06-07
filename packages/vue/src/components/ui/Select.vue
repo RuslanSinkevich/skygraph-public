@@ -34,6 +34,15 @@ export interface SelectProps {
   size?: 'small' | 'middle' | 'large'
   /** Strips built-in styling (renders native <select>). */
   unstyled?: boolean
+  /**
+   * Accessible name for the styled trigger. Required for the styled
+   * (non-`unstyled`) variant when there is no surrounding `<label htmlFor=...>`
+   * — the trigger is a `<div role="combobox">` and a parent `<label>` cannot
+   * associate. WCAG 4.1.2 expects a name for every interactive control.
+   */
+  ariaLabel?: string
+  /** Id(s) of the element(s) that label this control. */
+  ariaLabelledby?: string
 }
 
 const props = withDefaults(defineProps<SelectProps>(), {
@@ -44,6 +53,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   size: 'middle',
 })
 const listboxId = genId()
+const focusedIndex = ref(-1)
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number | (string | number)[]): void
@@ -131,6 +141,50 @@ function handleOutside(e: MouseEvent) {
 onMounted(() => document.addEventListener('mousedown', handleOutside))
 onBeforeUnmount(() => document.removeEventListener('mousedown', handleOutside))
 
+watch(open, (next) => {
+  if (!next) focusedIndex.value = -1
+})
+
+function handleKeydown(e: KeyboardEvent) {
+  if (isDisabled.value) return
+  switch (e.key) {
+    case 'Enter':
+    case ' ':
+      e.preventDefault()
+      if (open.value && focusedIndex.value >= 0) {
+        handleSelect(props.options[focusedIndex.value])
+      } else {
+        open.value = !open.value
+      }
+      break
+    case 'Escape':
+      e.preventDefault()
+      open.value = false
+      break
+    case 'ArrowDown':
+      e.preventDefault()
+      if (!open.value) {
+        open.value = true
+      } else if (props.options.length > 0) {
+        focusedIndex.value = (focusedIndex.value + 1) % props.options.length
+      }
+      break
+    case 'ArrowUp':
+      e.preventDefault()
+      if (!open.value) {
+        open.value = true
+      } else if (props.options.length > 0) {
+        focusedIndex.value = (focusedIndex.value - 1 + props.options.length) % props.options.length
+      }
+      break
+    case 'Backspace':
+      if (props.multiple && currentMultiple.value.length > 0) {
+        emitValue(currentMultiple.value.slice(0, -1))
+      }
+      break
+  }
+}
+
 const wrapperClass = computed(() =>
   [
     'sg-select',
@@ -168,6 +222,8 @@ function onNativeChange(e: Event) {
     :multiple="multiple"
     :value="multiple ? (currentMultiple as unknown as string) : (currentSingle as string)"
     :disabled="isDisabled"
+    :aria-label="ariaLabel"
+    :aria-labelledby="ariaLabelledby"
     @change="onNativeChange"
     @blur="emit('blur')"
   >
@@ -185,8 +241,11 @@ function onNativeChange(e: Event) {
       :aria-controls="listboxId"
       :aria-multiselectable="multiple || undefined"
       :aria-disabled="isDisabled || undefined"
+      :aria-label="ariaLabel"
+      :aria-labelledby="ariaLabelledby"
       :tabindex="isDisabled ? -1 : 0"
       @click="!isDisabled && (open = !open)"
+      @keydown="handleKeydown"
     >
       <template v-if="multiple">
         <span v-if="selectedOptions.length === 0" class="sg-select-placeholder">{{
@@ -223,13 +282,14 @@ function onNativeChange(e: Event) {
       :aria-multiselectable="multiple || undefined"
     >
       <div
-        v-for="opt in options"
+        v-for="(opt, idx) in options"
         :key="opt.value"
         role="option"
         :aria-selected="isOptionSelected(opt)"
         :class="[
           'sg-select-option',
           isOptionSelected(opt) ? 'sg-select-option-selected' : '',
+          idx === focusedIndex ? 'sg-select-option-focused' : '',
           opt.disabled || opt.loading ? 'sg-select-option-disabled' : '',
           opt.loading ? 'sg-select-option-loading' : '',
         ]"

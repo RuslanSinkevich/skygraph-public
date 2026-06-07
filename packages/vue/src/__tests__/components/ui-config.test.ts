@@ -1,8 +1,8 @@
 import { describe, it, expect } from 'vitest'
 import { defineComponent, ref, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { SgConfigProvider, SgTransition } from '../../components/ui'
-import { useConfig, useConfigWithDefaults } from '../../components/ui'
+import { SgConfigProvider, SgTransition, SgEmpty } from '../../components/ui'
+import { useConfig, useConfigWithDefaults, buildThemeVars } from '../../components/ui'
 
 describe('SgConfigProvider + useConfig', () => {
   it('useConfig returns empty config when no provider', () => {
@@ -184,6 +184,104 @@ describe('SgConfigProvider + useConfig', () => {
   })
 })
 
+describe('SgConfigProvider theme + direction', () => {
+  it('buildThemeVars maps tokens and raw cssVars', () => {
+    const vars = buildThemeVars({
+      token: { colorPrimary: '#f50', borderRadius: 10, fontFamily: 'Inter' },
+      cssVars: { '--sg-color-link': '#09f', 'sg-extra': '1px' },
+    })
+    expect(vars['--sg-color-primary']).toBe('#f50')
+    expect(vars['--sg-border-radius']).toBe('10px')
+    expect(vars['--sg-font-sans']).toBe('Inter')
+    expect(vars['--sg-color-link']).toBe('#09f')
+    expect(vars['--sg-extra']).toBe('1px')
+  })
+
+  it('renders a display:contents scope wrapper with dir + data-sg-theme', () => {
+    const wrapper = mount(SgConfigProvider, {
+      props: {
+        direction: 'rtl',
+        theme: { mode: 'dark', token: { colorPrimary: '#f50' } },
+      },
+      slots: { default: () => h('span', 'content') },
+    })
+    const scope = wrapper.find('.sg-config-provider')
+    expect(scope.exists()).toBe(true)
+    expect(scope.attributes('dir')).toBe('rtl')
+    expect(scope.attributes('data-sg-theme')).toBe('dark')
+    const el = scope.element as HTMLElement
+    expect(el.style.getPropertyValue('--sg-color-primary')).toBe('#f50')
+    expect(el.style.display).toBe('contents')
+  })
+
+  it('does not render a wrapper without theme/direction', () => {
+    const wrapper = mount(SgConfigProvider, {
+      props: { size: 'large' },
+      slots: { default: () => h('span', 'content') },
+    })
+    expect(wrapper.find('.sg-config-provider').exists()).toBe(false)
+  })
+
+  it('exposes direction and resolvedDirection', () => {
+    let resolved: ReturnType<typeof useConfigWithDefaults> | undefined
+    const Inner = defineComponent({
+      setup() {
+        resolved = useConfigWithDefaults({ direction: undefined })
+        return () => h('div')
+      },
+    })
+    mount(
+      defineComponent({
+        components: { SgConfigProvider, Inner },
+        template: `
+          <SgConfigProvider direction="rtl">
+            <Inner />
+          </SgConfigProvider>
+        `,
+      }),
+    )
+    expect(resolved!.resolvedDirection.value).toBe('rtl')
+  })
+})
+
+describe('SgConfigProvider renderEmpty', () => {
+  it('overrides the default Empty art', () => {
+    const wrapper = mount(
+      defineComponent({
+        components: { SgConfigProvider, SgEmpty },
+        setup() {
+          return { renderEmpty: (name?: string) => h('div', { class: 'custom' }, `empty:${name}`) }
+        },
+        template: `
+          <SgConfigProvider :render-empty="renderEmpty">
+            <SgEmpty />
+          </SgConfigProvider>
+        `,
+      }),
+    )
+    expect(wrapper.find('.custom').exists()).toBe(true)
+    expect(wrapper.find('.custom').text()).toBe('empty:Empty')
+  })
+
+  it('does not override when Empty is customized', () => {
+    const wrapper = mount(
+      defineComponent({
+        components: { SgConfigProvider, SgEmpty },
+        setup() {
+          return { renderEmpty: () => h('div', { class: 'custom' }, 'x') }
+        },
+        template: `
+          <SgConfigProvider :render-empty="renderEmpty">
+            <SgEmpty description="Nothing here" />
+          </SgConfigProvider>
+        `,
+      }),
+    )
+    expect(wrapper.find('.custom').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Nothing here')
+  })
+})
+
 describe('SgTransition', () => {
   it('renders the child when visible', () => {
     const wrapper = mount(SgTransition, {
@@ -225,6 +323,11 @@ describe('SgTransition', () => {
     const wrapper = mount(Comp)
     visible.value = true
     await nextTick()
-    expect(wrapper.find('.me').classes().some((c) => c.startsWith('sg-fade-enter'))).toBe(true)
+    expect(
+      wrapper
+        .find('.me')
+        .classes()
+        .some((c) => c.startsWith('sg-fade-enter')),
+    ).toBe(true)
   })
 })

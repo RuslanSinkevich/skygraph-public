@@ -556,7 +556,7 @@ function onHeaderChange(d: Date) {
                     v-for="(ev, i) in eventsForDate(cell.date).slice(0, maxEvents)"
                     :key="ev.key ?? ev.id ?? i"
                     class="sg-calendar-event-dot"
-                    :style="{ backgroundColor: ev.color ?? 'var(--sg-primary, #1677ff)' }"
+                    :style="{ backgroundColor: ev.color ?? 'var(--sg-color-primary, #1677ff)' }"
                     :title="ev.title"
                   />
                   <span

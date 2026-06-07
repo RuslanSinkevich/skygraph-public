@@ -51,6 +51,32 @@
   box-shadow: 0 0 0 2px var(--sg-color-primary-bg);
 }
 
+.sg-input-status-error,
+.sg-input-wrapper-status-error .sg-input {
+  --sg-input-border: var(--sg-color-error);
+}
+
+.sg-input-status-error:focus,
+.sg-input-status-error:focus-visible,
+.sg-input-wrapper-status-error .sg-input:focus,
+.sg-input-wrapper-status-error .sg-input:focus-visible {
+  --sg-input-border: var(--sg-color-error);
+  box-shadow: 0 0 0 2px var(--sg-color-error-bg);
+}
+
+.sg-input-status-warning,
+.sg-input-wrapper-status-warning .sg-input {
+  --sg-input-border: var(--sg-color-warning);
+}
+
+.sg-input-status-warning:focus,
+.sg-input-status-warning:focus-visible,
+.sg-input-wrapper-status-warning .sg-input:focus,
+.sg-input-wrapper-status-warning .sg-input:focus-visible {
+  --sg-input-border: var(--sg-color-warning);
+  box-shadow: 0 0 0 2px var(--sg-color-warning-bg);
+}
+
 .sg-input:disabled {
   --sg-input-bg: var(--sg-color-bg-disabled);
   --sg-input-color: var(--sg-color-text-disabled);

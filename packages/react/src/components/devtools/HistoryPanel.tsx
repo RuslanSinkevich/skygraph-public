@@ -12,9 +12,9 @@ const styles: Record<string, React.CSSProperties> = {
   root: {
     fontFamily: 'ui-monospace, "Cascadia Code", "Fira Code", monospace',
     fontSize: 12,
-    border: '1px solid var(--sg-border, #d9d9d9)',
+    border: '1px solid var(--sg-color-border, #d9d9d9)',
     borderRadius: 8,
-    background: 'var(--sg-bg-elevated, #fff)',
+    background: 'var(--sg-color-bg-elevated, #fff)',
     overflow: 'hidden',
   },
   header: {
@@ -22,7 +22,7 @@ const styles: Record<string, React.CSSProperties> = {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '8px 12px',
-    borderBottom: '1px solid var(--sg-border, #d9d9d9)',
+    borderBottom: '1px solid var(--sg-color-border, #d9d9d9)',
     fontWeight: 600,
     fontSize: 13,
   },
@@ -32,9 +32,9 @@ const styles: Record<string, React.CSSProperties> = {
   },
   btn: {
     padding: '2px 8px',
-    border: '1px solid var(--sg-border, #d9d9d9)',
+    border: '1px solid var(--sg-color-border, #d9d9d9)',
     borderRadius: 4,
-    background: 'var(--sg-bg, #fafafa)',
+    background: 'var(--sg-color-bg-secondary, #fafafa)',
     cursor: 'pointer',
     fontSize: 11,
   },
@@ -55,11 +55,11 @@ const styles: Record<string, React.CSSProperties> = {
     gap: 8,
     padding: '4px 12px',
     cursor: 'pointer',
-    borderBottom: '1px solid var(--sg-border-light, #f0f0f0)',
+    borderBottom: '1px solid var(--sg-color-border-secondary, #f0f0f0)',
     transition: 'background 0.15s',
   },
   entryActive: {
-    background: 'var(--sg-primary-bg, #e6f4ff)',
+    background: 'var(--sg-color-primary-bg, #e6f4ff)',
     fontWeight: 600,
   },
   entryFuture: {
@@ -70,19 +70,19 @@ const styles: Record<string, React.CSSProperties> = {
     padding: '1px 6px',
     borderRadius: 4,
     fontSize: 10,
-    background: 'var(--sg-primary-bg, #e6f4ff)',
-    color: 'var(--sg-primary, #1677ff)',
+    background: 'var(--sg-color-primary-bg, #e6f4ff)',
+    color: 'var(--sg-color-primary, #1677ff)',
   },
   patches: {
     padding: '4px 12px 8px 32px',
-    background: 'var(--sg-bg-subtle, #fafafa)',
+    background: 'var(--sg-color-bg-secondary, #fafafa)',
     fontSize: 11,
     lineHeight: 1.6,
   },
   empty: {
     padding: '24px 12px',
     textAlign: 'center' as const,
-    color: 'var(--sg-text-tertiary, #999)',
+    color: 'var(--sg-color-text-tertiary, #999)',
   },
 }
 

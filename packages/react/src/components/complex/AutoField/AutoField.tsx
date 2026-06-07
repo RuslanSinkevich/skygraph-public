@@ -102,21 +102,12 @@ export function AutoField(props: AutoFieldProps) {
   const hasErrors = meta.errors.length > 0
   const hasWarnings = meta.warnings.length > 0
 
-  const wrapperStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 4,
-    ...style,
-  }
-
-  const inputStyle: React.CSSProperties = {
-    padding: '6px 12px',
-    border: `1px solid ${hasErrors ? 'var(--sg-error, #ff4d4f)' : hasWarnings ? 'var(--sg-warning, #faad14)' : 'var(--sg-border, #d9d9d9)'}`,
-    borderRadius: 'var(--sg-radius, 6px)',
-    fontSize: 14,
-    outline: 'none',
-    background: disabled ? 'var(--sg-bg-disabled, #f5f5f5)' : 'var(--sg-bg, #fff)',
-  }
+  const inputClass = [
+    'sg-autofield-input',
+    hasErrors ? 'sg-autofield-input-error' : hasWarnings ? 'sg-autofield-input-warning' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   function renderInput() {
     switch (inferredType) {
@@ -147,7 +138,7 @@ export function AutoField(props: AutoFieldProps) {
             min={min}
             max={max}
             step={step}
-            style={inputStyle}
+            className={inputClass}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           />
@@ -161,7 +152,7 @@ export function AutoField(props: AutoFieldProps) {
             onBlur={() => form.onFieldBlur(name)}
             placeholder={placeholder}
             disabled={disabled}
-            style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }}
+            className={`${inputClass} sg-autofield-input-textarea`}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           />
@@ -173,7 +164,7 @@ export function AutoField(props: AutoFieldProps) {
             value={value == null ? '' : String(value)}
             onChange={(e) => handleChange(e.target.value)}
             disabled={disabled}
-            style={inputStyle}
+            className={inputClass}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           >
@@ -196,7 +187,7 @@ export function AutoField(props: AutoFieldProps) {
               handleChange(selected)
             }}
             disabled={disabled}
-            style={{ ...inputStyle, minHeight: 80 }}
+            className={`${inputClass} sg-autofield-input-multiple`}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           >
@@ -212,7 +203,10 @@ export function AutoField(props: AutoFieldProps) {
         return (
           <div role="radiogroup" style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             {options?.map((opt) => (
-              <label key={opt.value} style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}>
+              <label
+                key={opt.value}
+                style={{ display: 'flex', alignItems: 'center', gap: 4, cursor: 'pointer' }}
+              >
                 <input
                   type="radio"
                   name={name}
@@ -234,7 +228,7 @@ export function AutoField(props: AutoFieldProps) {
             value={value == null ? '' : String(value)}
             onChange={(e) => handleChange(e.target.value)}
             disabled={disabled}
-            style={inputStyle}
+            className={inputClass}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           />
@@ -247,7 +241,7 @@ export function AutoField(props: AutoFieldProps) {
             value={value == null ? '' : String(value)}
             onChange={(e) => handleChange(e.target.value)}
             disabled={disabled}
-            style={inputStyle}
+            className={inputClass}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           />
@@ -262,7 +256,7 @@ export function AutoField(props: AutoFieldProps) {
             onBlur={() => form.onFieldBlur(name)}
             placeholder={placeholder}
             disabled={disabled}
-            style={inputStyle}
+            className={inputClass}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           />
@@ -275,7 +269,7 @@ export function AutoField(props: AutoFieldProps) {
             value={value == null ? '#000000' : String(value)}
             onChange={(e) => handleChange(e.target.value)}
             disabled={disabled}
-            style={{ ...inputStyle, padding: 2, width: 48, height: 32 }}
+            className={`${inputClass} sg-autofield-input-color`}
           />
         )
 
@@ -314,7 +308,10 @@ export function AutoField(props: AutoFieldProps) {
                   border: 'none',
                   cursor: disabled ? 'default' : 'pointer',
                   fontSize: 20,
-                  color: i < currentRate ? 'var(--sg-warning, #faad14)' : 'var(--sg-border, #d9d9d9)',
+                  color:
+                    i < currentRate
+                      ? 'var(--sg-color-warning, #faad14)'
+                      : 'var(--sg-color-border, #d9d9d9)',
                   padding: 0,
                 }}
                 aria-label={`${i + 1} star${i !== 0 ? 's' : ''}`}
@@ -334,10 +331,10 @@ export function AutoField(props: AutoFieldProps) {
             multiple={multiple}
             onChange={(e) => {
               const files = e.target.files
-              if (files) handleChange(multiple ? Array.from(files) : files[0] ?? null)
+              if (files) handleChange(multiple ? Array.from(files) : (files[0] ?? null))
             }}
             disabled={disabled}
-            style={inputStyle}
+            className={inputClass}
           />
         )
 
@@ -353,7 +350,7 @@ export function AutoField(props: AutoFieldProps) {
             onBlur={() => form.onFieldBlur(name)}
             placeholder={placeholder}
             disabled={disabled}
-            style={inputStyle}
+            className={inputClass}
             aria-invalid={hasErrors}
             aria-describedby={hasErrors ? errorId : undefined}
           />
@@ -362,18 +359,22 @@ export function AutoField(props: AutoFieldProps) {
   }
 
   return (
-    <div className={`sg-autofield ${className ?? ''}`} style={wrapperStyle}>
+    <div className={`sg-autofield ${className ?? ''}`} style={style}>
       {inferredType !== 'boolean' && inferredType !== 'switch' && label && (
-        <label style={{ fontWeight: 500, fontSize: 14 }}>{label}</label>
+        <label className="sg-autofield-label">{label}</label>
       )}
       {renderInput()}
       {hasErrors && (
-        <span id={errorId} role="alert" style={{ color: 'var(--sg-error, #ff4d4f)', fontSize: 12 }}>
+        <span
+          id={errorId}
+          role="alert"
+          style={{ color: 'var(--sg-color-error, #ff4d4f)', fontSize: 12 }}
+        >
           {meta.errors.join('; ')}
         </span>
       )}
       {hasWarnings && !hasErrors && (
-        <span style={{ color: 'var(--sg-warning, #faad14)', fontSize: 12 }}>
+        <span style={{ color: 'var(--sg-color-warning, #faad14)', fontSize: 12 }}>
           {meta.warnings.join('; ')}
         </span>
       )}

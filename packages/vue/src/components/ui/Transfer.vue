@@ -41,6 +41,13 @@ export interface TransferProps {
   defaultTargetKeys?: string[]
   /** Show search input on each pane. */
   showSearch?: boolean
+  /**
+   * Custom search predicate. When omitted, a case-insensitive title substring
+   * match is used. Mirrors the React `filterOption` prop.
+   */
+  filterOption?: (inputValue: string, item: TransferItem) => boolean
+  /** Search input placeholder (overrides locale). */
+  searchPlaceholder?: string
   /** Pane titles, [left, right]. */
   titles?: [string, string]
   /** Disables interaction. */
@@ -49,6 +56,8 @@ export interface TransferProps {
   oneWay?: boolean
   /** Show select-all checkbox in the panel header. */
   showSelectAll?: boolean
+  /** Shows the `selected/total items` count line. @default true */
+  showCount?: boolean
   /** Enable client pagination. */
   pagination?: boolean | { pageSize?: number }
   /** Fixed list body height (px). */
@@ -65,6 +74,7 @@ const props = withDefaults(defineProps<TransferProps>(), {
   disabled: false,
   oneWay: false,
   showSelectAll: true,
+  showCount: true,
 })
 
 const emit = defineEmits<{
@@ -82,6 +92,10 @@ const mergedLocale = computed<Required<TransferLocale>>(() => ({
   ...DEFAULT_LOCALE,
   ...(props.locale ?? {}),
 }))
+
+const resolvedSearchPlaceholder = computed(
+  () => props.searchPlaceholder ?? mergedLocale.value.searchPlaceholder,
+)
 
 const internal = ref<string[]>(
   props.modelValue ?? props.targetKeys ?? props.defaultTargetKeys ?? [],
@@ -113,6 +127,9 @@ const targetItems = computed(() => props.dataSource.filter((i) => targets.value.
 
 function filterItems(items: TransferItem[], q: string): TransferItem[] {
   if (!q) return items
+  if (props.filterOption) {
+    return items.filter((item) => props.filterOption!(q, item))
+  }
   const v = q.toLowerCase()
   return items.filter((i) => i.title.toLowerCase().includes(v))
 }
@@ -270,7 +287,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
           :disabled="disabled || enabledKeys(filteredLeft).length === 0"
           @change="(v: boolean) => toggleAll('left', v)"
         />
-        <span :class="unstyled ? '' : 'sg-transfer-list-header-count'">
+        <span v-if="showCount" :class="unstyled ? '' : 'sg-transfer-list-header-count'">
           {{ countText(filteredLeft, leftSelected) }}
         </span>
         <span v-if="titles[0]" :class="unstyled ? '' : 'sg-transfer-list-header-title'">
@@ -281,7 +298,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
         <SgInput
           size="small"
           :model-value="leftSearch"
-          :placeholder="mergedLocale.searchPlaceholder"
+          :placeholder="resolvedSearchPlaceholder"
           allow-clear
           @update:model-value="onLeftSearch"
         />
@@ -352,7 +369,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
           :disabled="disabled || enabledKeys(filteredRight).length === 0"
           @change="(v: boolean) => toggleAll('right', v)"
         />
-        <span :class="unstyled ? '' : 'sg-transfer-list-header-count'">
+        <span v-if="showCount" :class="unstyled ? '' : 'sg-transfer-list-header-count'">
           {{ countText(filteredRight, rightSelected) }}
         </span>
         <span v-if="titles[1]" :class="unstyled ? '' : 'sg-transfer-list-header-title'">
@@ -363,7 +380,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
         <SgInput
           size="small"
           :model-value="rightSearch"
-          :placeholder="mergedLocale.searchPlaceholder"
+          :placeholder="resolvedSearchPlaceholder"
           allow-clear
           @update:model-value="onRightSearch"
         />

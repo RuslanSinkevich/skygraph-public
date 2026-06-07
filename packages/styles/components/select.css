@@ -14,11 +14,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: var(--sg-height-md);
+  /* Honour the shared `--sg-input-*` family (same as `Input`) so a scoped
+   * override re-skins the trigger, falling back to the semantic palette. */
+  height: var(--sg-input-height, var(--sg-height-md));
   padding: 0 var(--sg-padding-md);
-  background: var(--sg-color-bg-container);
-  border: 1px solid var(--sg-color-border);
-  border-radius: var(--sg-border-radius);
+  color: var(--sg-input-color, var(--sg-color-text));
+  background: var(--sg-input-bg, var(--sg-color-bg-container));
+  border: 1px solid var(--sg-input-border, var(--sg-color-border));
+  border-radius: var(--sg-input-radius, var(--sg-border-radius));
   cursor: pointer;
   transition: border-color var(--sg-transition-duration);
 }
@@ -47,7 +50,7 @@
 }
 
 .sg-select-selection-item {
-  color: var(--sg-color-text);
+  color: var(--sg-input-color, var(--sg-color-text));
 }
 
 .sg-select-arrow {
@@ -79,6 +82,10 @@
 }
 
 .sg-select-option:hover {
+  background: var(--sg-color-bg-hover);
+}
+
+.sg-select-option-focused {
   background: var(--sg-color-bg-hover);
 }
 
@@ -163,7 +170,9 @@
   border: none;
   border-radius: 2px;
   cursor: pointer;
-  transition: color var(--sg-transition-duration), background var(--sg-transition-duration);
+  transition:
+    color var(--sg-transition-duration),
+    background var(--sg-transition-duration);
 }
 
 .sg-select-tag-remove:hover {

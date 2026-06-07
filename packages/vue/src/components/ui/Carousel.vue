@@ -12,6 +12,7 @@ import {
   type PropType,
   type VNode,
 } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface CarouselProps {
   /** Auto-advance slides on an interval. @default false */
@@ -87,8 +88,11 @@ export default defineComponent({
       if (timer) clearInterval(timer)
     })
 
-    const isVertical = computed(
-      () => props.dotPosition === 'left' || props.dotPosition === 'right',
+    const isVertical = computed(() => props.dotPosition === 'left' || props.dotPosition === 'right')
+
+    const cfg = useConfig()
+    const slideLabel = computed(
+      () => cfg.value.locale?.carousel?.slide ?? ((index: number) => `Slide ${index}`),
     )
 
     return () => {
@@ -170,11 +174,8 @@ export default defineComponent({
                 h('button', {
                   key: i,
                   type: 'button',
-                  class: [
-                    'sg-carousel-dot',
-                    i === current.value ? 'sg-carousel-dot-active' : '',
-                  ],
-                  'aria-label': `Slide ${i + 1}`,
+                  class: ['sg-carousel-dot', i === current.value ? 'sg-carousel-dot-active' : ''],
+                  'aria-label': slideLabel.value(i + 1),
                   onClick: () => goTo(i, count),
                 }),
               ),

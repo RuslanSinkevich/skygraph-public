@@ -1,7 +1,7 @@
 {
   "name": "@skygraph/vue",
-  "version": "0.6.1",
-  "description": "SkyGraph Vue 3 adapter — composables and components built on @skygraph/core",
+  "version": "0.6.3",
+  "description": "SkyGraph Vue 3 adapter вЂ” composables and components built on @skygraph/core",
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",

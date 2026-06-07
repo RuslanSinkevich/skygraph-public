@@ -75,6 +75,9 @@ export const en_US: SgLocale = {
     prevMonth: 'Previous month',
     nextMonth: 'Next month',
   },
+  input: {
+    clear: 'Clear',
+  },
   inputPassword: {
     showPassword: 'Show password',
     hidePassword: 'Hide password',

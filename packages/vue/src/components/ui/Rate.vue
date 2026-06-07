@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfig } from './ConfigProvider.vue'
 
 export interface RateProps {
   /** v-model binding (Vue idiom). */
@@ -12,7 +13,7 @@ export interface RateProps {
   count?: number
   /** Allows half steps. */
   allowHalf?: boolean
-  /** Custom character (defaults to ★). */
+  /** Custom character (defaults to ★). Prefer the `character` slot for nodes. */
   character?: string
   /** Disables interaction. */
   disabled?: boolean
@@ -33,8 +34,14 @@ const emit = defineEmits<{
   (e: 'change', value: number): void
 }>()
 
-const ariaLabel = 'Rating'
-const starLabel = (n: number) => `${n} star${n > 1 ? 's' : ''}`
+const cfg = useConfig()
+const rateLocale = computed(() => cfg.value.locale?.rate)
+const ariaLabel = computed(() => rateLocale.value?.ariaLabel ?? 'Rating')
+const starLabel = (n: number) => {
+  const fn = rateLocale.value?.star
+  if (typeof fn === 'function') return fn(n)
+  return `${n} star${n > 1 ? 's' : ''}`
+}
 
 const internal = ref<number>(props.modelValue ?? props.value ?? props.defaultValue)
 const hoverValue = ref<number | null>(null)
@@ -120,7 +127,10 @@ function classFor(starIndex: number) {
       @mousemove="(e) => hoverStar(i, e)"
       @mouseleave="!disabled && (hoverValue = null)"
       @keydown="(e) => onKey(i, e)"
-      >{{ character }}</span
     >
+      <slot name="character" :index="i" :value="display"
+        ><slot>{{ character }}</slot></slot
+      >
+    </span>
   </div>
 </template>

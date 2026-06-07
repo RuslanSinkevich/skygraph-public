@@ -1,6 +1,6 @@
 {
   "name": "skygraph-vue",
-  "version": "0.6.1",
+  "version": "0.6.3",
   "description": "SkyGraph for Vue 3 — components, composables and styles in a single install",
   "license": "MIT",
   "type": "module",

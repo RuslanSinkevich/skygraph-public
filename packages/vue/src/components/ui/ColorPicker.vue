@@ -25,6 +25,15 @@ export interface ColorPickerProps {
   size?: 'small' | 'middle' | 'large'
   /** Strips built-in styling. */
   unstyled?: boolean
+  /**
+   * Accessible name for the trigger button. The trigger only shows a color
+   * swatch (and optional `showText`), so without a programmatic name the
+   * `button-name` axe rule flags the control. Provide either `ariaLabel`
+   * or `ariaLabelledby`; if `showText` renders text, that text is enough.
+   */
+  ariaLabel?: string
+  /** Id(s) of the element(s) that label the trigger. */
+  ariaLabelledby?: string
 }
 
 const props = withDefaults(defineProps<ColorPickerProps>(), {
@@ -352,36 +361,54 @@ const satBackground = computed(
   <div
     ref="wrapperRef"
     :class="wrapperClass"
+    :style="unstyled ? { position: 'relative', display: 'inline-block' } : undefined"
     @mouseenter="handleMouseEnter"
     @mouseleave="handleMouseLeave"
   >
     <button
       type="button"
-      class="sg-colorpicker-trigger"
+      :class="unstyled ? undefined : 'sg-colorpicker-trigger'"
       :disabled="disabled"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      :aria-label="pickColorLabel"
+      :aria-label="ariaLabel ?? pickColorLabel"
+      :aria-labelledby="ariaLabelledby"
       @click="handleTriggerClick"
     >
-      <span class="sg-colorpicker-swatch" :style="{ background: current }" />
-      <span v-if="showText" class="sg-colorpicker-text">{{ formatColor(current, format) }}</span>
+      <span
+        :class="unstyled ? undefined : 'sg-colorpicker-swatch'"
+        :style="
+          unstyled
+            ? { display: 'inline-block', width: '16px', height: '16px', background: current }
+            : { background: current }
+        "
+      />
+      <slot name="text" :color="formatColor(current, format)">
+        <span v-if="showText" :class="unstyled ? undefined : 'sg-colorpicker-text'">{{
+          formatColor(current, format)
+        }}</span>
+      </slot>
     </button>
     <div
       v-if="isOpen"
-      class="sg-colorpicker-dropdown"
+      :class="unstyled ? undefined : 'sg-colorpicker-dropdown'"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
     >
       <div
         ref="satPanelRef"
-        class="sg-colorpicker-saturation"
-        :style="{ background: satBackground }"
+        :class="unstyled ? undefined : 'sg-colorpicker-saturation'"
+        :style="
+          unstyled
+            ? { width: '200px', height: '150px', position: 'relative', background: satBackground }
+            : { background: satBackground }
+        "
         @pointerdown="handleSatPointerDown"
         @pointermove="handleSatPointerMove"
         @pointerup="handlePointerUp"
       >
         <div
+          v-if="!unstyled"
           class="sg-colorpicker-cursor"
           :style="{
             left: `${hsv.s * 100}%`,
@@ -392,31 +419,52 @@ const satBackground = computed(
       </div>
       <div
         ref="hueBarRef"
-        class="sg-colorpicker-hue"
+        :class="unstyled ? undefined : 'sg-colorpicker-hue'"
+        :style="
+          unstyled
+            ? {
+                width: '200px',
+                height: '12px',
+                background:
+                  'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)',
+              }
+            : undefined
+        "
         @pointerdown="handleHuePointerDown"
         @pointermove="handleHuePointerMove"
         @pointerup="handlePointerUp"
       >
-        <div class="sg-colorpicker-hue-cursor" :style="{ left: `${hsv.h * 100}%` }" />
+        <div
+          v-if="!unstyled"
+          class="sg-colorpicker-hue-cursor"
+          :style="{ left: `${hsv.h * 100}%` }"
+        />
       </div>
-      <div class="sg-colorpicker-input-row">
-        <span class="sg-colorpicker-preview" :style="{ background: current }" />
+      <div :class="unstyled ? undefined : 'sg-colorpicker-input-row'">
+        <span v-if="!unstyled" class="sg-colorpicker-preview" :style="{ background: current }" />
         <input
-          class="sg-colorpicker-input"
+          :class="unstyled ? undefined : 'sg-colorpicker-input'"
           :value="textInput"
           spellcheck="false"
           @input="handleTextInput"
         />
       </div>
-      <div v-for="group in presets ?? []" :key="group.label" class="sg-colorpicker-preset-group">
-        <div class="sg-colorpicker-preset-label">{{ group.label }}</div>
-        <div class="sg-colorpicker-preset-grid">
+      <div
+        v-for="group in presets ?? []"
+        :key="group.label"
+        :class="unstyled ? undefined : 'sg-colorpicker-preset-group'"
+      >
+        <div :class="unstyled ? undefined : 'sg-colorpicker-preset-label'">{{ group.label }}</div>
+        <div
+          :class="unstyled ? undefined : 'sg-colorpicker-preset-grid'"
+          :style="unstyled ? { display: 'flex', flexWrap: 'wrap', gap: '4px' } : undefined"
+        >
           <button
             v-for="c in group.colors"
             :key="c"
             type="button"
-            class="sg-colorpicker-preset-color"
-            :style="{ background: c }"
+            :class="unstyled ? undefined : 'sg-colorpicker-preset-color'"
+            :style="unstyled ? { width: '16px', height: '16px', background: c } : { background: c }"
             :title="c"
             @click="handlePresetClick(c)"
           />

@@ -2,9 +2,15 @@ export { default as SgConfigProvider } from './ConfigProvider.vue'
 export {
   useConfig,
   useConfigWithDefaults,
+  buildThemeVars,
   sgConfigKey,
   type SgConfig,
   type ConfigProviderProps,
+  type ThemeConfig,
+  type SgThemeToken,
+  type CSPConfig,
+  type RenderEmptyHandler,
+  type Direction,
 } from './ConfigProvider.vue'
 
 export { default as SgTransition } from './Transition.vue'

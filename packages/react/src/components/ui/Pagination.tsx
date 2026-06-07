@@ -76,6 +76,33 @@ export function Pagination({
     setJumpValue('')
   }
 
+  // Keyboard paging: ← / → step one page, Home / End jump to the edges.
+  // Skipped while focus sits in the size-changer <select> or quick-jumper
+  // <input> so arrow keys there keep their native behaviour.
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLElement>) => {
+    if (disabled) return
+    const tag = (e.target as HTMLElement).tagName
+    if (tag === 'INPUT' || tag === 'SELECT') return
+    switch (e.key) {
+      case 'ArrowLeft':
+        e.preventDefault()
+        go(safeCurrentPage - 1)
+        break
+      case 'ArrowRight':
+        e.preventDefault()
+        go(safeCurrentPage + 1)
+        break
+      case 'Home':
+        e.preventDefault()
+        go(1)
+        break
+      case 'End':
+        e.preventDefault()
+        go(totalPages)
+        break
+    }
+  }
+
   const pages = buildPages(safeCurrentPage, totalPages)
 
   const renderTotal = () => {
@@ -130,8 +157,12 @@ export function Pagination({
 
   if (unstyled) {
     return (
-      <nav className={className} style={style} aria-label={ariaLabel}>
-        <button disabled={safeCurrentPage <= 1} onClick={() => go(safeCurrentPage - 1)}>
+      <nav className={className} style={style} aria-label={ariaLabel} onKeyDown={handleKeyDown}>
+        <button
+          type="button"
+          disabled={safeCurrentPage <= 1}
+          onClick={() => go(safeCurrentPage - 1)}
+        >
           ‹
         </button>
         {pages.map((p, i) =>
@@ -140,6 +171,7 @@ export function Pagination({
           ) : (
             <button
               key={p}
+              type="button"
               onClick={() => go(p as number)}
               aria-current={p === safeCurrentPage ? 'page' : undefined}
             >
@@ -147,7 +179,11 @@ export function Pagination({
             </button>
           ),
         )}
-        <button disabled={safeCurrentPage >= totalPages} onClick={() => go(safeCurrentPage + 1)}>
+        <button
+          type="button"
+          disabled={safeCurrentPage >= totalPages}
+          onClick={() => go(safeCurrentPage + 1)}
+        >
           ›
         </button>
       </nav>
@@ -166,8 +202,10 @@ export function Pagination({
           .join(' ')}
         style={style}
         aria-label={ariaLabel}
+        onKeyDown={handleKeyDown}
       >
         <button
+          type="button"
           className="sg-pagination-item sg-pagination-prev"
           disabled={safeCurrentPage <= 1}
           onClick={() => go(safeCurrentPage - 1)}
@@ -178,6 +216,7 @@ export function Pagination({
           {safeCurrentPage} / {totalPages}
         </span>
         <button
+          type="button"
           className="sg-pagination-item sg-pagination-next"
           disabled={safeCurrentPage >= totalPages}
           onClick={() => go(safeCurrentPage + 1)}
@@ -195,9 +234,11 @@ export function Pagination({
         .join(' ')}
       style={style}
       aria-label={ariaLabel}
+      onKeyDown={handleKeyDown}
     >
       {renderTotal()}
       <button
+        type="button"
         className="sg-pagination-item sg-pagination-prev"
         disabled={safeCurrentPage <= 1}
         onClick={() => go(safeCurrentPage - 1)}
@@ -212,6 +253,7 @@ export function Pagination({
         ) : (
           <button
             key={p}
+            type="button"
             className={`sg-pagination-item${p === safeCurrentPage ? ' sg-pagination-item-active' : ''}`}
             onClick={() => go(p as number)}
             aria-current={p === safeCurrentPage ? 'page' : undefined}
@@ -221,6 +263,7 @@ export function Pagination({
         ),
       )}
       <button
+        type="button"
         className="sg-pagination-item sg-pagination-next"
         disabled={safeCurrentPage >= totalPages}
         onClick={() => go(safeCurrentPage + 1)}

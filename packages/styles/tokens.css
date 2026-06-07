@@ -87,6 +87,17 @@
 
   /* === Component tokens === */
   --sg-color-star: #fadb14;
+
+  /* Input-family aliases shared by Input / Select / TreeSelect / Cascader.
+   * These are public component tokens, so scoped overrides work consistently
+   * across all trigger-like controls. */
+  --sg-input-height: var(--sg-height-md);
+  --sg-input-padding: var(--sg-padding-xs) var(--sg-padding-md);
+  --sg-input-font-size: var(--sg-font-size);
+  --sg-input-color: var(--sg-color-text);
+  --sg-input-bg: var(--sg-color-bg-container);
+  --sg-input-border: var(--sg-color-border);
+  --sg-input-radius: var(--sg-border-radius);
 }
 
 /* === Semantic tokens — Light theme (default) === */

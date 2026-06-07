@@ -252,6 +252,9 @@ export function buildPageRule(opts?: PrintOptions): string;
 export function buildPrintHtml(fragment: string, opts?: PrintOptions, documentRef?: Document | null): string;
 
 // @public
+export function buildThemeVars(theme?: ThemeConfig): Record<string, string>;
+
+// @public
 export function Button(input: ButtonProps): react_jsx_runtime.JSX.Element;
 
 // @public
@@ -689,6 +692,11 @@ export { createMeasureCache }
 export { createVirtual }
 
 // @public
+export interface CSPConfig {
+    nonce?: string;
+}
+
+// @public
 export function Dashboard(input: DashboardProps): react_jsx_runtime.JSX.Element;
 
 // @public
@@ -1022,6 +1030,9 @@ export interface DiagramRef {
 
 // @public
 export type DiagramSelectionMode = 'single' | 'multi' | 'lasso';
+
+// @public
+export type Direction = 'ltr' | 'rtl';
 
 // @public
 export interface DownloadPngOptions {
@@ -1475,6 +1486,11 @@ export interface InputGroupProps extends BaseComponentProps, SizableProps {
 }
 
 // @public
+export interface InputLocale {
+    clear?: string;
+}
+
+// @public
 export function InputNumber(input: InputNumberProps): react_jsx_runtime.JSX.Element;
 
 // @public
@@ -1519,13 +1535,18 @@ export interface InputProps extends BaseComponentProps, InteractiveProps, Sizabl
     'aria-describedby'?: string;
     'aria-invalid'?: boolean | 'false' | 'true' | 'grammar' | 'spelling';
     'aria-required'?: boolean | 'false' | 'true';
+    allowClear?: boolean;
     defaultValue?: string;
     id?: string;
     onBlur?: () => void;
     onChange?: (value: string) => void;
+    onClear?: () => void;
     onFocus?: () => void;
     placeholder?: string;
+    prefix?: React__default.ReactNode;
     readOnly?: boolean;
+    status?: 'error' | 'warning';
+    suffix?: React__default.ReactNode;
     type?: 'text' | 'email' | 'password' | 'number';
     value?: string;
 }
@@ -2031,6 +2052,9 @@ export interface RateProps extends BaseComponentProps, InteractiveProps {
 }
 
 // @public
+export type RenderEmptyHandler = (componentName?: string) => React__default.ReactNode;
+
+// @public
 export function resolveBrushConfig(brush: boolean | ChartBrushConfig | undefined): ChartBrushConfig | null;
 
 // @public
@@ -2332,9 +2356,15 @@ export function serializeSvg(svg: SVGSVGElement, size?: PngSize): string;
 // @public
 export interface SgConfig {
     bordered?: boolean;
+    csp?: CSPConfig;
+    direction?: Direction;
     disabled?: boolean;
+    getPopupContainer?: (triggerNode?: HTMLElement) => HTMLElement;
+    getTargetContainer?: () => HTMLElement;
     locale?: SgLocale;
+    renderEmpty?: RenderEmptyHandler;
     size?: SizeType;
+    theme?: ThemeConfig;
 }
 
 // @public
@@ -2353,6 +2383,7 @@ export interface SgLocale {
     form?: FormLocale;
     gantt?: GanttLocale;
     inlineEdit?: InlineEditLocale;
+    input?: InputLocale;
     inputPassword?: InputPasswordLocale;
     modal?: ModalLocale;
     notification?: NotificationLocale;
@@ -2371,6 +2402,20 @@ export interface SgLocale {
     transfer?: TransferLocale;
     treeSelect?: TreeSelectLocale;
     upload?: UploadLocale;
+}
+
+// @public
+export interface SgThemeToken {
+    borderRadius?: number | string;
+    colorBg?: string;
+    colorBorder?: string;
+    colorError?: string;
+    colorPrimary?: string;
+    colorSuccess?: string;
+    colorText?: string;
+    colorWarning?: string;
+    fontFamily?: string;
+    fontSize?: number | string;
 }
 
 // @public
@@ -2772,6 +2817,13 @@ export interface TextareaProps extends BaseComponentProps, InteractiveProps, Siz
     rows?: number;
     showCount?: boolean;
     value?: string;
+}
+
+// @public
+export interface ThemeConfig {
+    cssVars?: Record<string, string>;
+    mode?: 'light' | 'dark';
+    token?: SgThemeToken;
 }
 
 // @public
@@ -3201,6 +3253,18 @@ export function useComputed(core: Core, path: string): unknown;
 
 // @public
 export function useConfig(): SgConfig;
+
+// @public
+export function useConfigWithDefaults<T extends Record<string, unknown>>(props: T, defaults: {
+    size?: SizeType;
+    disabled?: boolean;
+    bordered?: boolean;
+    direction?: Direction;
+}): T & {
+    resolvedSize: SizeType;
+    resolvedDisabled: boolean;
+    resolvedDirection: Direction;
+};
 
 // @public (undocumented)
 export function useField(core: Core, form: FormEngine, name: string): UseFieldReturn;

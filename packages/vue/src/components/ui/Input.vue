@@ -27,6 +27,18 @@ export interface InputProps {
   unstyled?: boolean
   /** Shows a loading spinner. */
   loading?: boolean
+  /**
+   * Exposes invalid state to assistive technologies. Accepts a string token
+   * (`'true'` / `'false'` / `'grammar'` / `'spelling'`); the prop is
+   * intentionally string-only so Vue's Boolean prop coercion does not
+   * default it to `false` when the consumer omits it. Pass strings — e.g.
+   * `aria-invalid="true"`.
+   */
+  ariaInvalid?: 'false' | 'true' | 'grammar' | 'spelling'
+  /** Marks the field as required for assistive technologies. */
+  ariaRequired?: 'false' | 'true'
+  /** Connects the input to description / error nodes for assistive technologies. */
+  ariaDescribedby?: string
 }
 
 const props = withDefaults(defineProps<InputProps>(), {
@@ -126,7 +138,9 @@ const clearLabel = computed(() => cfg.value.locale?.input?.clear ?? 'Clear')
       :disabled="disabled || loading"
       :readonly="readOnly"
       :aria-readonly="readOnly || undefined"
-      :aria-invalid="status === 'error' || undefined"
+      :aria-invalid="ariaInvalid ?? (status === 'error' || undefined)"
+      :aria-required="ariaRequired"
+      :aria-describedby="ariaDescribedby"
       @input="onInput"
       @focus="onFocus"
       @blur="onBlur"

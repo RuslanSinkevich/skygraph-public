@@ -430,12 +430,18 @@ export {
   useNotification,
   useConfig,
   useConfigWithDefaults,
+  buildThemeVars,
   sgConfigKey,
 } from './components/ui'
 
 export type {
   ConfigProviderProps,
   SgConfig,
+  ThemeConfig,
+  SgThemeToken,
+  CSPConfig,
+  RenderEmptyHandler,
+  Direction,
   TransitionProps,
   SpinProps,
   ModalProps,

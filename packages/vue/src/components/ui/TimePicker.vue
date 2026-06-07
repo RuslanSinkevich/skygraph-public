@@ -43,6 +43,16 @@ export interface TimePickerProps {
   disabledMinutes?: (hour: number) => number[]
   /** Second values to disable for the currently picked hour + minute. */
   disabledSeconds?: (hour: number, minute: number) => number[]
+  /**
+   * Reserved for read-only input behavior (mirrors the React adapter; the
+   * Vue trigger is already a non-editable button so this is a no-op kept
+   * for parity).
+   */
+  inputReadOnly?: boolean
+  /** Accessible name for the trigger button. */
+  ariaLabel?: string
+  /** Id(s) of the element(s) that label the trigger. */
+  ariaLabelledby?: string
 }
 
 const props = withDefaults(defineProps<TimePickerProps>(), {
@@ -296,6 +306,8 @@ function setPm() {
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
       :aria-disabled="disabled"
+      :aria-label="ariaLabel"
+      :aria-labelledby="ariaLabelledby"
       @click="openDropdown"
     >
       <span :class="current ? '' : 'sg-timepicker-placeholder'">{{ current || placeholder }}</span>

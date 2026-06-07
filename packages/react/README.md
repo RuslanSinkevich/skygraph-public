@@ -1,6 +1,6 @@
 # @skygraph/react
 
-React adapter for [SkyGraph](https://skygraph.ruslansinkevich.ru/) — 78+ components, hooks and `ConfigProvider` built on the framework-agnostic [`@skygraph/core`](../core) engine. Shares the `.sg-*` CSS contract with the Vue and Angular adapters via [`@skygraph/styles`](../styles).
+React adapter for [SkyGraph](https://skygraph.ruslansinkevich.ru/) — 50+ components, hooks and `ConfigProvider` built on the framework-agnostic [`@skygraph/core`](../core) engine. Shares the `.sg-*` CSS contract with the Vue and Angular adapters via [`@skygraph/styles`](../styles).
 
 > **Easier path — the meta-package:**
 >
@@ -33,7 +33,7 @@ export function App() {
 }
 ```
 
-## Components (78+)
+## Components (53 documented)
 
 **Data entry:** Button, Input, InputNumber, Textarea, Select, Checkbox, Radio, Switch, Slider, DatePicker, TimePicker, AutoComplete, Rate, Upload, ColorPicker, Cascader, TreeSelect, Mentions
 

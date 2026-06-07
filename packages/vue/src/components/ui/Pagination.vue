@@ -1,6 +1,17 @@
 <script setup lang="ts">
-import { computed, ref, type PropType } from 'vue'
+import { computed, ref, useSlots, type PropType, type VNode } from 'vue'
 import { useConfigWithDefaults, useConfig } from './ConfigProvider.vue'
+
+/**
+ * Renderer for the "total" label. Receives the total count and the current
+ * visible range `[start, end]`. Return either a plain string or an array of
+ * `VNode`s (e.g. `h('span', ...)`). Mirrors the React `showTotal` function
+ * signature.
+ */
+export type PaginationTotalRenderer = (
+  total: number,
+  range: [number, number],
+) => string | number | VNode | VNode[]
 
 export interface PaginationProps {
   /** Current page number (1-based). */
@@ -9,8 +20,12 @@ export interface PaginationProps {
   total: number
   /** Items per page. @default 10 */
   pageSize?: number
-  /** Whether the total count is displayed. */
-  showTotal?: boolean
+  /**
+   * Whether the total count is displayed. When a function is passed it
+   * receives `(total, [start, end])` and returns the rendered content
+   * (parity with the React `showTotal` callback).
+   */
+  showTotal?: boolean | PaginationTotalRenderer
   /** Disables all controls. */
   disabled?: boolean
   /** Renders prev/next with current/total only. */
@@ -29,7 +44,10 @@ const props = defineProps({
   current: { type: Number, required: true },
   total: { type: Number, required: true },
   pageSize: { type: Number, default: 10 },
-  showTotal: { type: Boolean, default: false },
+  showTotal: {
+    type: [Boolean, Function] as PropType<boolean | PaginationTotalRenderer>,
+    default: false,
+  },
   disabled: { type: Boolean, default: undefined },
   simple: { type: Boolean, default: false },
   showSizeChanger: { type: Boolean, default: false },
@@ -40,6 +58,15 @@ const props = defineProps({
   showQuickJumper: { type: Boolean, default: false },
   unstyled: { type: Boolean, default: false },
 })
+
+defineSlots<{
+  /**
+   * Custom renderer for the total label. Receives the total count and the
+   * current visible range `[start, end]` — equivalent to the
+   * `showTotal` function prop.
+   */
+  total(slot: { total: number; range: [number, number] }): unknown
+}>()
 
 const emit = defineEmits<{
   (e: 'change', page: number): void
@@ -58,6 +85,23 @@ const jumpValue = ref('')
 
 const totalPages = computed(() => Math.max(1, Math.ceil(props.total / props.pageSize)))
 const safeCurrent = computed(() => Math.min(Math.max(1, props.current), totalPages.value))
+const rangeStart = computed(() => (safeCurrent.value - 1) * props.pageSize + 1)
+const rangeEnd = computed(() => Math.min(safeCurrent.value * props.pageSize, props.total))
+
+const slots = useSlots()
+const hasTotalSlot = computed(() => Boolean(slots.total))
+const showTotalEnabled = computed(
+  () => hasTotalSlot.value || props.showTotal === true || typeof props.showTotal === 'function',
+)
+const totalIsFunction = computed(() => typeof props.showTotal === 'function')
+// Functional component bridge — renders whatever the consumer-provided
+// `showTotal` callback returns (string / number / VNode / VNode[]).
+const CustomTotalRenderer = {
+  render() {
+    if (typeof props.showTotal !== 'function') return null
+    return props.showTotal(props.total, [rangeStart.value, rangeEnd.value])
+  },
+}
 
 function go(page: number) {
   if (disabled.value || page < 1 || page > totalPages.value || page === safeCurrent.value) {
@@ -72,6 +116,33 @@ function handleJump() {
     go(num)
   }
   jumpValue.value = ''
+}
+
+// Keyboard paging: ← / → step one page, Home / End jump to the edges.
+// Skipped while focus sits in the size-changer <select> or quick-jumper
+// <input> so arrow keys keep their native behaviour there.
+function handleKeydown(e: KeyboardEvent) {
+  if (disabled.value) return
+  const tag = (e.target as HTMLElement | null)?.tagName
+  if (tag === 'INPUT' || tag === 'SELECT') return
+  switch (e.key) {
+    case 'ArrowLeft':
+      e.preventDefault()
+      go(safeCurrent.value - 1)
+      break
+    case 'ArrowRight':
+      e.preventDefault()
+      go(safeCurrent.value + 1)
+      break
+    case 'Home':
+      e.preventDefault()
+      go(1)
+      break
+    case 'End':
+      e.preventDefault()
+      go(totalPages.value)
+      break
+  }
 }
 
 /**
@@ -108,7 +179,7 @@ const simpleClasses = computed(() =>
 </script>
 
 <template>
-  <nav v-if="unstyled" :aria-label="navAriaLabel">
+  <nav v-if="unstyled" :aria-label="navAriaLabel" @keydown="handleKeydown">
     <button type="button" :disabled="safeCurrent <= 1" @click="go(safeCurrent - 1)">‹</button>
     <template v-for="(p, i) in pages" :key="`p${i}-${p}`">
       <span v-if="p === '...'">…</span>
@@ -125,7 +196,12 @@ const simpleClasses = computed(() =>
       ›
     </button>
   </nav>
-  <nav v-else-if="simple" :class="simpleClasses" :aria-label="navAriaLabel">
+  <nav
+    v-else-if="simple"
+    :class="simpleClasses"
+    :aria-label="navAriaLabel"
+    @keydown="handleKeydown"
+  >
     <button
       type="button"
       class="sg-pagination-item sg-pagination-prev"
@@ -144,8 +220,13 @@ const simpleClasses = computed(() =>
       ›
     </button>
   </nav>
-  <nav v-else :class="rootClasses" :aria-label="navAriaLabel">
-    <span v-if="showTotal" class="sg-pagination-total">{{ totalPrefix }} {{ total }}</span>
+  <nav v-else :class="rootClasses" :aria-label="navAriaLabel" @keydown="handleKeydown">
+    <span v-if="showTotalEnabled" class="sg-pagination-total">
+      <slot name="total" :total="total" :range="[rangeStart, rangeEnd] as [number, number]">
+        <component v-if="totalIsFunction" :is="CustomTotalRenderer" />
+        <template v-else>{{ totalPrefix }} {{ total }}</template>
+      </slot>
+    </span>
     <button
       type="button"
       class="sg-pagination-item sg-pagination-prev"

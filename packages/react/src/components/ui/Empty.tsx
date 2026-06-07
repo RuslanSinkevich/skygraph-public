@@ -31,15 +31,21 @@ const DefaultImage = () => (
 /**
  * Presents a no-data state with optional image, description, and footer slot.
  */
-export function Empty({
-  image,
-  description,
-  children,
-  className,
-  style,
-  unstyled,
-}: EmptyProps) {
-  const localeDefault = useConfig().locale?.empty?.description ?? 'No Data'
+export function Empty({ image, description, children, className, style, unstyled }: EmptyProps) {
+  const config = useConfig()
+
+  // Global `ConfigProvider.renderEmpty` overrides the default art when the
+  // caller did not customize the Empty content explicitly.
+  if (
+    config.renderEmpty &&
+    image === undefined &&
+    description === undefined &&
+    children === undefined
+  ) {
+    return <>{config.renderEmpty('Empty')}</>
+  }
+
+  const localeDefault = config.locale?.empty?.description ?? 'No Data'
   const desc = description === undefined ? localeDefault : description
 
   if (unstyled) {

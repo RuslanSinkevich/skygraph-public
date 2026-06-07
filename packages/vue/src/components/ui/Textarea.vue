@@ -26,6 +26,12 @@ export interface TextareaProps {
   size?: 'small' | 'middle' | 'large'
   /** Strips built-in styling. */
   unstyled?: boolean
+  /** Exposes invalid state to assistive technologies. */
+  ariaInvalid?: boolean | 'false' | 'true' | 'grammar' | 'spelling'
+  /** Connects the textarea to description / error nodes for assistive technologies. */
+  ariaDescribedby?: string
+  /** Marks the field as required for assistive technologies. */
+  ariaRequired?: boolean | 'false' | 'true'
 }
 
 const props = withDefaults(defineProps<TextareaProps>(), {
@@ -87,6 +93,9 @@ function onInput(e: Event) {
       :rows="rows"
       :disabled="disabled || loading"
       :aria-disabled="disabled || loading"
+      :aria-invalid="ariaInvalid"
+      :aria-describedby="ariaDescribedby"
+      :aria-required="ariaRequired"
       @input="onInput"
       @blur="emit('blur')"
       @focus="emit('focus')"

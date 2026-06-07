@@ -161,7 +161,9 @@ describe('SgModal', () => {
     })
     await nextTick()
     const modal = document.body.querySelector('.sg-modal') as HTMLElement
-    expect(modal.style.width).toBe('800px')
+    // Width flows through the `--sg-modal-width` CSS variable (read by
+    // `.sg-modal` in modal.css), matching the React adapter.
+    expect(modal.style.getPropertyValue('--sg-modal-width')).toBe('800px')
     wrapper.unmount()
     document.body.innerHTML = ''
   })

@@ -1,7 +1,7 @@
 {
   "name": "@skygraph/styles",
-  "version": "0.2.1",
-  "description": "SkyGraph framework-agnostic CSS — tokens, themes, transitions, print and 60+ component stylesheets",
+  "version": "0.2.3",
+  "description": "SkyGraph framework-agnostic CSS вЂ” tokens, themes, transitions, print and 60+ component stylesheets",
   "license": "MIT",
   "type": "module",
   "sideEffects": [

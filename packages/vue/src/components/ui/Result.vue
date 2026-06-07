@@ -18,12 +18,15 @@ defineSlots<{
   default(props: Record<string, never>): unknown
   icon(props: Record<string, never>): unknown
   extra(props: Record<string, never>): unknown
+  title(props: Record<string, never>): unknown
+  subTitle(props: Record<string, never>): unknown
 }>()
 
 const slots = useSlots()
 const hasCustomIcon = computed(() => Boolean(slots.icon))
 const hasExtra = computed(() => Boolean(slots.extra))
 const hasChildren = computed(() => Boolean(slots.default))
+const hasCustomSubTitle = computed(() => Boolean(slots.subTitle))
 
 const STATUS_COLOR: Record<string, string> = {
   success: 'var(--sg-color-success)',
@@ -115,23 +118,26 @@ const DefaultIcon = defineComponent({
       <slot v-if="hasCustomIcon" name="icon" />
       <DefaultIcon v-else :status="status" />
     </div>
-    <div>{{ title }}</div>
-    <div v-if="subTitle">{{ subTitle }}</div>
+    <div>
+      <slot name="title">{{ title }}</slot>
+    </div>
+    <div v-if="hasCustomSubTitle || subTitle">
+      <slot name="subTitle">{{ subTitle }}</slot>
+    </div>
     <div v-if="hasExtra"><slot name="extra" /></div>
     <slot />
   </div>
-  <div
-    v-else
-    :class="rootClasses"
-    role="status"
-    aria-live="polite"
-  >
+  <div v-else :class="rootClasses" role="status" aria-live="polite">
     <div class="sg-result-icon" :style="{ color: iconColor }">
       <slot v-if="hasCustomIcon" name="icon" />
       <DefaultIcon v-else :status="status" />
     </div>
-    <div class="sg-result-title">{{ title }}</div>
-    <div v-if="subTitle" class="sg-result-subtitle">{{ subTitle }}</div>
+    <div class="sg-result-title">
+      <slot name="title">{{ title }}</slot>
+    </div>
+    <div v-if="hasCustomSubTitle || subTitle" class="sg-result-subtitle">
+      <slot name="subTitle">{{ subTitle }}</slot>
+    </div>
     <div v-if="hasExtra" class="sg-result-extra"><slot name="extra" /></div>
     <div v-if="hasChildren" class="sg-result-content"><slot /></div>
   </div>

@@ -69,6 +69,9 @@ export const ru_RU: SgLocale = {
     prevMonth: 'Предыдущий месяц',
     nextMonth: 'Следующий месяц',
   },
+  input: {
+    clear: 'Очистить',
+  },
   inputPassword: {
     showPassword: 'Показать пароль',
     hidePassword: 'Скрыть пароль',

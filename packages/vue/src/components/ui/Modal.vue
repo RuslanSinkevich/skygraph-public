@@ -66,8 +66,11 @@ const bodyId = `${id}-body`
 
 const trapRef = useFocusTrap(toRef(props, 'open'))
 
+// Width is forwarded through the `--sg-modal-width` CSS variable (read by
+// `.sg-modal` in modal.css) instead of an inline `width`, so it matches the
+// React adapter and stays overridable via the same token.
 const widthStyle = computed(() => ({
-  width: typeof props.width === 'number' ? `${props.width}px` : props.width,
+  '--sg-modal-width': typeof props.width === 'number' ? `${props.width}px` : props.width,
 }))
 
 function onClose() {

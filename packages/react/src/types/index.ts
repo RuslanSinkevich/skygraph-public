@@ -11,6 +11,7 @@ export type {
   UploadLocale,
   TransferLocale,
   CalendarLocale,
+  InputLocale,
   InputPasswordLocale,
   SearchInputLocale,
   InlineEditLocale,

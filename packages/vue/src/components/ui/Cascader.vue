@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
 import { useConfig } from './ConfigProvider.vue'
 
 /** One node in a cascader tree; children define the next column. */
@@ -47,6 +47,8 @@ export interface CascaderProps {
   maxTagCount?: number
   /** Load children for a node when `isLeaf: false` and `children` is empty. */
   loadData?: (selectedOptions: CascaderOption[]) => void
+  /** Inline styles applied to the dropdown panel (parity with React). */
+  dropdownStyle?: CSSProperties
   /** Strips built-in styling. */
   unstyled?: boolean
   /** Size token. */
@@ -403,7 +405,7 @@ function pathLabel(values: (string | number)[]) {
         <span class="sg-cascader-arrow">{{ isOpen ? '▲' : '▼' }}</span>
       </div>
     </div>
-    <div v-if="isOpen" class="sg-cascader-dropdown">
+    <div v-if="isOpen" class="sg-cascader-dropdown" :style="dropdownStyle">
       <template v-if="searchResults">
         <div class="sg-cascader-search-list">
           <div
