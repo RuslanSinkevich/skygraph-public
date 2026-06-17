@@ -150,6 +150,23 @@
   flex-shrink: 0;
 }
 
+/* First-letter fallback shown on the collapsed rail for items without an icon. */
+.sg-menu-item-icon-fallback {
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--sg-border-radius-sm);
+  background: var(--sg-color-fill-secondary, var(--sg-color-bg-secondary));
+  color: var(--sg-color-text-secondary);
+  font-size: var(--sg-font-size-sm);
+  font-weight: 600;
+}
+
+.sg-menu-item-selected .sg-menu-item-icon-fallback {
+  background: var(--sg-color-primary-bg);
+  color: var(--sg-color-primary);
+}
+
 .sg-menu-item-label {
   flex: 1;
   overflow: hidden;

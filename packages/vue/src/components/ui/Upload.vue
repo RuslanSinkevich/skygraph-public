@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
 import SgSpin from './Spin.vue'
 
@@ -54,7 +54,7 @@ export interface UploadProps {
 
 const props = withDefaults(defineProps<UploadProps>(), {
   multiple: false,
-  disabled: false,
+  disabled: undefined,
   drag: false,
   listType: 'text',
   showUploadList: true,
@@ -65,6 +65,8 @@ const emit = defineEmits<{
   (e: 'change', files: UploadFile[]): void
   (e: 'remove', file: UploadFile): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const internal = ref<UploadFile[]>(
   props.modelValue ?? props.fileList ?? props.defaultFileList ?? [],
@@ -140,19 +142,19 @@ function handleRemove(file: UploadFile) {
 }
 
 function openPicker() {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   inputRef.value?.click()
 }
 
 function onDrop(e: DragEvent) {
   e.preventDefault()
   isDragging.value = false
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   void handleFiles(e.dataTransfer?.files ?? null)
 }
 function onDragOver(e: DragEvent) {
   e.preventDefault()
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   isDragging.value = true
 }
 function onDragLeave() {
@@ -177,7 +179,7 @@ const wrapperCls = computed(() =>
         'sg-upload',
         `sg-upload-${props.listType}`,
         props.drag ? 'sg-upload-drag' : 'sg-upload-select',
-        props.disabled ? 'sg-upload-disabled' : '',
+        resolvedDisabled.value ? 'sg-upload-disabled' : '',
         isDragging.value ? 'sg-upload-dragging' : '',
       ]
         .filter(Boolean)
@@ -199,7 +201,7 @@ function itemClasses(file: UploadFile) {
       class="sg-upload-input"
       :multiple="multiple"
       :accept="accept"
-      :disabled="disabled"
+      :disabled="resolvedDisabled"
       :aria-label="uploadAriaLabel"
       style="display: none"
       @change="onInputChange"
@@ -221,7 +223,7 @@ function itemClasses(file: UploadFile) {
     </div>
     <div v-else class="sg-upload-select-trigger" @click="openPicker">
       <slot>
-        <SgButton :disabled="disabled">{{ uploadText }}</SgButton>
+        <SgButton :disabled="resolvedDisabled">{{ uploadText }}</SgButton>
       </slot>
     </div>
     <div v-if="showUploadList && files.length > 0" :class="unstyled ? '' : 'sg-upload-list'">

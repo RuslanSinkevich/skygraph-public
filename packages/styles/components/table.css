@@ -1,14 +1,11 @@
 .sg-table-wrapper {
-  --sg-table-row-height: auto;
-  --sg-table-row-bg: transparent;
-  --sg-table-row-hover-bg: var(--sg-color-bg-hover);
-  --sg-table-header-bg: var(--sg-color-bg-secondary);
-  --sg-table-border-color: var(--sg-color-border);
-  --sg-table-border-color-secondary: var(--sg-color-border-secondary);
-  --sg-table-cell-padding: var(--sg-padding-sm) var(--sg-padding-md);
-  /* Opaque fallback used by fixed (sticky) cells so scrolling columns
-     don't bleed through. Override per instance for non-default backgrounds. */
-  --sg-table-cell-solid-bg: var(--sg-color-bg);
+  /* NB: the `--sg-table-*` theming tokens are intentionally NOT declared here.
+   * Declaring them on the wrapper would make a custom value set on an *ancestor*
+   * (per-instance theming, e.g. `<div style={{'--sg-table-header-bg': ...}}>`)
+   * lose to the wrapper's own declaration, so the override would silently do
+   * nothing. Instead each consumer below reads the token with the global token
+   * as the `var(...)` fallback — that keeps both ancestor overrides AND scope
+   * colour theming working. */
   width: 100%;
   /* Allow shrinking below intrinsic min-content inside flex/grid parents
    * so the inner scroll container can actually overflow (or the table can
@@ -101,7 +98,7 @@
   /* Fluid mode: stretch to fill the scroll container. Overridden below
    * when the author opts into horizontal scroll via `scroll.x`. */
   min-width: 100%;
-  background: var(--sg-table-cell-solid-bg);
+  background: var(--sg-table-cell-solid-bg, var(--sg-color-bg));
 }
 
 /* Horizontal-scroll mode: the grid keeps its declared `scroll.x` width
@@ -118,11 +115,11 @@
 /* ---- Header ---- */
 .sg-table-th {
   position: relative;
-  padding: var(--sg-table-cell-padding);
+  padding: var(--sg-table-cell-padding, var(--sg-padding-sm) var(--sg-padding-md));
   font-weight: 600;
-  color: var(--sg-color-text);
-  background: var(--sg-table-header-bg);
-  border-bottom: 1px solid var(--sg-table-border-color);
+  color: var(--sg-table-header-color, var(--sg-color-text));
+  background: var(--sg-table-header-bg, var(--sg-color-bg-secondary));
+  border-bottom: 1px solid var(--sg-table-border-color, var(--sg-color-border));
   user-select: none;
   display: flex;
   align-items: center;
@@ -214,7 +211,7 @@
    Opaque body/header overrides live at the end of the file where they can
    win the cascade against .sg-table-td / .sg-table-th. */
 .sg-table-cell-fixed {
-  background: var(--sg-table-cell-solid-bg);
+  background: var(--sg-table-cell-solid-bg, var(--sg-color-bg));
 }
 
 /* Sticky header */
@@ -230,10 +227,10 @@
 
 /* ---- Body cells ---- */
 .sg-table-td {
-  padding: var(--sg-table-cell-padding);
-  min-height: var(--sg-table-row-height);
-  background: var(--sg-table-row-bg);
-  border-bottom: 1px solid var(--sg-table-border-color-secondary);
+  padding: var(--sg-table-cell-padding, var(--sg-padding-sm) var(--sg-padding-md));
+  min-height: var(--sg-table-row-height, auto);
+  background: var(--sg-table-row-bg, transparent);
+  border-bottom: 1px solid var(--sg-table-border-color-secondary, var(--sg-color-border-secondary));
   display: flex;
   align-items: center;
   min-width: 0;
@@ -241,7 +238,7 @@
 }
 
 .sg-table-hoverable .sg-table-row:hover .sg-table-td {
-  background: var(--sg-table-row-hover-bg);
+  background: var(--sg-table-row-hover-bg, var(--sg-color-bg-hover));
 }
 
 .sg-table-row-selected .sg-table-td {
@@ -971,15 +968,15 @@
  * the row, so the "floating" effect disappears entirely.
  */
 .sg-table-td.sg-table-cell-fixed {
-  background: var(--sg-table-cell-solid-bg);
+  background: var(--sg-table-cell-solid-bg, var(--sg-color-bg));
 }
 
 .sg-table-th.sg-table-cell-fixed {
-  background: var(--sg-table-header-bg);
+  background: var(--sg-table-header-bg, var(--sg-color-bg-secondary));
 }
 
 .sg-table-hoverable .sg-table-row:hover .sg-table-td.sg-table-cell-fixed {
-  background: var(--sg-table-row-hover-bg);
+  background: var(--sg-table-row-hover-bg, var(--sg-color-bg-hover));
 }
 
 .sg-table-row-selected .sg-table-td.sg-table-cell-fixed,
@@ -988,11 +985,15 @@
 }
 
 .sg-table-row-striped .sg-table-td.sg-table-cell-fixed {
-  background: color-mix(in srgb, var(--sg-color-text) 2%, var(--sg-table-cell-solid-bg));
+  background: color-mix(
+    in srgb,
+    var(--sg-color-text) 2%,
+    var(--sg-table-cell-solid-bg, var(--sg-color-bg))
+  );
 }
 
 .sg-table-hoverable .sg-table-row-striped:hover .sg-table-td.sg-table-cell-fixed {
-  background: var(--sg-table-row-hover-bg);
+  background: var(--sg-table-row-hover-bg, var(--sg-color-bg-hover));
 }
 
 /* Subtle shadow on the inner edge so the fixed column visually detaches

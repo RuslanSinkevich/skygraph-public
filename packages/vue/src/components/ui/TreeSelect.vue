@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, useTemplateRef, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 import SgTree from '../complex/Tree/Tree.vue'
 import type { TreeKey, TreeNodeData, TreeFieldNames } from '@skygraph/core'
 
@@ -67,11 +68,13 @@ const props = withDefaults(defineProps<TreeSelectProps>(), {
   showSearch: false,
   placeholder: 'Please select',
   allowClear: false,
-  disabled: false,
+  disabled: undefined,
   size: 'middle',
   treeLine: false,
   showCheckedStrategy: 'SHOW_ALL',
 })
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: TreeKey | TreeKey[]): void
@@ -297,7 +300,7 @@ function handleTreeCheck(
 
 function handleRemoveTag(key: TreeKey, e: MouseEvent) {
   e.stopPropagation()
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   const node = findNode(props.treeData, key) ?? ({ key } as TreeNodeData)
   const newKeys = currentValue.value.filter((k) => k !== key)
   fireChange(newKeys, node)
@@ -305,7 +308,7 @@ function handleRemoveTag(key: TreeKey, e: MouseEvent) {
 
 function handleClear(e: MouseEvent) {
   e.stopPropagation()
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   const node = props.treeData[0] ?? ({ key: '' } as TreeNodeData)
   fireChange([], node)
   searchValue.value = ''
@@ -318,7 +321,7 @@ function handleSearchInput(e: Event) {
 }
 
 function handleTriggerClick() {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   open.value = !open.value
 }
 
@@ -345,7 +348,7 @@ const wrapperCls = computed(() => {
     'sg-treeselect',
     `sg-treeselect-${props.size}`,
     open.value ? 'sg-treeselect-open' : '',
-    props.disabled ? 'sg-treeselect-disabled' : '',
+    resolvedDisabled.value ? 'sg-treeselect-disabled' : '',
     isMultiple.value ? 'sg-treeselect-multiple' : '',
     props.className,
   ]
@@ -402,7 +405,7 @@ function labelFor(key: TreeKey): string {
       <div class="sg-treeselect-selector" @click="handleTriggerClick">
         <div class="sg-treeselect-selection-wrap">
           <span
-            v-if="displayedValues.length === 0 && !searchValue"
+            v-if="displayedValues.length === 0 && !searchValue && !(showSearch && open)"
             class="sg-treeselect-placeholder"
             >{{ placeholder }}</span
           >
@@ -431,6 +434,7 @@ function labelFor(key: TreeKey): string {
             ref="searchRef"
             class="sg-treeselect-search-input"
             :value="searchValue"
+            :placeholder="displayedValues.length === 0 ? placeholder : ''"
             @input="handleSearchInput"
           />
         </div>

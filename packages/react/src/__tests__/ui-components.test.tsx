@@ -185,18 +185,14 @@ describe('Upload', () => {
   })
 
   it('renders file list', () => {
-    const files = [
-      { uid: '1', name: 'file.txt', size: 100, status: 'done' as const },
-    ]
+    const files = [{ uid: '1', name: 'file.txt', size: 100, status: 'done' as const }]
     render(<Upload fileList={files} />)
     expect(screen.getByText('file.txt')).toBeDefined()
   })
 
   it('calls onRemove', () => {
     const fn = vi.fn()
-    const files = [
-      { uid: '1', name: 'file.txt', size: 100, status: 'done' as const },
-    ]
+    const files = [{ uid: '1', name: 'file.txt', size: 100, status: 'done' as const }]
     const { container } = render(<Upload fileList={files} onRemove={fn} />)
     const removeBtn = container.querySelector('.sg-upload-item-remove')!
     fireEvent.click(removeBtn)
@@ -243,14 +239,17 @@ describe('InputNumber', () => {
 describe('ColorPicker', () => {
   it('renders trigger', () => {
     const { container } = render(<ColorPicker />)
-    expect(container.querySelector('.sg-color-picker') || container.querySelector('[class*=color]')).toBeTruthy()
+    expect(
+      container.querySelector('.sg-color-picker') || container.querySelector('[class*=color]'),
+    ).toBeTruthy()
   })
 
   it('opens on click', () => {
     const { container } = render(<ColorPicker />)
     const trigger = container.firstElementChild!
     fireEvent.click(trigger.querySelector('[class*=trigger]') || trigger.firstElementChild!)
-    const panel = container.querySelector('[class*=panel]') || container.querySelector('[class*=popup]')
+    const panel =
+      container.querySelector('[class*=panel]') || container.querySelector('[class*=popup]')
     expect(panel || container.querySelectorAll('input').length > 0).toBeTruthy()
   })
 
@@ -373,7 +372,9 @@ describe('Pagination', () => {
     const { container } = render(<Pagination current={1} total={50} />)
     const prev = container.querySelector('.sg-pagination-prev')
     if (prev) {
-      expect(prev.classList.contains('sg-pagination-disabled') || (prev as HTMLButtonElement).disabled).toBeTruthy()
+      expect(
+        prev.classList.contains('sg-pagination-disabled') || (prev as HTMLButtonElement).disabled,
+      ).toBeTruthy()
     }
   })
 
@@ -434,12 +435,20 @@ describe('Dropdown', () => {
   ]
 
   it('renders trigger', () => {
-    render(<Dropdown items={items}><button>Open</button></Dropdown>)
+    render(
+      <Dropdown items={items}>
+        <button>Open</button>
+      </Dropdown>,
+    )
     expect(screen.getByText('Open')).toBeDefined()
   })
 
   it('shows menu on click', () => {
-    render(<Dropdown items={items} trigger="click"><button>Open</button></Dropdown>)
+    render(
+      <Dropdown items={items} trigger="click">
+        <button>Open</button>
+      </Dropdown>,
+    )
     fireEvent.click(screen.getByText('Open'))
     expect(screen.getByText('Item 1')).toBeDefined()
     expect(screen.getByText('Item 2')).toBeDefined()
@@ -447,7 +456,11 @@ describe('Dropdown', () => {
 
   it('calls onSelect on item click', () => {
     const fn = vi.fn()
-    render(<Dropdown items={items} trigger="click" onSelect={fn}><button>Open</button></Dropdown>)
+    render(
+      <Dropdown items={items} trigger="click" onSelect={fn}>
+        <button>Open</button>
+      </Dropdown>,
+    )
     fireEvent.click(screen.getByText('Open'))
     fireEvent.click(screen.getByText('Item 1'))
     expect(fn).toHaveBeenCalledWith('1')
@@ -478,9 +491,7 @@ describe('Menu', () => {
 
   it('renders submenu', () => {
     const subItems = [
-      { key: 'parent', label: 'Parent', children: [
-        { key: 'child', label: 'Child' },
-      ]},
+      { key: 'parent', label: 'Parent', children: [{ key: 'child', label: 'Child' }] },
     ]
     render(<Menu items={subItems} mode="inline" />)
     fireEvent.click(screen.getByText('Parent'))
@@ -498,19 +509,31 @@ describe('Menu', () => {
 
 describe('Popconfirm', () => {
   it('renders children', () => {
-    render(<Popconfirm title="Sure?"><button>Delete</button></Popconfirm>)
+    render(
+      <Popconfirm title="Sure?">
+        <button>Delete</button>
+      </Popconfirm>,
+    )
     expect(screen.getByText('Delete')).toBeDefined()
   })
 
   it('shows confirmation on click', () => {
-    render(<Popconfirm title="Sure?"><button>Delete</button></Popconfirm>)
+    render(
+      <Popconfirm title="Sure?">
+        <button>Delete</button>
+      </Popconfirm>,
+    )
     fireEvent.click(screen.getByText('Delete'))
     expect(screen.getByText('Sure?')).toBeDefined()
   })
 
   it('calls onConfirm', () => {
     const fn = vi.fn()
-    render(<Popconfirm title="Sure?" onConfirm={fn}><button>Delete</button></Popconfirm>)
+    render(
+      <Popconfirm title="Sure?" onConfirm={fn}>
+        <button>Delete</button>
+      </Popconfirm>,
+    )
     fireEvent.click(screen.getByText('Delete'))
     fireEvent.click(screen.getByText('Yes'))
     expect(fn).toHaveBeenCalledOnce()
@@ -518,14 +541,22 @@ describe('Popconfirm', () => {
 
   it('calls onCancel', () => {
     const fn = vi.fn()
-    render(<Popconfirm title="Sure?" onCancel={fn}><button>Delete</button></Popconfirm>)
+    render(
+      <Popconfirm title="Sure?" onCancel={fn}>
+        <button>Delete</button>
+      </Popconfirm>,
+    )
     fireEvent.click(screen.getByText('Delete'))
     fireEvent.click(screen.getByText('No'))
     expect(fn).toHaveBeenCalledOnce()
   })
 
   it('disabled blocks popup', () => {
-    render(<Popconfirm title="Sure?" disabled><button>Delete</button></Popconfirm>)
+    render(
+      <Popconfirm title="Sure?" disabled>
+        <button>Delete</button>
+      </Popconfirm>,
+    )
     fireEvent.click(screen.getByText('Delete'))
     expect(screen.queryByText('Sure?')).toBeNull()
   })
@@ -533,18 +564,30 @@ describe('Popconfirm', () => {
 
 describe('Tooltip', () => {
   it('renders children', () => {
-    render(<Tooltip title="Hint"><button>Hover me</button></Tooltip>)
+    render(
+      <Tooltip title="Hint">
+        <button>Hover me</button>
+      </Tooltip>,
+    )
     expect(screen.getByText('Hover me')).toBeDefined()
   })
 
   it('shows tooltip on hover', () => {
-    render(<Tooltip title="Hint"><button>Hover me</button></Tooltip>)
+    render(
+      <Tooltip title="Hint">
+        <button>Hover me</button>
+      </Tooltip>,
+    )
     fireEvent.mouseEnter(screen.getByText('Hover me'))
     expect(screen.getByText('Hint')).toBeDefined()
   })
 
   it('sets visible false on mouse leave (transition pending)', () => {
-    render(<Tooltip title="Hint"><button>Hover me</button></Tooltip>)
+    render(
+      <Tooltip title="Hint">
+        <button>Hover me</button>
+      </Tooltip>,
+    )
     fireEvent.mouseEnter(screen.getByText('Hover me'))
     expect(screen.getByText('Hint')).toBeDefined()
     fireEvent.mouseLeave(screen.getByText('Hover me'))
@@ -556,11 +599,7 @@ describe('Tooltip', () => {
 })
 
 describe('Steps', () => {
-  const items = [
-    { title: 'Step 1' },
-    { title: 'Step 2' },
-    { title: 'Step 3' },
-  ]
+  const items = [{ title: 'Step 1' }, { title: 'Step 2' }, { title: 'Step 3' }]
 
   it('renders all steps', () => {
     render(<Steps items={items} current={0} />)
@@ -584,11 +623,7 @@ describe('Steps', () => {
 })
 
 describe('Breadcrumb', () => {
-  const items = [
-    { title: 'Home' },
-    { title: 'Products' },
-    { title: 'Detail' },
-  ]
+  const items = [{ title: 'Home' }, { title: 'Products' }, { title: 'Detail' }]
 
   it('renders all items', () => {
     render(<Breadcrumb items={items} />)
@@ -642,7 +677,7 @@ describe('Carousel', () => {
       <Carousel>
         <div>Slide 1</div>
         <div>Slide 2</div>
-      </Carousel>
+      </Carousel>,
     )
     expect(screen.getByText('Slide 1')).toBeDefined()
   })
@@ -652,7 +687,7 @@ describe('Carousel', () => {
       <Carousel dots>
         <div>A</div>
         <div>B</div>
-      </Carousel>
+      </Carousel>,
     )
     const dots = container.querySelectorAll('[class*=dot]')
     expect(dots.length).toBeGreaterThanOrEqual(2)
@@ -691,7 +726,11 @@ describe('Empty', () => {
   })
 
   it('renders children', () => {
-    render(<Empty><button>Create</button></Empty>)
+    render(
+      <Empty>
+        <button>Create</button>
+      </Empty>,
+    )
     expect(screen.getByText('Create')).toBeDefined()
   })
 })
@@ -726,7 +765,11 @@ describe('Skeleton', () => {
   })
 
   it('renders children when not loading', () => {
-    render(<Skeleton loading={false}><div>Content</div></Skeleton>)
+    render(
+      <Skeleton loading={false}>
+        <div>Content</div>
+      </Skeleton>,
+    )
     expect(screen.getByText('Content')).toBeDefined()
   })
 
@@ -737,11 +780,7 @@ describe('Skeleton', () => {
 })
 
 describe('Timeline', () => {
-  const items = [
-    { children: 'Created' },
-    { children: 'Processing' },
-    { children: 'Done' },
-  ]
+  const items = [{ children: 'Created' }, { children: 'Processing' }, { children: 'Done' }]
 
   it('renders all items', () => {
     render(<Timeline items={items} />)
@@ -782,25 +821,40 @@ describe('Progress', () => {
 
 describe('Drawer', () => {
   it('renders when open', () => {
-    render(<Drawer open onClose={() => {}}>Drawer Content</Drawer>)
+    render(
+      <Drawer open onClose={() => {}}>
+        Drawer Content
+      </Drawer>,
+    )
     expect(screen.getByText('Drawer Content')).toBeDefined()
   })
 
   it('does not render when closed', () => {
-    render(<Drawer open={false} onClose={() => {}}>Hidden</Drawer>)
+    render(
+      <Drawer open={false} onClose={() => {}}>
+        Hidden
+      </Drawer>,
+    )
     expect(screen.queryByText('Hidden')).toBeNull()
   })
 
   it('renders title', () => {
-    render(<Drawer open onClose={() => {}} title="My Drawer">Body</Drawer>)
+    render(
+      <Drawer open onClose={() => {}} title="My Drawer">
+        Body
+      </Drawer>,
+    )
     expect(screen.getByText('My Drawer')).toBeDefined()
   })
 
   it('calls onClose on close button', () => {
     const fn = vi.fn()
-    const { container } = render(<Drawer open onClose={fn}>Body</Drawer>)
-    const close = container.querySelector('[class*=close]')
-    if (close) fireEvent.click(close)
+    render(
+      <Drawer open onClose={fn}>
+        Body
+      </Drawer>,
+    )
+    fireEvent.click(document.querySelector('.sg-drawer-close')!)
     expect(fn).toHaveBeenCalled()
   })
 })

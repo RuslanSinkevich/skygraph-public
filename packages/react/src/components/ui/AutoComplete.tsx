@@ -60,9 +60,7 @@ export function AutoComplete({
   const ref = useRef<HTMLDivElement>(null)
   const currentValue = value ?? internalValue
 
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(currentValue.toLowerCase())
-  )
+  const filtered = options.filter((o) => o.label.toLowerCase().includes(currentValue.toLowerCase()))
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -88,8 +86,13 @@ export function AutoComplete({
   }
 
   const wrapperClass = unstyled
-    ? className ?? ''
-    : ['sg-autocomplete', `sg-autocomplete-${size}`, loading ? 'sg-autocomplete-loading' : '', className]
+    ? (className ?? '')
+    : [
+        'sg-autocomplete',
+        `sg-autocomplete-${size}`,
+        loading ? 'sg-autocomplete-loading' : '',
+        className,
+      ]
         .filter(Boolean)
         .join(' ')
 
@@ -104,7 +107,8 @@ export function AutoComplete({
           className={unstyled ? '' : `sg-input sg-input-${size}`}
           value={currentValue}
           placeholder={placeholder}
-          disabled={disabled || loading}
+          disabled={disabled}
+          aria-busy={loading || undefined}
           onChange={handleChange}
           onFocus={() => setOpen(true)}
           onBlur={onBlur}

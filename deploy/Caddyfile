@@ -3,6 +3,18 @@ skygraph.ruslansinkevich.ru {
     encode gzip zstd
     file_server
 
+    handle /react/showcases/* {
+        try_files {path} {path}/ /react/showcases/index.html
+    }
+
+    handle /react/* {
+        try_files {path} {path}/ /react/index.html
+    }
+
+    handle /vue/showcases/* {
+        try_files {path} {path}/ /vue/showcases/index.html
+    }
+
     handle /vue/* {
         try_files {path} {path}/ /vue/index.html
     }

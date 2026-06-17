@@ -45,11 +45,12 @@ export function PinInput({
   className,
   style,
   unstyled,
-  'aria-label': ariaLabel = 'PIN input',
+  'aria-label': ariaLabelProp,
 }: PinInputProps) {
   const config = useConfig()
   const size = sizeProp ?? config.size ?? 'middle'
   const disabled = disabledProp ?? config.disabled ?? false
+  const ariaLabel = ariaLabelProp ?? config.locale?.pinInput?.ariaLabel ?? 'PIN input'
   const id = useId()
 
   const pad = (s: string) => s.padEnd(length, '').slice(0, length)

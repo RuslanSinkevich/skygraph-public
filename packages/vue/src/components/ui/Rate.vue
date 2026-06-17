@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface RateProps {
   /** v-model binding (Vue idiom). */
@@ -26,13 +26,15 @@ const props = withDefaults(defineProps<RateProps>(), {
   count: 5,
   allowHalf: false,
   character: '★',
-  disabled: false,
+  disabled: undefined,
 })
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: number): void
   (e: 'change', value: number): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const cfg = useConfig()
 const rateLocale = computed(() => cfg.value.locale?.rate)
@@ -63,7 +65,7 @@ function emitValue(v: number) {
 }
 
 function clickStar(starIndex: number, e: MouseEvent) {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   if (!props.allowHalf) {
     emitValue(current.value === starIndex ? 0 : starIndex)
     return
@@ -76,7 +78,7 @@ function clickStar(starIndex: number, e: MouseEvent) {
 }
 
 function hoverStar(starIndex: number, e: MouseEvent) {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   if (!props.allowHalf) {
     hoverValue.value = starIndex
     return
@@ -88,7 +90,7 @@ function hoverStar(starIndex: number, e: MouseEvent) {
 }
 
 function onKey(_starIndex: number, e: KeyboardEvent) {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
     e.preventDefault()
     emitValue(Math.min(props.count, props.allowHalf ? current.value + 0.5 : current.value + 1))
@@ -101,7 +103,7 @@ function onKey(_starIndex: number, e: KeyboardEvent) {
 const wrapperClass = computed(() =>
   props.unstyled
     ? ''
-    : ['sg-rate', props.disabled ? 'sg-rate-disabled' : ''].filter(Boolean).join(' '),
+    : ['sg-rate', resolvedDisabled.value ? 'sg-rate-disabled' : ''].filter(Boolean).join(' '),
 )
 
 function classFor(starIndex: number) {
@@ -122,10 +124,10 @@ function classFor(starIndex: number) {
       role="radio"
       :aria-checked="display >= i"
       :aria-label="starLabel(i)"
-      :tabindex="disabled ? -1 : 0"
+      :tabindex="resolvedDisabled ? -1 : 0"
       @click="(e) => clickStar(i, e)"
       @mousemove="(e) => hoverStar(i, e)"
-      @mouseleave="!disabled && (hoverValue = null)"
+      @mouseleave="!resolvedDisabled && (hoverValue = null)"
       @keydown="(e) => onKey(i, e)"
     >
       <slot name="character" :index="i" :value="display"

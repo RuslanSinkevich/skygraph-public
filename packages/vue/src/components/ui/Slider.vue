@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface SliderProps {
   /** v-model binding (Vue idiom). */
@@ -25,7 +26,7 @@ const props = withDefaults(defineProps<SliderProps>(), {
   min: 0,
   max: 100,
   step: 1,
-  disabled: false,
+  disabled: undefined,
 })
 
 const emit = defineEmits<{
@@ -33,9 +34,9 @@ const emit = defineEmits<{
   (e: 'change', value: number): void
 }>()
 
-const internal = ref<number>(
-  props.modelValue ?? props.value ?? props.defaultValue ?? 0,
-)
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
+
+const internal = ref<number>(props.modelValue ?? props.value ?? props.defaultValue ?? 0)
 
 watch(
   () => props.modelValue ?? props.value,
@@ -56,7 +57,7 @@ function emitValue(v: number) {
 }
 
 function updateFromPosition(clientX: number) {
-  if (!trackRef.value || props.disabled) return
+  if (!trackRef.value || resolvedDisabled.value) return
   const rect = trackRef.value.getBoundingClientRect()
   const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
   const raw = props.min + ratio * (props.max - props.min)
@@ -65,7 +66,7 @@ function updateFromPosition(clientX: number) {
 }
 
 function onMouseDown(e: MouseEvent) {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   updateFromPosition(e.clientX)
   const move = (ev: MouseEvent) => updateFromPosition(ev.clientX)
   const up = () => {
@@ -77,7 +78,7 @@ function onMouseDown(e: MouseEvent) {
 }
 
 function onKeyDown(e: KeyboardEvent) {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   if (e.key === 'ArrowRight' || e.key === 'ArrowUp') {
     e.preventDefault()
     emitValue(Math.min(props.max, current.value + props.step))
@@ -90,21 +91,14 @@ function onKeyDown(e: KeyboardEvent) {
 const wrapperClass = computed(() =>
   props.unstyled
     ? ''
-    : ['sg-slider', props.disabled ? 'sg-slider-disabled' : ''].filter(Boolean).join(' '),
+    : ['sg-slider', resolvedDisabled.value ? 'sg-slider-disabled' : ''].filter(Boolean).join(' '),
 )
 </script>
 
 <template>
   <div :class="wrapperClass">
-    <div
-      ref="trackRef"
-      :class="unstyled ? '' : 'sg-slider-track'"
-      @mousedown="onMouseDown"
-    >
-      <div
-        :class="unstyled ? '' : 'sg-slider-fill'"
-        :style="{ width: `${percent}%` }"
-      />
+    <div ref="trackRef" :class="unstyled ? '' : 'sg-slider-track'" @mousedown="onMouseDown">
+      <div :class="unstyled ? '' : 'sg-slider-fill'" :style="{ width: `${percent}%` }" />
       <div
         :class="unstyled ? '' : 'sg-slider-handle'"
         :style="{ left: `${percent}%` }"
@@ -112,8 +106,8 @@ const wrapperClass = computed(() =>
         :aria-valuemin="min"
         :aria-valuemax="max"
         :aria-valuenow="current"
-        :aria-disabled="disabled"
-        :tabindex="disabled ? -1 : 0"
+        :aria-disabled="resolvedDisabled"
+        :tabindex="resolvedDisabled ? -1 : 0"
         @keydown="onKeyDown"
       />
     </div>

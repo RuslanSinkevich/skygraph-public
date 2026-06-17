@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
 import SgInput from './Input.vue'
 import SgCheckbox from './Checkbox.vue'
@@ -71,11 +72,13 @@ export interface TransferProps {
 const props = withDefaults(defineProps<TransferProps>(), {
   showSearch: false,
   titles: () => ['Source', 'Target'],
-  disabled: false,
+  disabled: undefined,
   oneWay: false,
   showSelectAll: true,
   showCount: true,
 })
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', keys: string[]): void
@@ -165,7 +168,7 @@ function countText(items: TransferItem[], selected: string[]): string {
 }
 
 function enabledKeys(items: TransferItem[]): string[] {
-  return items.filter((i) => !i.disabled && !props.disabled).map((i) => i.key)
+  return items.filter((i) => !i.disabled && !resolvedDisabled.value).map((i) => i.key)
 }
 
 function allChecked(items: TransferItem[], selected: string[]): boolean {
@@ -180,7 +183,7 @@ function indeterminate(items: TransferItem[], selected: string[]): boolean {
 }
 
 function toggleItem(item: TransferItem, side: 'left' | 'right') {
-  if (props.disabled || item.disabled) return
+  if (resolvedDisabled.value || item.disabled) return
   const list = side === 'left' ? leftSelected : rightSelected
   const set = new Set(list.value)
   if (set.has(item.key)) set.delete(item.key)
@@ -190,7 +193,7 @@ function toggleItem(item: TransferItem, side: 'left' | 'right') {
 }
 
 function toggleAll(side: 'left' | 'right', checked: boolean) {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   const items = side === 'left' ? filteredLeft.value : filteredRight.value
   const list = side === 'left' ? leftSelected : rightSelected
   const enabled = enabledKeys(items)
@@ -260,7 +263,9 @@ function onRightSearch(v: string) {
 const wrapperCls = computed(() =>
   props.unstyled
     ? ''
-    : ['sg-transfer', props.disabled ? 'sg-transfer-disabled' : ''].filter(Boolean).join(' '),
+    : ['sg-transfer', resolvedDisabled.value ? 'sg-transfer-disabled' : '']
+        .filter(Boolean)
+        .join(' '),
 )
 
 function itemCls(item: TransferItem, selected: string[]): string {
@@ -268,7 +273,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
   return [
     'sg-transfer-list-item',
     selected.includes(item.key) ? 'sg-transfer-list-item-selected' : '',
-    props.disabled || item.disabled ? 'sg-transfer-list-item-disabled' : '',
+    resolvedDisabled.value || item.disabled ? 'sg-transfer-list-item-disabled' : '',
   ]
     .filter(Boolean)
     .join(' ')
@@ -284,7 +289,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
           v-if="showSelectAll"
           :checked="allChecked(filteredLeft, leftSelected)"
           :indeterminate="indeterminate(filteredLeft, leftSelected)"
-          :disabled="disabled || enabledKeys(filteredLeft).length === 0"
+          :disabled="resolvedDisabled || enabledKeys(filteredLeft).length === 0"
           @change="(v: boolean) => toggleAll('left', v)"
         />
         <span v-if="showCount" :class="unstyled ? '' : 'sg-transfer-list-header-count'">
@@ -319,7 +324,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
           >
             <SgCheckbox
               :checked="leftSelected.includes(item.key)"
-              :disabled="disabled || item.disabled"
+              :disabled="resolvedDisabled || item.disabled"
               @click.stop
               @change="() => toggleItem(item, 'left')"
             >
@@ -346,14 +351,18 @@ function itemCls(item: TransferItem, selected: string[]): string {
 
     <!-- Operations -->
     <div :class="unstyled ? '' : 'sg-transfer-operations'">
-      <SgButton type="primary" size="small" :disabled="disabled || !canMoveRight" @click="moveRight"
+      <SgButton
+        type="primary"
+        size="small"
+        :disabled="resolvedDisabled || !canMoveRight"
+        @click="moveRight"
         >&rsaquo;</SgButton
       >
       <SgButton
         v-if="!oneWay"
         type="primary"
         size="small"
-        :disabled="disabled || !canMoveLeft"
+        :disabled="resolvedDisabled || !canMoveLeft"
         @click="moveLeft"
         >&lsaquo;</SgButton
       >
@@ -366,7 +375,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
           v-if="showSelectAll"
           :checked="allChecked(filteredRight, rightSelected)"
           :indeterminate="indeterminate(filteredRight, rightSelected)"
-          :disabled="disabled || enabledKeys(filteredRight).length === 0"
+          :disabled="resolvedDisabled || enabledKeys(filteredRight).length === 0"
           @change="(v: boolean) => toggleAll('right', v)"
         />
         <span v-if="showCount" :class="unstyled ? '' : 'sg-transfer-list-header-count'">
@@ -401,7 +410,7 @@ function itemCls(item: TransferItem, selected: string[]): string {
           >
             <SgCheckbox
               :checked="rightSelected.includes(item.key)"
-              :disabled="disabled || item.disabled"
+              :disabled="resolvedDisabled || item.disabled"
               @click.stop
               @change="() => toggleItem(item, 'right')"
             >

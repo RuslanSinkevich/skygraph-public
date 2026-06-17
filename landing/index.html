@@ -3,14 +3,50 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>SkyGraph — UI-компоненты для React и Vue</title>
-		<meta name="description" content="Готовые UI-компоненты для React и Vue: таблицы, формы, графики, календари. Одно ядро — одинаковый результат. Бесплатно, MIT." />
+		<title>SkyGraph — UI для React и Vue на одном ядре</title>
+		<meta name="description" content="Готовые UI-компоненты для React и Vue: таблицы, формы, графики, календари. Одно ядро, нативные адаптеры, одинаковый UI. Бесплатно, MIT." />
+		<meta name="application-name" content="SkyGraph" />
+		<meta name="author" content="Ruslan Sinkevich" />
 		<meta name="robots" content="index,follow" />
 		<meta name="theme-color" content="#141414" />
-		<meta property="og:title" content="SkyGraph — UI-компоненты для React и Vue" />
-		<meta property="og:description" content="Много компонентов на общем ядре. Одинаковый внешний вид в React и Vue. MIT." />
+		<link rel="canonical" href="https://skygraph.ruslansinkevich.ru/" />
+		<link rel="alternate" hreflang="en" href="https://skygraph.ruslansinkevich.ru/" />
+		<link rel="alternate" hreflang="ru" href="https://skygraph.ruslansinkevich.ru/" />
+		<link rel="alternate" hreflang="x-default" href="https://skygraph.ruslansinkevich.ru/" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="manifest" href="/site.webmanifest" />
+		<meta property="og:title" content="SkyGraph — UI для React и Vue на одном ядре" />
+		<meta property="og:description" content="Много компонентов, общее ядро, нативные адаптеры и одинаковый внешний вид в React и Vue. MIT." />
 		<meta property="og:url" content="https://skygraph.ruslansinkevich.ru/" />
 		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="SkyGraph" />
+		<meta property="og:locale" content="ru_RU" />
+		<meta property="og:image" content="https://skygraph.ruslansinkevich.ru/og-image.svg" />
+		<meta property="og:image:type" content="image/svg+xml" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content="SkyGraph — UI для React и Vue на одном ядре" />
+		<meta name="twitter:description" content="Готовые UI-компоненты для React и Vue: таблицы, формы, графики, календари. Одно ядро, нативные адаптеры, MIT." />
+		<meta name="twitter:image" content="https://skygraph.ruslansinkevich.ru/og-image.svg" />
+
+		<script type="application/ld+json">
+			{
+				"@context": "https://schema.org",
+				"@type": "SoftwareSourceCode",
+				"name": "SkyGraph",
+				"description": "UI-компоненты для React и Vue на одном ядре: таблицы, формы, графики, календари и mini-app showcases.",
+				"url": "https://skygraph.ruslansinkevich.ru/",
+				"codeRepository": "https://github.com/RuslanSinkevich/skygraph-public",
+				"license": "https://github.com/RuslanSinkevich/skygraph-public/blob/master/LICENSE",
+				"programmingLanguage": ["TypeScript", "React", "Vue"],
+				"author": {
+					"@type": "Person",
+					"name": "Ruslan Sinkevich",
+					"url": "https://ruslansinkevich.ru/"
+				}
+			}
+		</script>
 
 		<script>
 			(function () {
@@ -385,6 +421,13 @@
 			.code-tabs {
 				margin-top: 8px;
 			}
+			.code-note {
+				max-width: 640px;
+				margin: 4px 0 0;
+				font-size: 13px;
+				line-height: 1.55;
+				color: var(--sg-color-text-tertiary);
+			}
 			.tab-bar {
 				display: flex;
 				flex-wrap: wrap;
@@ -752,18 +795,21 @@
 		<main>
 			<section class="hero">
 				<div class="container">
-					<div class="section-eyebrow">MIT</div>
-					<h1 data-lang="en">UI for React and Vue. One code base.</h1>
-					<h1 data-lang="ru">UI для React и Vue. Один код.</h1>
+					<div class="section-eyebrow">
+						<span data-lang="en">One core · native adapters</span>
+						<span data-lang="ru">Единое ядро · нативные адаптеры</span>
+					</div>
+					<h1 data-lang="en">React and Vue UI on one engine.</h1>
+					<h1 data-lang="ru">UI для React и Vue на одном ядре.</h1>
 					<p class="lead" data-lang="en">
 						Many ready-made components — tables, forms, charts, calendars,
-						diagrams. The same engine and the same look across React and Vue.
-						Free, MIT.
+						diagrams. Native React and Vue adapters share the same engine,
+						DOM contract and CSS classes. Free, MIT.
 					</p>
 					<p class="lead" data-lang="ru">
 						Множество готовых компонентов — таблицы, формы, графики, календари,
-						диаграммы. Один движок, одинаковый внешний вид в React и Vue.
-						Бесплатно, MIT.
+						диаграммы. Нативные адаптеры для React и Vue используют одно ядро,
+						один DOM-контракт и одинаковые CSS-классы. Бесплатно, MIT.
 					</p>
 					<div class="cta-row">
 						<a class="btn btn-primary" href="#live-demos">
@@ -811,6 +857,14 @@ npm install skygraph-vue</pre>
 							</div>
 						</div>
 					</div>
+					<p class="code-note" data-lang="en">
+						The app code stays framework-native. The shared part is the core
+						behaviour, CSS contract and visual output.
+					</p>
+					<p class="code-note" data-lang="ru">
+						Код приложения остаётся нативным для фреймворка. Общее здесь —
+						поведение ядра, CSS-контракт и визуальный результат.
+					</p>
 				</div>
 			</section>
 
@@ -818,26 +872,25 @@ npm install skygraph-vue</pre>
 				<div class="container">
 					<div class="stats-grid">
 						<div>
-							<div class="stat-value" data-lang="en">Many</div>
-							<div class="stat-value" data-lang="ru">Много</div>
-							<div class="stat-label" data-lang="en">React components</div>
-							<div class="stat-label" data-lang="ru">React-компонентов</div>
+							<div class="stat-value">50+</div>
+							<div class="stat-label" data-lang="en">UI components</div>
+							<div class="stat-label" data-lang="ru">UI-компонентов</div>
 						</div>
 						<div>
-							<div class="stat-value" data-lang="en">Many</div>
-							<div class="stat-value" data-lang="ru">Много</div>
-							<div class="stat-label" data-lang="en">Vue components</div>
-							<div class="stat-label" data-lang="ru">Vue-компонентов</div>
+							<div class="stat-value">2</div>
+							<div class="stat-label" data-lang="en">Native adapters</div>
+							<div class="stat-label" data-lang="ru">Нативных адаптера</div>
 						</div>
 						<div>
-							<div class="stat-value">1800+</div>
-							<div class="stat-label" data-lang="en">Tests in CI</div>
-							<div class="stat-label" data-lang="ru">Тестов в CI</div>
+							<div class="stat-value" data-lang="en">Same</div>
+							<div class="stat-value" data-lang="ru">Один</div>
+							<div class="stat-label" data-lang="en">CSS contract</div>
+							<div class="stat-label" data-lang="ru">CSS-контракт</div>
 						</div>
 						<div>
-							<div class="stat-value">~25 KB</div>
-							<div class="stat-label" data-lang="en">CSS, gzipped</div>
-							<div class="stat-label" data-lang="ru">CSS, gzip</div>
+							<div class="stat-value">MIT</div>
+							<div class="stat-label" data-lang="en">Free to use</div>
+							<div class="stat-label" data-lang="ru">Свободное использование</div>
 						</div>
 					</div>
 				</div>
@@ -847,49 +900,44 @@ npm install skygraph-vue</pre>
 				<div class="container">
 					<div class="section-eyebrow" data-lang="en">Why SkyGraph</div>
 					<div class="section-eyebrow" data-lang="ru">Зачем</div>
-					<h2 data-lang="en">Write once. Ship for React and Vue.</h2>
-					<h2 data-lang="ru">Пишешь один раз. Отдаёшь и в React, и в Vue.</h2>
+					<h2 data-lang="en">One engine. Native adapters. Same UI.</h2>
+					<h2 data-lang="ru">Одно ядро. Нативные адаптеры. Один UI.</h2>
 					<div class="features-grid">
 						<div class="feature">
-							<h3 data-lang="en">Same engine for React and Vue</h3>
-							<h3 data-lang="ru">Один движок на React и Vue</h3>
+							<h3 data-lang="en">Shared core behaviour</h3>
+							<h3 data-lang="ru">Общее поведение в ядре</h3>
 							<p data-lang="en">
-								Logic lives in one core package. React and Vue adapters share
-								the same state, the same validation, the same selection model.
-								Update the core — both stay in sync.
+								State, validation, selection, history and export logic live in
+								one core package. React and Vue subscribe to the same behaviour.
 							</p>
 							<p data-lang="ru">
-								Вся логика — в одном ядре. Адаптеры для React и Vue делят одно
-								состояние, одну валидацию, одну модель выделения. Обновил ядро —
-								оба остались синхронны.
+								Состояние, валидация, выделение, история и экспорт живут в
+								одном core-пакете. React и Vue подписываются на одно поведение.
 							</p>
 						</div>
 						<div class="feature">
-							<h3 data-lang="en">Identical look out of the box</h3>
-							<h3 data-lang="ru">Одинаковый внешний вид</h3>
+							<h3 data-lang="en">Native framework APIs</h3>
+							<h3 data-lang="ru">Нативные API фреймворков</h3>
 							<p data-lang="en">
-								React and Vue render the same DOM and the same CSS classes.
-								Switch framework — buttons, tables and forms look exactly the
-								same.
+								React gets React components. Vue gets SFCs and Composition API.
+								No wrapper layer pretending one framework is the other.
 							</p>
 							<p data-lang="ru">
-								React и Vue отдают одинаковый DOM и одинаковые CSS-классы.
-								Переехал с одного на другое — кнопки, таблицы, формы выглядят
-								так же.
+								React получает React-компоненты. Vue получает SFC и Composition
+								API. Без слоя-обёртки, который притворяется другим фреймворком.
 							</p>
 						</div>
 						<div class="feature">
-							<h3 data-lang="en">Light and predictable CSS</h3>
-							<h3 data-lang="ru">Лёгкий CSS без сюрпризов</h3>
+							<h3 data-lang="en">One CSS contract</h3>
+							<h3 data-lang="ru">Один CSS-контракт</h3>
 							<p data-lang="en">
-								~25 KB gzipped, no CSS-in-JS, no runtime injection. Dark and
-								light themes via a single attribute on
-								<code>&lt;html&gt;</code>.
+								Both adapters render the same <code>.sg-*</code> classes and
+								read the same design tokens. Theme once, keep both UIs aligned.
 							</p>
 							<p data-lang="ru">
-								~25 KB gzip, без CSS-in-JS и runtime-инъекций. Светлая и тёмная
-								темы — переключаются одним атрибутом на
-								<code>&lt;html&gt;</code>.
+								Оба адаптера рендерят одинаковые <code>.sg-*</code> классы и
+								читают одни design tokens. Темизируешь один раз — оба UI
+								остаются выровнены.
 							</p>
 						</div>
 						<div class="feature">

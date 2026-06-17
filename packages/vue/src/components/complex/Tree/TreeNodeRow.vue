@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
+import SgCheckbox from '../../ui/Checkbox.vue'
 import type { TreeKey, TreeNodeData, TreeLocale, TreeNodeAction, TreeNodeStatus } from './types'
 
 interface TreeNodeRowProps {
@@ -45,7 +46,7 @@ const emit = defineEmits<{
   (e: 'check', key: TreeKey): void
   (e: 'select', key: TreeKey): void
   (e: 'dragStart', evt: DragEvent, key: TreeKey): void
-  (e: 'dragOver', evt: DragEvent, key: TreeKey): void
+  (e: 'dragOver', evt: DragEvent, key: TreeKey, pos: -1 | 0 | 1): void
   (e: 'dragLeave', evt: DragEvent, key: TreeKey): void
   (e: 'dragEnd', evt: DragEvent, key: TreeKey): void
   (e: 'drop', evt: DragEvent, key: TreeKey): void
@@ -78,8 +79,7 @@ function handleSwitcherClick(e: MouseEvent) {
   }
 }
 
-function handleCheckChange(e: Event) {
-  e.stopPropagation()
+function handleCheckToggle() {
   if (props.disabled || props.node.disableCheckbox) return
   emit('check', props.nodeKey)
 }
@@ -208,7 +208,23 @@ function onDragStart(e: DragEvent) {
 function onDragOver(e: DragEvent) {
   if (!props.draggable) return
   e.preventDefault()
-  emit('dragOver', e, props.nodeKey)
+  // Compute the drop position against the row element directly. Relying on
+  // the event's `currentTarget` downstream is fragile once the native event
+  // is re-emitted through Vue, so resolve it here where `rowEl` is guaranteed
+  // to be this row: top quarter → before (-1), bottom quarter → after (1),
+  // middle → inside (0).
+  let pos: -1 | 0 | 1 = 0
+  const el = rowEl.value
+  if (el) {
+    const rect = el.getBoundingClientRect()
+    const y = e.clientY - rect.top
+    const h = rect.height
+    if (h > 0) {
+      if (y < h * 0.25) pos = -1
+      else if (y > h * 0.75) pos = 1
+    }
+  }
+  emit('dragOver', e, props.nodeKey, pos)
 }
 
 function onDragLeave(e: DragEvent) {
@@ -294,15 +310,15 @@ const indentPx = computed(() => `${props.depth * props.indentSize}px`)
     </span>
     <span v-else class="sg-tree-switcher sg-tree-switcher-noop" />
 
-    <input
+    <SgCheckbox
       v-if="checkable && node.checkable !== false"
-      type="checkbox"
-      class="sg-tree-checkbox sg-checkbox-input"
+      class="sg-tree-checkbox"
       :checked="checked"
+      :indeterminate="halfChecked"
       :disabled="disabled || node.disableCheckbox"
-      :data-indeterminate="halfChecked || undefined"
+      :unstyled="unstyled"
       @click.stop
-      @change="handleCheckChange"
+      @change="handleCheckToggle"
     />
 
     <span v-if="directory" class="sg-tree-icon">{{ expanded ? '📂' : '📁' }}</span>

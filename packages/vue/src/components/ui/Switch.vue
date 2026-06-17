@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface SwitchProps {
   /** v-model binding (Vue idiom). */
@@ -18,8 +19,17 @@ export interface SwitchProps {
   unstyled?: boolean
 }
 
+// `modelValue` / `checked` / `defaultChecked` are tri-state: their absence
+// must read as `undefined`, not `false`. Without explicit `undefined`
+// defaults Vue's Boolean-prop casting coerces an absent boolean prop to
+// `false`, which poisons the `modelValue ?? checked ?? internal` chain
+// (`false ?? x === false`) and freezes uncontrolled switches in the off
+// state. The explicit defaults disable that cast.
 const props = withDefaults(defineProps<SwitchProps>(), {
-  disabled: false,
+  modelValue: undefined,
+  checked: undefined,
+  defaultChecked: undefined,
+  disabled: undefined,
   loading: false,
   size: 'middle',
 })
@@ -28,6 +38,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', checked: boolean): void
   (e: 'change', checked: boolean): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults(props, {})
 
 defineSlots<{
   checkedChildren(props: Record<string, never>): unknown
@@ -46,7 +58,7 @@ watch(
 const isChecked = computed(() => props.modelValue ?? props.checked ?? internal.value)
 
 function handleClick() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   const next = !isChecked.value
   internal.value = next
   emit('update:modelValue', next)
@@ -59,7 +71,7 @@ const classes = computed(() =>
     'sg-switch',
     `sg-switch-${switchSizeClass.value}`,
     isChecked.value ? 'sg-switch-checked' : '',
-    props.disabled || props.loading ? 'sg-switch-disabled' : '',
+    resolvedDisabled.value || props.loading ? 'sg-switch-disabled' : '',
     props.loading ? 'sg-switch-loading' : '',
   ]
     .filter(Boolean)
@@ -71,7 +83,7 @@ const classes = computed(() =>
   <button
     role="switch"
     :aria-checked="isChecked"
-    :disabled="disabled || loading"
+    :disabled="resolvedDisabled || loading"
     :class="unstyled ? '' : classes"
     type="button"
     @click="handleClick"

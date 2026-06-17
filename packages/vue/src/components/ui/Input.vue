@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, useSlots } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { computed, inject, useSlots } from 'vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
+import { formContextKey } from '../complex/Form/context'
 
 export interface InputProps {
   /** v-model value (Vue idiom) — alias for `value`. */
@@ -44,11 +45,21 @@ export interface InputProps {
 const props = withDefaults(defineProps<InputProps>(), {
   modelValue: '',
   type: 'text',
-  size: 'middle',
-  disabled: false,
+  // `size` defaults to `undefined` so we can distinguish "consumer set a
+  // size" from "inherit from the surrounding Form / ConfigProvider".
+  size: undefined,
+  disabled: undefined,
   readOnly: false,
   allowClear: false,
 })
+
+// Resolve the effective size: an explicit prop wins, otherwise inherit
+// from the enclosing Form context (mirrors React, where `<Field>` forwards
+// the form `size` to its control), falling back to `middle`.
+const formCtx = inject(formContextKey, null)
+const resolvedSize = computed(() => props.size ?? formCtx?.size ?? 'middle')
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void
@@ -70,7 +81,7 @@ const wrapperClasses = computed(() =>
     ? ''
     : [
         'sg-input-wrapper',
-        `sg-input-wrapper-${props.size}`,
+        `sg-input-wrapper-${resolvedSize.value}`,
         props.loading ? 'sg-input-wrapper-loading' : '',
         props.readOnly ? 'sg-input-wrapper-readonly' : '',
         props.status ? `sg-input-wrapper-status-${props.status}` : '',
@@ -84,7 +95,7 @@ const inputClasses = computed(() =>
     ? ''
     : [
         'sg-input',
-        `sg-input-${props.size}`,
+        `sg-input-${resolvedSize.value}`,
         props.readOnly ? 'sg-input-readonly' : '',
         props.status ? `sg-input-status-${props.status}` : '',
       ]
@@ -113,7 +124,7 @@ function clear() {
 }
 
 const showClear = computed(
-  () => props.allowClear && !props.disabled && !props.readOnly && !!currentValue.value,
+  () => props.allowClear && !resolvedDisabled.value && !props.readOnly && !!currentValue.value,
 )
 
 const slots = useSlots()
@@ -135,7 +146,7 @@ const clearLabel = computed(() => cfg.value.locale?.input?.clear ?? 'Clear')
       :class="inputClasses"
       :value="currentValue"
       :placeholder="placeholder"
-      :disabled="disabled || loading"
+      :disabled="resolvedDisabled || loading"
       :readonly="readOnly"
       :aria-readonly="readOnly || undefined"
       :aria-invalid="ariaInvalid ?? (status === 'error' || undefined)"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface RadioOption {
   label: string
@@ -31,7 +32,7 @@ const props = withDefaults(defineProps<RadioGroupProps>(), {
   value: undefined,
   defaultValue: undefined,
   direction: 'horizontal',
-  disabled: false,
+  disabled: undefined,
   loading: false,
   unstyled: false,
 })
@@ -40,6 +41,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: string | number): void
   (e: 'change', value: string | number): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const internal = ref<string | number | undefined>(
   props.modelValue ?? props.value ?? props.defaultValue,
@@ -55,7 +58,7 @@ watch(
 const current = computed(() => props.modelValue ?? props.value ?? internal.value)
 
 function select(opt: RadioOption) {
-  if (opt.disabled || props.disabled || props.loading) return
+  if (opt.disabled || resolvedDisabled.value || props.loading) return
   internal.value = opt.value
   emit('update:modelValue', opt.value)
   emit('change', opt.value)
@@ -106,7 +109,7 @@ onMounted(syncInputs)
           : [
               'sg-radio',
               current === opt.value ? 'sg-radio-checked' : '',
-              opt.disabled || disabled || loading ? 'sg-radio-disabled' : '',
+              opt.disabled || resolvedDisabled || loading ? 'sg-radio-disabled' : '',
             ]
               .filter(Boolean)
               .join(' ')
@@ -118,7 +121,7 @@ onMounted(syncInputs)
         :class="unstyled ? '' : 'sg-radio-input'"
         :aria-checked="current === opt.value"
         :checked="current === opt.value"
-        :disabled="opt.disabled || disabled || loading"
+        :disabled="opt.disabled || resolvedDisabled || loading"
         @change="select(opt)"
       />
       <span v-if="!unstyled" class="sg-radio-box" aria-hidden="true" />

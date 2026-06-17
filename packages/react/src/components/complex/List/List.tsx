@@ -2,6 +2,7 @@ import React from 'react'
 import { Spin } from '../../ui/Spin'
 import { Pagination } from '../../ui/Pagination'
 import { Empty } from '../../ui/Empty'
+import { useConfig } from '../../ConfigProvider'
 import type { ListProps, ListItemProps, ListItemMetaProps } from './types'
 
 function cls(...parts: (string | false | undefined | null)[]): string {
@@ -144,7 +145,11 @@ function ListInner<T = any>({
     (e: React.DragEvent, index: number) => {
       if (!draggable || dragIndex === null) return
       e.preventDefault()
-      setDropIndex(index)
+      // Force the "move" cursor. Without an explicit dropEffect the browser
+      // can fall back to the "no-drop" (forbidden) cursor on the frames
+      // between dragenter/dragover, which reads as a broken drop zone.
+      e.dataTransfer.dropEffect = 'move'
+      setDropIndex((prev) => (prev === index ? prev : index))
     },
     [draggable, dragIndex],
   )
@@ -186,7 +191,8 @@ function ListInner<T = any>({
     }
   }, [])
 
-  const emptyText = locale?.emptyText ?? 'No Data'
+  const config = useConfig()
+  const emptyText = locale?.emptyText ?? config.locale?.empty?.description ?? 'No Data'
 
   const gridStyle = React.useMemo((): React.CSSProperties | undefined => {
     if (!grid) return undefined
@@ -240,7 +246,6 @@ function ListInner<T = any>({
           onDragOver={(e) => handleDragOver(e, index)}
           onDrop={(e) => handleDrop(e, index)}
           onDragEnd={handleDragEnd}
-          onDragLeave={() => setDropIndex(null)}
         >
           {draggable && <span className="sg-list-drag-handle">⠿</span>}
           {renderItem(item, index)}

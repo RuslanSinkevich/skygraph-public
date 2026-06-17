@@ -66,6 +66,53 @@ describe('SgResourceCalendar', () => {
     w.unmount()
   })
 
+  it('emits conflict with the overlapping pair', async () => {
+    const w = mount(SgResourceCalendar, {
+      props: { resources, assignments },
+      attachTo: document.body,
+    })
+    await nextTick()
+    const events = w.emitted('conflict')
+    expect(events).toBeTruthy()
+    const pairs = events![events!.length - 1][0] as Array<{
+      a: { id: string }
+      b: { id: string }
+    }>
+    expect(pairs.length).toBe(1)
+    expect([pairs[0].a.id, pairs[0].b.id].sort()).toEqual(['a1', 'a2'])
+    w.unmount()
+  })
+
+  it('emits an empty conflict list when nothing overlaps', async () => {
+    const w = mount(SgResourceCalendar, {
+      props: {
+        resources,
+        assignments: [
+          {
+            id: 'x',
+            resourceId: 'r1',
+            start: new Date('2024-01-01'),
+            end: new Date('2024-01-03'),
+            title: 'X',
+          },
+          {
+            id: 'y',
+            resourceId: 'r1',
+            start: new Date('2024-01-05'),
+            end: new Date('2024-01-08'),
+            title: 'Y',
+          },
+        ],
+      },
+      attachTo: document.body,
+    })
+    await nextTick()
+    const events = w.emitted('conflict')
+    expect(events).toBeTruthy()
+    expect((events![0][0] as unknown[]).length).toBe(0)
+    w.unmount()
+  })
+
   it('does not flag conflicts on different resources', async () => {
     const w = mount(SgResourceCalendar, {
       props: {

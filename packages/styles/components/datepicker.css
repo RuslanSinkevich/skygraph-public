@@ -195,12 +195,31 @@
   min-width: 0;
 }
 
+/* Range + presets: absolute dropdown with `width: auto` shrink-fits to the
+ * trigger (~320px) and clips the second calendar. Size from content instead. */
+.sg-dp-dropdown-range {
+  width: max-content;
+}
+
+.sg-dp-dropdown-range .sg-dp-dropdown-inner,
+.sg-dp-dropdown-range .sg-dp-content,
+.sg-dp-dropdown-range .sg-dp-range-panels,
+.sg-dp-dropdown-range .sg-dp-panel {
+  flex-shrink: 0;
+  min-width: min-content;
+}
+
 /* ── Presets sidebar ── */
 
 .sg-dp-presets {
   border-right: 1px solid var(--sg-color-border-secondary);
   padding: var(--sg-padding-sm);
   min-width: 120px;
+  /* Size to the widest label instead of being squeezed by the flex row —
+   * a squeezed column turns `overflow-y: auto` into a stray horizontal
+   * scrollbar. Capped so a long custom label can't blow out the popup. */
+  flex: 0 0 auto;
+  max-width: 200px;
   max-height: 320px;
   overflow-y: auto;
 }
@@ -211,7 +230,10 @@
   cursor: pointer;
   font-size: var(--sg-font-size-sm);
   color: var(--sg-color-text);
-  white-space: nowrap;
+  /* Wrap long labels onto a second line rather than overflowing the column
+   * (which would force a horizontal scrollbar). */
+  white-space: normal;
+  overflow-wrap: anywhere;
   transition: background var(--sg-transition-duration);
 }
 
@@ -322,6 +344,7 @@ button.sg-dp-panel-title.sg-dp-panel-title-btn:hover {
   height: 28px;
   border-radius: 50%;
   font-size: var(--sg-font-size-sm);
+  color: var(--sg-color-text);
   transition:
     color var(--sg-transition-duration),
     background var(--sg-transition-duration),
@@ -577,6 +600,15 @@ button.sg-dp-panel-title.sg-dp-panel-title-btn:hover {
 
 .sg-dp-range-panels {
   display: flex;
+  flex-wrap: nowrap;
+}
+
+.sg-dp-range-panels .sg-dp-panel {
+  flex: 0 0 auto;
+}
+
+.sg-dp-range-panels .sg-dp-table {
+  width: max-content;
 }
 
 .sg-dp-range-panels .sg-dp-panel + .sg-dp-panel {

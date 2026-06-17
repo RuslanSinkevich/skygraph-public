@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 import type { DatePreset, ShowTimeConfig } from './DatePicker.vue'
 
 export type { DatePreset, ShowTimeConfig } from './DatePicker.vue'
@@ -47,7 +47,7 @@ const props = withDefaults(defineProps<RangePickerProps>(), {
   separator: '→',
   placement: 'bottomLeft',
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   loading: false,
   open: undefined,
 })
@@ -57,6 +57,8 @@ const emit = defineEmits<{
   (e: 'change', value: [Date | null, Date | null], dateStrings: [string, string]): void
   (e: 'openChange', open: boolean): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const DEFAULT_MONTH_NAMES = [
   'January',
@@ -149,7 +151,19 @@ const internal = ref<[Date | null, Date | null]>(
 watch(externalValue, (v) => {
   if (v) internal.value = v
 })
-const current = computed<[Date | null, Date | null]>(() => externalValue.value ?? internal.value)
+
+// In-progress selection buffer. The range commits only after the second
+// click (or OK with time), but the first-click start has to be visible
+// immediately — and in controlled mode the parent prop hasn't updated yet
+// (no change fired), so reading the committed value would lose the pending
+// start. The draft drives the UI mid-selection; once committed (or the
+// panel closes) it clears and the controlled prop takes over again.
+// Mirrors React DatePicker's range `draft` state.
+const draft = ref<[Date | null, Date | null] | null>(null)
+
+const current = computed<[Date | null, Date | null]>(
+  () => draft.value ?? externalValue.value ?? internal.value,
+)
 
 const internalOpen = ref(false)
 const isOpen = computed(() => props.open ?? internalOpen.value)
@@ -184,13 +198,16 @@ function commitRange(dates: [Date | null, Date | null]) {
 }
 
 function openDropdown() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   setOpen(true)
 }
 
 function handleDateSelect(date: Date) {
   if (activeIndex.value === 0) {
-    internal.value = [date, null]
+    // First click: buffer the start locally and wait for the end. The
+    // committed value is intentionally left untouched until the range
+    // completes.
+    draft.value = [date, null]
     activeIndex.value = 1
     return
   }
@@ -213,9 +230,12 @@ function handleDateSelect(date: Date) {
       tempTimes.value[1].getMinutes(),
       tempTimes.value[1].getSeconds(),
     )
-    internal.value = [s, e]
+    // Keep the completed-but-uncommitted range in the draft so both time
+    // columns appear; OK commits it.
+    draft.value = [s, e]
   } else {
     commitRange([start, end])
+    draft.value = null
     setOpen(false)
     activeIndex.value = 0
   }
@@ -223,6 +243,7 @@ function handleDateSelect(date: Date) {
 
 function handleTimeOk() {
   commitRange(current.value)
+  draft.value = null
   setOpen(false)
   activeIndex.value = 0
 }
@@ -230,6 +251,7 @@ function handleTimeOk() {
 function handleClear(e: MouseEvent) {
   e.stopPropagation()
   commitRange([null, null])
+  draft.value = null
   activeIndex.value = 0
 }
 
@@ -239,6 +261,8 @@ function handlePresetSelect(p: DatePreset) {
   } else {
     commitRange([p.value, p.value])
   }
+  draft.value = null
+  activeIndex.value = 0
   setOpen(false)
 }
 
@@ -337,7 +361,7 @@ const wrapperCls = computed(() =>
         'sg-datepicker-range',
         `sg-datepicker-${props.size}`,
         isOpen.value ? 'sg-datepicker-open' : '',
-        props.disabled || props.loading ? 'sg-datepicker-disabled' : '',
+        resolvedDisabled.value || props.loading ? 'sg-datepicker-disabled' : '',
         props.loading ? 'sg-datepicker-loading' : '',
       ]
         .filter(Boolean)
@@ -351,6 +375,10 @@ function handleOutside(e: MouseEvent) {
   if (!isOpen.value) return
   if (wrapperRef.value && !wrapperRef.value.contains(e.target as Node)) {
     setOpen(false)
+    // Abandon an unfinished selection so a half-picked range doesn't
+    // linger and corrupt the next interaction.
+    draft.value = null
+    activeIndex.value = 0
   }
 }
 
@@ -387,10 +415,14 @@ function setTime(idx: 0 | 1, fn: (d: Date) => void) {
   const next: [Date, Date] = [cloneDate(tempTimes.value[0]), cloneDate(tempTimes.value[1])]
   fn(next[idx])
   tempTimes.value = next
-  if (current.value[0] && current.value[1]) {
-    const merged: [Date, Date] = [cloneDate(current.value[0]), cloneDate(current.value[1])]
+  const base = current.value
+  if (base[0] && base[1]) {
+    const merged: [Date, Date] = [cloneDate(base[0]), cloneDate(base[1])]
     merged[idx].setHours(next[idx].getHours(), next[idx].getMinutes(), next[idx].getSeconds())
-    internal.value = merged
+    // Mid-selection edits land in the draft so OK commits the latest time;
+    // once committed, edits go straight to the controlled/internal value.
+    if (draft.value) draft.value = merged
+    else internal.value = merged
   }
 }
 
@@ -405,7 +437,7 @@ const monthLabelRight = computed(() => `${monthNames.value[rightMonth.value]} ${
       role="combobox"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      :aria-disabled="disabled"
+      :aria-disabled="resolvedDisabled"
       @click="openDropdown"
     >
       <span

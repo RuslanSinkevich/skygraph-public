@@ -60,11 +60,7 @@ export interface BodyProps {
   /** Called after a row drag reorder. */
   onRowOrderChange?: (fromIndex: number, toIndex: number) => void
   /** Builds cell context menu items. */
-  cellContextMenu?: (
-    id: RowId,
-    column: string,
-    data: Record<string, unknown>,
-  ) => ContextMenuItem[]
+  cellContextMenu?: (id: RowId, column: string, data: Record<string, unknown>) => ContextMenuItem[]
   /** Opens or closes the shared context menu. */
   onContextMenu: (state: ContextMenuState | null) => void
   /** Zebra striping for data rows. */
@@ -210,14 +206,11 @@ export function TableBody(props: BodyProps) {
     }
   }
 
-  const handleCellCopy = useCallback(
-    async (rowId: RowId, colKey: string, value: unknown) => {
-      await copyToClipboard(String(value ?? ''))
-      setCopiedCell(`${rowId}:${colKey}`)
-      setTimeout(() => setCopiedCell(null), 1500)
-    },
-    [],
-  )
+  const handleCellCopy = useCallback(async (rowId: RowId, colKey: string, value: unknown) => {
+    await copyToClipboard(String(value ?? ''))
+    setCopiedCell(`${rowId}:${colKey}`)
+    setTimeout(() => setCopiedCell(null), 1500)
+  }, [])
 
   if (flatRows.length === 0) {
     return (
@@ -258,16 +251,13 @@ export function TableBody(props: BodyProps) {
           : !!expandable
 
         const rowCls =
-          typeof rowClassName === 'function'
-            ? rowClassName(row.data, row.id)
-            : (rowClassName ?? '')
+          typeof rowClassName === 'function' ? rowClassName(row.data, row.id) : (rowClassName ?? '')
 
         const isZebra = striped && currentDataIdx % 2 === 1
         const isDragOver = dragOverRowIdx === rowIdx && dragRowIdx !== rowIdx
         const isPinned = isPinnedSection
 
-        const virtualIndexAttr =
-          rowIndexOffset !== undefined ? rowIndexOffset + rowIdx : undefined
+        const virtualIndexAttr = rowIndexOffset !== undefined ? rowIndexOffset + rowIdx : undefined
 
         return (
           <React.Fragment key={row.id}>
@@ -288,12 +278,8 @@ export function TableBody(props: BodyProps) {
               style={{ display: 'contents', ...sSty.row }}
               data-sg-virtual-row-index={virtualIndexAttr}
               draggable={rowDraggable}
-              onDragStart={
-                rowDraggable ? (e) => handleRowDragStart(e, rowIdx) : undefined
-              }
-              onDragOver={
-                rowDraggable ? (e) => handleRowDragOver(e, rowIdx) : undefined
-              }
+              onDragStart={rowDraggable ? (e) => handleRowDragStart(e, rowIdx) : undefined}
+              onDragOver={rowDraggable ? (e) => handleRowDragOver(e, rowIdx) : undefined}
               onDrop={rowDraggable ? (e) => handleRowDrop(e, rowIdx) : undefined}
               onDragEnd={rowDraggable ? handleRowDragEnd : undefined}
             >
@@ -301,7 +287,13 @@ export function TableBody(props: BodyProps) {
                 <div
                   className="sg-table-td sg-table-cell-drag-handle"
                   role="cell"
-                  style={{ cursor: 'grab', userSelect: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  style={{
+                    cursor: 'grab',
+                    userSelect: 'none',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
                 >
                   ⠿
                 </div>
@@ -319,13 +311,27 @@ export function TableBody(props: BodyProps) {
                   role="cell"
                   onClick={(e) => {
                     e.stopPropagation()
-                    onSelectRow(row.id, row.data)
+                    // The control (checkbox/radio) toggles via its own
+                    // onChange. Clicking the surrounding padding still
+                    // selects, but only when the click lands on the cell
+                    // itself — otherwise a label-wrapped checkbox bubbles a
+                    // second synthetic click here and the toggle cancels out.
+                    if (e.target === e.currentTarget) {
+                      onSelectRow(row.id, row.data)
+                    }
                   }}
                 >
                   {rowSelection.type === 'radio' ? (
-                    <input type="radio" checked={!!isSelected} readOnly />
+                    <input
+                      type="radio"
+                      checked={!!isSelected}
+                      onChange={() => onSelectRow(row.id, row.data)}
+                    />
                   ) : (
-                    <Checkbox checked={!!isSelected} onChange={() => {}} />
+                    <Checkbox
+                      checked={!!isSelected}
+                      onChange={() => onSelectRow(row.id, row.data)}
+                    />
                   )}
                 </div>
               )}
@@ -352,28 +358,22 @@ export function TableBody(props: BodyProps) {
 
                 const span = spanMap.get(cellKey)
                 const val = row.data[col.key]
-                const isEditing =
-                  editingCell?.rowId === row.id && editingCell?.col === col.key
+                const isEditing = editingCell?.rowId === row.id && editingCell?.col === col.key
                 const isFocused =
-                  keyboardNavigation &&
-                  focusedCell?.row === rowIdx &&
-                  focusedCell?.col === colIndex
+                  keyboardNavigation && focusedCell?.row === rowIdx && focusedCell?.col === colIndex
                 const isCopied = copiedCell === cellKey
 
                 const cellStyle: React.CSSProperties = { ...fixedStyle(col) }
-                if (span?.colSpan && span.colSpan > 1)
-                  cellStyle.gridColumn = `span ${span.colSpan}`
-                if (span?.rowSpan && span.rowSpan > 1)
-                  cellStyle.gridRow = `span ${span.rowSpan}`
+                if (span?.colSpan && span.colSpan > 1) cellStyle.gridColumn = `span ${span.colSpan}`
+                if (span?.rowSpan && span.rowSpan > 1) cellStyle.gridRow = `span ${span.rowSpan}`
 
                 const isFirstCol = colIndex === 0
-                const treeIndent =
-                  isTreeMode && isFirstCol ? row.depth * indentSize : 0
+                const treeIndent = isTreeMode && isFirstCol ? row.depth * indentSize : 0
 
                 const cellClsExtra =
                   typeof col.cellClassName === 'function'
                     ? col.cellClassName(val, row.data, row.id)
-                    : col.cellClassName ?? ''
+                    : (col.cellClassName ?? '')
 
                 return (
                   <div
@@ -400,9 +400,7 @@ export function TableBody(props: BodyProps) {
                         onFocusCell?.({ row: rowIdx, col: colIndex })
                       }
                     }}
-                    onContextMenu={(e) =>
-                      handleCellContext(e, row.id, col.key, row.data)
-                    }
+                    onContextMenu={(e) => handleCellContext(e, row.id, col.key, row.data)}
                     onDoubleClick={
                       col.editable && onCellEdit
                         ? (e) => {
@@ -479,9 +477,7 @@ export function TableBody(props: BodyProps) {
                 style={{ gridColumn: `1 / ${totalCols + 1}` }}
                 role="row"
               >
-                <div role="cell">
-                  {expandable.expandedRowRender(row.data, row.id)}
-                </div>
+                <div role="cell">{expandable.expandedRowRender(row.data, row.id)}</div>
               </div>
             )}
           </React.Fragment>

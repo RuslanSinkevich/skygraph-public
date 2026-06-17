@@ -3,7 +3,7 @@
 [![npm](https://img.shields.io/npm/v/skygraph-react.svg)](https://www.npmjs.com/package/skygraph-react)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/RuslanSinkevich/skygraph-public/blob/master/LICENSE)
 
-UI components for React — tables, forms, charts, calendars, diagrams and 50+ more. One install, styles included.
+UI components for React — tables, forms, charts, calendars, diagrams and more. One install, styles included. The same DOM and `.sg-*` CSS contract is shared with the Vue adapter, so the look stays identical across frameworks.
 
 ```bash
 npm install skygraph-react
@@ -28,7 +28,7 @@ That's it. No extra `@skygraph/styles` import, no separate `@skygraph/core` inst
 
 `skygraph-react` re-exports the full public API of [`@skygraph/react`](https://www.npmjs.com/package/@skygraph/react) and ships [`@skygraph/core`](https://www.npmjs.com/package/@skygraph/core) and [`@skygraph/styles`](https://www.npmjs.com/package/@skygraph/styles) as transitive dependencies. Existing imports from `@skygraph/*` keep working — this package is purely additive.
 
-## Components (53 documented)
+## Components
 
 Button, Input, Select, DatePicker, Table, DataGrid, Tree, Transfer, Modal, Drawer, Notification, Tabs, Form, FormList, SchemaForm, SchemaFormEditor, Diagram, LineChart, BarChart, AreaChart, PieChart, Dashboard, Gantt, EventTimeline, ResourceCalendar — and the rest of an AntD-shaped surface.
 
@@ -49,9 +49,12 @@ Dark mode via one attribute:
 <html data-sg-theme="dark"> ... </html>
 ```
 
-## Repository
+## Links
 
-[github.com/RuslanSinkevich/skygraph-public](https://github.com/RuslanSinkevich/skygraph-public) · [docs](https://skygraph.ruslansinkevich.ru/) · [Vue version](https://www.npmjs.com/package/skygraph-vue)
+- Docs & live demos — [skygraph.ruslansinkevich.ru](https://skygraph.ruslansinkevich.ru/)
+- Source — [github.com/RuslanSinkevich/skygraph-public](https://github.com/RuslanSinkevich/skygraph-public)
+- Vue version — [skygraph-vue](https://www.npmjs.com/package/skygraph-vue)
+- Author — [ruslansinkevich.ru](https://ruslansinkevich.ru/)
 
 ## License
 

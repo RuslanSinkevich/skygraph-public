@@ -170,4 +170,29 @@ export const de_DE: SgLocale = {
     duplicateField: 'Feld duplizieren',
     deleteField: 'Feld löschen',
   },
+  table: {
+    emptyText: 'Keine Daten',
+    searchPlaceholder: 'Suchen...',
+  },
+  dataGrid: {
+    noData: 'Keine Daten',
+    selectAll: 'Alle auswählen',
+  },
+  tree: {
+    emptyText: 'Keine Daten',
+    searchPlaceholder: 'Suchen...',
+    clearSearch: 'Suche löschen',
+  },
+  list: {
+    loading: 'Wird geladen',
+  },
+  diagram: {
+    ariaLabel: 'Diagramm',
+  },
+  colorPicker: {
+    pickColor: 'Farbe wählen',
+  },
+  pinInput: {
+    ariaLabel: 'PIN-Eingabe',
+  },
 }

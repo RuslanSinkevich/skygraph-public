@@ -46,14 +46,14 @@ const props = withDefaults(defineProps<TimelineProps>(), {
 
 defineSlots<{
   /** Per-item content override. `isPending` is `true` for the synthetic pending tail. */
-  content(slotProps: { item: TimelineItem; index: number; isPending: boolean }): unknown
+  content?(slotProps: { item: TimelineItem; index: number; isPending: boolean }): unknown
   /** Per-item label override (shown beside the marker / above on `alternate`). */
-  label(slotProps: { item: TimelineItem; index: number }): unknown
+  label?(slotProps: { item: TimelineItem; index: number }): unknown
   /**
    * Per-item dot override. Replaces the default ring; `isPending` is `true`
    * for the synthetic pending tail (use it to render `pendingDot` analogue).
    */
-  dot(slotProps: { item: TimelineItem; index: number; isPending: boolean }): unknown
+  dot?(slotProps: { item: TimelineItem; index: number; isPending: boolean }): unknown
 }>()
 
 interface InternalItem extends TimelineItem {

@@ -1,5 +1,6 @@
 import React from 'react'
 import { Button } from '../../ui/Button'
+import { useConfig } from '../../ConfigProvider'
 import { TransferList } from './TransferList'
 import type { TransferProps } from './types'
 import { DEFAULT_TRANSFER_LOCALE } from './types'
@@ -40,19 +41,25 @@ export function Transfer({
   listHeight,
   listClassName,
 }: TransferProps) {
-  const mergedLocale = React.useMemo(() => ({
-    ...DEFAULT_TRANSFER_LOCALE,
-    ...locale,
-  }), [locale])
+  const config = useConfig()
+  const mergedLocale = React.useMemo(
+    () => ({
+      ...DEFAULT_TRANSFER_LOCALE,
+      ...config.locale?.transfer,
+      ...locale,
+    }),
+    [config.locale?.transfer, locale],
+  )
+  const resolvedTitles = titles ?? config.locale?.transfer?.titles
 
   const [internalSourceSelected, setInternalSourceSelected] = React.useState<string[]>([])
   const [internalTargetSelected, setInternalTargetSelected] = React.useState<string[]>([])
 
   const sourceSelected = controlledSelectedKeys
-    ? controlledSelectedKeys.filter(k => !targetKeys.includes(k))
+    ? controlledSelectedKeys.filter((k) => !targetKeys.includes(k))
     : internalSourceSelected
   const targetSelected = controlledSelectedKeys
-    ? controlledSelectedKeys.filter(k => targetKeys.includes(k))
+    ? controlledSelectedKeys.filter((k) => targetKeys.includes(k))
     : internalTargetSelected
 
   const setSourceSelected = (keys: string[]) => {
@@ -68,18 +75,18 @@ export function Transfer({
   const targetKeySet = React.useMemo(() => new Set(targetKeys), [targetKeys])
 
   const sourceItems = React.useMemo(
-    () => dataSource.filter(item => !targetKeySet.has(item.key)),
+    () => dataSource.filter((item) => !targetKeySet.has(item.key)),
     [dataSource, targetKeySet],
   )
 
   const targetItems = React.useMemo(
-    () => dataSource.filter(item => targetKeySet.has(item.key)),
+    () => dataSource.filter((item) => targetKeySet.has(item.key)),
     [dataSource, targetKeySet],
   )
 
   const moveToRight = () => {
-    const moveKeys = sourceSelected.filter(k => {
-      const item = dataSource.find(i => i.key === k)
+    const moveKeys = sourceSelected.filter((k) => {
+      const item = dataSource.find((i) => i.key === k)
       return item && !item.disabled
     })
     if (moveKeys.length === 0) return
@@ -90,27 +97,29 @@ export function Transfer({
   }
 
   const moveToLeft = () => {
-    const moveKeys = targetSelected.filter(k => {
-      const item = dataSource.find(i => i.key === k)
+    const moveKeys = targetSelected.filter((k) => {
+      const item = dataSource.find((i) => i.key === k)
       return item && !item.disabled
     })
     if (moveKeys.length === 0) return
 
     const moveKeySet = new Set(moveKeys)
-    const newTargetKeys = targetKeys.filter(k => !moveKeySet.has(k))
+    const newTargetKeys = targetKeys.filter((k) => !moveKeySet.has(k))
     onChange?.(newTargetKeys, 'left', moveKeys)
     setTargetSelected([])
   }
 
-  const canMoveRight = sourceSelected.some(k => {
-    const item = dataSource.find(i => i.key === k)
+  const canMoveRight = sourceSelected.some((k) => {
+    const item = dataSource.find((i) => i.key === k)
     return item && !item.disabled
   })
 
-  const canMoveLeft = !oneWay && targetSelected.some(k => {
-    const item = dataSource.find(i => i.key === k)
-    return item && !item.disabled
-  })
+  const canMoveLeft =
+    !oneWay &&
+    targetSelected.some((k) => {
+      const item = dataSource.find((i) => i.key === k)
+      return item && !item.disabled
+    })
 
   const resolveFooter = (dir: 'left' | 'right'): React.ReactNode => {
     if (!footer) return undefined
@@ -142,25 +151,34 @@ export function Transfer({
           items={sourceItems}
           selectedKeys={sourceSelected}
           onSelect={setSourceSelected}
-          title={titles?.[0]}
+          title={resolvedTitles?.[0]}
           direction="left"
           footer={resolveFooter('left')}
           {...listCommonProps}
         />
         <div>
-          {operations ? operations[0] : (
-            <button disabled={disabled || !canMoveRight} onClick={moveToRight}>→</button>
+          {operations ? (
+            operations[0]
+          ) : (
+            <button disabled={disabled || !canMoveRight} onClick={moveToRight}>
+              →
+            </button>
           )}
-          {!oneWay && (operations ? operations[1] : (
-            <button disabled={disabled || !canMoveLeft} onClick={moveToLeft}>←</button>
-          ))}
+          {!oneWay &&
+            (operations ? (
+              operations[1]
+            ) : (
+              <button disabled={disabled || !canMoveLeft} onClick={moveToLeft}>
+                ←
+              </button>
+            ))}
         </div>
         <TransferList
           unstyled
           items={targetItems}
           selectedKeys={targetSelected}
           onSelect={setTargetSelected}
-          title={titles?.[1]}
+          title={resolvedTitles?.[1]}
           direction="right"
           footer={resolveFooter('right')}
           {...listCommonProps}
@@ -170,19 +188,24 @@ export function Transfer({
   }
 
   return (
-    <div className={cls('sg-transfer', disabled && 'sg-transfer-disabled', className)} style={style}>
+    <div
+      className={cls('sg-transfer', disabled && 'sg-transfer-disabled', className)}
+      style={style}
+    >
       <TransferList
         items={sourceItems}
         selectedKeys={sourceSelected}
         onSelect={setSourceSelected}
-        title={titles?.[0] ?? 'Source'}
+        title={resolvedTitles?.[0] ?? 'Source'}
         direction="left"
         footer={resolveFooter('left')}
         {...listCommonProps}
       />
 
       <div className="sg-transfer-operations" style={operationsStyle}>
-        {operations ? operations[0] : (
+        {operations ? (
+          operations[0]
+        ) : (
           <Button
             type="primary"
             size="small"
@@ -192,23 +215,26 @@ export function Transfer({
             →
           </Button>
         )}
-        {!oneWay && (operations ? operations[1] : (
-          <Button
-            type="primary"
-            size="small"
-            disabled={disabled || !canMoveLeft}
-            onClick={moveToLeft}
-          >
-            ←
-          </Button>
-        ))}
+        {!oneWay &&
+          (operations ? (
+            operations[1]
+          ) : (
+            <Button
+              type="primary"
+              size="small"
+              disabled={disabled || !canMoveLeft}
+              onClick={moveToLeft}
+            >
+              ←
+            </Button>
+          ))}
       </div>
 
       <TransferList
         items={targetItems}
         selectedKeys={targetSelected}
         onSelect={setTargetSelected}
-        title={titles?.[1] ?? 'Target'}
+        title={resolvedTitles?.[1] ?? 'Target'}
         direction="right"
         footer={resolveFooter('right')}
         {...listCommonProps}

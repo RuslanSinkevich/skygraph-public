@@ -62,7 +62,7 @@ describe('SgList', () => {
     const wrapper = mount(Wrapper)
     expect(wrapper.findAll('.row').length).toBe(10)
 
-    const next = wrapper.find('.sg-list-pagination-next')
+    const next = wrapper.find('.sg-pagination-next')
     await next.trigger('click')
     expect(wrapper.findAll('.row').length).toBe(10)
     expect(onChangeSeen.value?.page).toBe(2)
@@ -92,7 +92,9 @@ describe('SgList', () => {
     expect(rows.length).toBe(3)
     await rows[0].trigger('click')
     expect((wrapper.vm as unknown as { changes: { keys: number[] }[] }).changes.length).toBe(1)
-    expect((wrapper.vm as unknown as { changes: { keys: number[] }[] }).changes[0].keys).toEqual([0])
+    expect((wrapper.vm as unknown as { changes: { keys: number[] }[] }).changes[0].keys).toEqual([
+      0,
+    ])
   })
 
   it('header / footer slots render', () => {

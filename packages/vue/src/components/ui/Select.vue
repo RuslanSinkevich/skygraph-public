@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, onBeforeUnmount, onMounted } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 let selectUid = 0
 function genId() {
@@ -48,10 +49,11 @@ export interface SelectProps {
 const props = withDefaults(defineProps<SelectProps>(), {
   placeholder: 'Select...',
   multiple: false,
-  disabled: false,
+  disabled: undefined,
   loading: false,
   size: 'middle',
 })
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 const listboxId = genId()
 const focusedIndex = ref(-1)
 
@@ -120,11 +122,11 @@ function handleSelect(opt: SelectOption) {
 
 function handleRemoveTag(val: string | number, e: Event) {
   e.stopPropagation()
-  if (props.disabled || props.loading) return
+  if (isDisabled.value) return
   emitValue(currentMultiple.value.filter((v) => v !== val))
 }
 
-const isDisabled = computed(() => props.disabled || props.loading)
+const isDisabled = computed(() => resolvedDisabled.value || props.loading)
 
 function isOptionSelected(opt: SelectOption) {
   return props.multiple

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, inject, onBeforeUnmount, useSlots, watch } from 'vue'
 import { useField } from '../../../composables/useField'
+import { useConfig } from '../../ui/ConfigProvider.vue'
 import { formContextKey } from './context'
 import type { Rule, ValidationMode } from '@skygraph/core'
 
@@ -76,6 +77,12 @@ const ctx = injected
 
 const field = useField(ctx.core, ctx.form, props.name)
 
+const cfg = useConfig()
+const requiredMarker = computed(() => cfg.value.locale?.form?.required ?? '*')
+const optionalMarker = computed(() => cfg.value.locale?.form?.optional ?? '(optional)')
+const showRequiredMark = computed(() => props.required || ctx.requiredMark === true)
+const showOptionalMark = computed(() => ctx.requiredMark === 'optional' && !props.required)
+
 const disabled = computed(() => props.disabled ?? ctx.disabled)
 
 let prevValue: unknown = field.value.value
@@ -138,6 +145,25 @@ const fieldClasses = computed(() =>
 
 const slots = useSlots()
 const hasLabelSlot = computed(() => Boolean(slots.label))
+
+// ── Horizontal layout (24-col grid via labelCol / wrapperCol) ──────────
+// Mirrors React `Field`: label and control each sit in their own flex
+// column with explicit widths, and the error/help/extra nest *inside* the
+// control column so they align under the input instead of spilling next to
+// it (the old layout rendered label/control/error as three flex siblings).
+const lCol = computed(() => props.labelCol ?? ctx.labelCol)
+const wCol = computed(() => props.wrapperCol ?? ctx.wrapperCol)
+const labelAlign = computed(() => ctx.labelAlign ?? 'right')
+const isHorizontal = computed(() => ctx.layout === 'horizontal' && !!lCol.value)
+const labelSpan = computed(() => lCol.value?.span ?? 6)
+const wrapperSpan = computed(() => wCol.value?.span ?? 24 - labelSpan.value)
+const labelPct = computed(() => `${(labelSpan.value / 24) * 100}%`)
+const wrapperPct = computed(() => `${(wrapperSpan.value / 24) * 100}%`)
+const labelOffsetStyle = computed(() =>
+  ctx.layout === 'horizontal' && lCol.value?.offset
+    ? { marginLeft: `${(lCol.value.offset / 24) * 100}%` }
+    : undefined,
+)
 </script>
 
 <template>
@@ -157,42 +183,92 @@ const hasLabelSlot = computed(() => Boolean(slots.label))
       />
     </template>
     <div v-else :class="fieldClasses" :data-field-name="name">
-      <label v-if="label || hasLabelSlot" class="sg-field-label">
-        <slot name="label">{{ label }}</slot>
-        <span v-if="required" class="sg-field-required">*</span>
-        <template v-if="ctx.colon">:</template>
-      </label>
-      <div class="sg-field-control">
-        <slot
-          :value="field.value.value"
-          :on-change="wrappedOnChange"
-          :on-blur="field.onBlur"
-          :errors="field.errors.value"
-          :error="field.error.value"
-          :warnings="field.warnings.value"
-          :touched="field.touched.value"
-          :dirty="field.dirty.value"
-          :validating="field.validating.value"
-          :status="effectiveStatus"
-        >
-          <input
-            class="sg-input"
-            type="text"
-            :value="(field.value.value as string) ?? ''"
-            :disabled="disabled"
-            @input="(e) => wrappedOnChange((e.target as HTMLInputElement).value)"
-            @blur="field.onBlur"
-          />
-        </slot>
-      </div>
-      <div v-if="hasErrors" class="sg-field-error" role="alert">
-        <div v-for="(err, i) in field.errors.value" :key="i">{{ err }}</div>
-      </div>
-      <div v-else-if="hasWarnings" class="sg-field-warning">
-        <div v-for="(w, i) in field.warnings.value" :key="i">{{ w }}</div>
-      </div>
-      <div v-else-if="help" class="sg-field-help">{{ help }}</div>
-      <div v-if="extra" class="sg-field-extra">{{ extra }}</div>
+      <!-- Horizontal layout: label column + control column (error nests
+           inside the control column so it aligns under the input). -->
+      <template v-if="isHorizontal">
+        <div class="sg-field-label-wrap" :style="{ width: labelPct, textAlign: labelAlign }">
+          <label v-if="label || hasLabelSlot" class="sg-field-label" :style="labelOffsetStyle">
+            <slot name="label">{{ label }}</slot>
+            <span v-if="showRequiredMark" class="sg-field-required">{{ requiredMarker }}</span>
+            <span v-else-if="showOptionalMark" class="sg-field-optional">{{ optionalMarker }}</span>
+            <template v-if="ctx.colon">:</template>
+          </label>
+        </div>
+        <div class="sg-field-control-wrap" :style="{ width: wrapperPct }">
+          <div class="sg-field-control">
+            <slot
+              :value="field.value.value"
+              :on-change="wrappedOnChange"
+              :on-blur="field.onBlur"
+              :errors="field.errors.value"
+              :error="field.error.value"
+              :warnings="field.warnings.value"
+              :touched="field.touched.value"
+              :dirty="field.dirty.value"
+              :validating="field.validating.value"
+              :status="effectiveStatus"
+            >
+              <input
+                class="sg-input"
+                type="text"
+                :value="(field.value.value as string) ?? ''"
+                :disabled="disabled"
+                @input="(e) => wrappedOnChange((e.target as HTMLInputElement).value)"
+                @blur="field.onBlur"
+              />
+            </slot>
+          </div>
+          <div v-if="hasErrors" class="sg-field-error" role="alert">
+            <div v-for="(err, i) in field.errors.value" :key="i">{{ err }}</div>
+          </div>
+          <div v-else-if="hasWarnings" class="sg-field-warning">
+            <div v-for="(w, i) in field.warnings.value" :key="i">{{ w }}</div>
+          </div>
+          <div v-else-if="help" class="sg-field-help">{{ help }}</div>
+          <div v-if="extra" class="sg-field-extra">{{ extra }}</div>
+        </div>
+      </template>
+
+      <!-- Vertical / inline layout -->
+      <template v-else>
+        <label v-if="label || hasLabelSlot" class="sg-field-label">
+          <slot name="label">{{ label }}</slot>
+          <span v-if="showRequiredMark" class="sg-field-required">{{ requiredMarker }}</span>
+          <span v-else-if="showOptionalMark" class="sg-field-optional">{{ optionalMarker }}</span>
+          <template v-if="ctx.colon">:</template>
+        </label>
+        <div class="sg-field-control">
+          <slot
+            :value="field.value.value"
+            :on-change="wrappedOnChange"
+            :on-blur="field.onBlur"
+            :errors="field.errors.value"
+            :error="field.error.value"
+            :warnings="field.warnings.value"
+            :touched="field.touched.value"
+            :dirty="field.dirty.value"
+            :validating="field.validating.value"
+            :status="effectiveStatus"
+          >
+            <input
+              class="sg-input"
+              type="text"
+              :value="(field.value.value as string) ?? ''"
+              :disabled="disabled"
+              @input="(e) => wrappedOnChange((e.target as HTMLInputElement).value)"
+              @blur="field.onBlur"
+            />
+          </slot>
+        </div>
+        <div v-if="hasErrors" class="sg-field-error" role="alert">
+          <div v-for="(err, i) in field.errors.value" :key="i">{{ err }}</div>
+        </div>
+        <div v-else-if="hasWarnings" class="sg-field-warning">
+          <div v-for="(w, i) in field.warnings.value" :key="i">{{ w }}</div>
+        </div>
+        <div v-else-if="help" class="sg-field-help">{{ help }}</div>
+        <div v-if="extra" class="sg-field-extra">{{ extra }}</div>
+      </template>
     </div>
   </template>
 </template>

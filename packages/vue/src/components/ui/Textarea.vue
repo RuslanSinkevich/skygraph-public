@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface TextareaProps {
   /** v-model binding (Vue idiom). */
@@ -37,7 +38,7 @@ export interface TextareaProps {
 const props = withDefaults(defineProps<TextareaProps>(), {
   rows: 4,
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   loading: false,
 })
 
@@ -47,6 +48,8 @@ const emit = defineEmits<{
   (e: 'blur'): void
   (e: 'focus'): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const internalValue = ref(props.modelValue ?? props.value ?? props.defaultValue ?? '')
 
@@ -91,8 +94,8 @@ function onInput(e: Event) {
       :value="currentValue"
       :placeholder="placeholder"
       :rows="rows"
-      :disabled="disabled || loading"
-      :aria-disabled="disabled || loading"
+      :disabled="resolvedDisabled || loading"
+      :aria-disabled="resolvedDisabled || loading"
       :aria-invalid="ariaInvalid"
       :aria-describedby="ariaDescribedby"
       :aria-required="ariaRequired"

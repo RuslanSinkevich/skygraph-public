@@ -4,6 +4,26 @@
   font-size: var(--sg-font-size);
 }
 
+/* ── Size variants ──────────────────────────────────────────────────── */
+
+.sg-tabs-small {
+  font-size: var(--sg-font-size-sm);
+}
+
+/* Extra `.sg-tabs` qualifier keeps these ahead of `.sg-tabs-line/card .sg-tabs-tab`
+ * (same base specificity, defined later in the file). */
+.sg-tabs.sg-tabs-small .sg-tabs-tab {
+  padding: var(--sg-padding-xs) var(--sg-padding-md);
+}
+
+.sg-tabs-large {
+  font-size: var(--sg-font-size-lg);
+}
+
+.sg-tabs.sg-tabs-large .sg-tabs-tab {
+  padding: var(--sg-padding-md) var(--sg-padding-xl);
+}
+
 .sg-tabs-tab-disabled {
   color: var(--sg-color-text-disabled);
   cursor: not-allowed;

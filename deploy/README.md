@@ -26,10 +26,13 @@ The script:
 
 1. Builds all workspace packages (`packages/*`).
 2. Type-checks the React demo (`tsc -b`).
-3. Builds the React demo with `vite build --base=/` (overrides the
-   legacy `/skygraph/` base in `vite.config.ts` without modifying source).
-4. Copies `examples/demo/dist` into `deploy/output/`.
-5. Copies stubs into `deploy/output/vue/` and `deploy/output/angular/`.
+3. Copies the static landing page and root SEO assets into `deploy/output/`.
+4. Builds the React demo with `vite build --base=/react/` and copies it into
+   `deploy/output/react/`.
+5. Builds the React showcases with `vite build --base=/react/showcases/` and
+   copies them into `deploy/output/react/showcases/`.
+6. Builds the Vue demo and Vue showcases under `deploy/output/vue/`.
+7. Copies the Angular stub into `deploy/output/angular/`.
 
 > Production deploy on the VPS uses `infra/scripts/deploy-skygraph.ps1`
 > (workspace root). It builds React + showcases + Vue and the static
@@ -75,6 +78,11 @@ docker run -d --name skygraph \
 ```
 deploy/output/
 ├── index.html                       (static landing)
+├── robots.txt                       (search crawler policy)
+├── sitemap.xml                      (canonical production URLs)
+├── favicon.svg
+├── og-image.svg                     (social preview image)
+├── site.webmanifest
 ├── react/index.html                 (React demo)
 ├── react/showcases/index.html       (React showcases)
 ├── vue/index.html                   (Vue demo)

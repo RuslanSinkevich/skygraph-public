@@ -7,6 +7,7 @@ import React, {
   useState,
 } from 'react'
 import { useVirtualScroll } from '../../../hooks/useVirtualScroll'
+import { useConfig } from '../../ConfigProvider'
 import { Spin } from '../../ui/Spin'
 import { Checkbox } from '../../ui/Checkbox'
 import { useDataGridState } from './useDataGridState'
@@ -191,6 +192,8 @@ function DataGridInner<R extends Record<string, unknown>>(
     loading,
     emptyContent,
   } = props
+
+  const config = useConfig()
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -728,7 +731,7 @@ function DataGridInner<R extends Record<string, unknown>>(
       >
         {data.length === 0 ? (
           <div className={cls.empty} style={{ padding: 24, textAlign: 'center' }}>
-            {emptyContent ?? locale?.noData ?? 'No data'}
+            {emptyContent ?? locale?.noData ?? config.locale?.dataGrid?.noData ?? 'No data'}
           </div>
         ) : (
           <div style={{ height: range.totalHeight, position: 'relative', minWidth: totalWidth }}>

@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback, useId } from 'react'
+import React, { useEffect, useCallback, useId, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from './Button'
 import { Transition } from './Transition'
 import { useConfig } from '../ConfigProvider'
@@ -38,6 +39,22 @@ const PLACEMENT_TRANSITION: Record<string, string> = {
   bottom: 'sg-slide-up',
 }
 
+function getScopedCssVars(scope: HTMLElement | null): React.CSSProperties {
+  if (!scope || typeof window === 'undefined') return {}
+
+  const computed = window.getComputedStyle(scope)
+  const vars: Record<string, string> = {}
+
+  for (let i = 0; i < computed.length; i += 1) {
+    const name = computed.item(i)
+    if (name.startsWith('--sg-')) {
+      vars[name] = computed.getPropertyValue(name)
+    }
+  }
+
+  return vars as React.CSSProperties
+}
+
 /**
  * Side panel drawer with optional mask, placement transitions, and focus trap.
  * Horizontal placement uses `width`; vertical uses `height`.
@@ -62,6 +79,7 @@ export function Drawer({
   const titleId = `${uid}-title`
   const bodyId = `${uid}-body`
   const trapRef = useFocusTrap(open)
+  const scopeRef = useRef<HTMLSpanElement | null>(null)
   const { locale } = useConfig()
   const closeAriaLabel = locale?.drawer?.closeAriaLabel ?? 'Close'
 
@@ -108,10 +126,11 @@ export function Drawer({
   }
 
   const transitionName = PLACEMENT_TRANSITION[placement] ?? 'sg-slide-right'
+  const portalTarget = typeof document !== 'undefined' ? document.body : null
 
-  return (
+  const drawer = (
     <Transition visible={open} name="sg-fade" unmountOnExit duration={300}>
-      <div className="sg-drawer-root">
+      <div className="sg-drawer-root" style={getScopedCssVars(scopeRef.current)}>
         {mask && <div className="sg-drawer-mask" onClick={maskClosable ? onClose : undefined} />}
         <Transition visible={open} name={transitionName} unmountOnExit duration={300}>
           <div
@@ -150,5 +169,12 @@ export function Drawer({
         </Transition>
       </div>
     </Transition>
+  )
+
+  return (
+    <>
+      <span ref={scopeRef} hidden />
+      {portalTarget ? createPortal(drawer, portalTarget) : drawer}
+    </>
   )
 }

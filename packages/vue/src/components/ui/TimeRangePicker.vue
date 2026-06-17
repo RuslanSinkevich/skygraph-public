@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 import SgTimePicker from './TimePicker.vue'
 
 export interface TimeRangePickerProps {
@@ -50,10 +50,12 @@ const props = withDefaults(defineProps<TimeRangePickerProps>(), {
   allowClear: true,
   separator: '→',
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   loading: false,
   open: undefined,
 })
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const cfg = useConfig()
 const clearLabel = computed(() => cfg.value.locale?.input?.clear ?? 'Clear')
@@ -108,7 +110,7 @@ function handleClear(e: MouseEvent) {
 }
 
 function openDropdown() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   setOpen(true)
 }
 
@@ -137,7 +139,7 @@ const wrapperCls = computed(() =>
         'sg-timepicker-range',
         `sg-timepicker-${props.size}`,
         isOpen.value ? 'sg-timepicker-open' : '',
-        props.disabled || props.loading ? 'sg-timepicker-disabled' : '',
+        resolvedDisabled.value || props.loading ? 'sg-timepicker-disabled' : '',
         props.loading ? 'sg-timepicker-loading' : '',
       ]
         .filter(Boolean)
@@ -152,7 +154,7 @@ const wrapperCls = computed(() =>
       role="combobox"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      :aria-disabled="disabled"
+      :aria-disabled="resolvedDisabled"
       @click="openDropdown"
     >
       <span :class="current[0] ? '' : 'sg-timepicker-placeholder'">

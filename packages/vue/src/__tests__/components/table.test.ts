@@ -131,7 +131,9 @@ describe('SgTable', () => {
     expect(wrapper.text()).toContain('User 10')
   })
 
-  it('column filter applies single-value filter', async () => {
+  it('column filter narrows rows via checklist popover', async () => {
+    // Mirrors React's `FilterDropdown`: a ▾ trigger opens a checkbox/radio
+    // checklist with Reset/Confirm; confirming applies the selection.
     const cols = [
       {
         key: 'role',
@@ -151,13 +153,16 @@ describe('SgTable', () => {
     })
     const wrapper = mount(Wrapper)
     expect(wrapper.findAll('.sg-table-row-clickable').length).toBe(3)
-    const select = wrapper.find('.sg-table-filter-select')
-    await select.find('.sg-select-selector').trigger('click')
+    await wrapper.find('.sg-table-filter-trigger').trigger('click')
     await nextTick()
-    const options = wrapper.findAll('.sg-table-filter-select .sg-select-option')
-    const engineerOpt = options.find((o) => o.text().includes('Engineer'))
-    expect(engineerOpt).toBeTruthy()
-    await engineerOpt!.trigger('click')
+    const items = wrapper.findAll('.sg-table-filter-item')
+    const engineer = items.find((i) => i.text().includes('Engineer'))
+    expect(engineer).toBeTruthy()
+    await engineer!.find('input').trigger('change')
+    await nextTick()
+    // The primary (last) action button confirms the draft selection.
+    const actions = wrapper.findAll('.sg-table-filter-actions button')
+    await actions[actions.length - 1].trigger('click')
     await nextTick()
     const rows = wrapper.findAll('.sg-table-row-clickable')
     expect(rows.length).toBe(1)
@@ -200,7 +205,7 @@ describe('SgTable', () => {
     expect(wrapper.findAll('.sg-table-cell-selection .sg-checkbox').length).toBeGreaterThan(0)
   })
 
-  it('column filter uses SgSelect (no raw <select>)', () => {
+  it('column filter uses SgCheckbox checklist (no raw <select>)', () => {
     const cols = [
       {
         key: 'role',
@@ -209,7 +214,11 @@ describe('SgTable', () => {
       },
     ]
     const wrapper = mount(SgTable, { props: { columns: cols, data: sampleData } })
-    expect(wrapper.find('.sg-table-filter-select.sg-select').exists()).toBe(true)
+    // Canonical filter UI (React parity): ▾ trigger + SgCheckbox checklist,
+    // never a raw <select>.
+    expect(wrapper.find('.sg-table-filter-trigger').exists()).toBe(true)
+    expect(wrapper.find('.sg-table-filter-item .sg-checkbox').exists()).toBe(true)
+    expect(wrapper.find('select').exists()).toBe(false)
   })
 
   it('pagination uses SgPagination (no raw button.sg-table-pagination-next)', () => {

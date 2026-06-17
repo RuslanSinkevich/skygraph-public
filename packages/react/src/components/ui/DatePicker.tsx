@@ -29,6 +29,28 @@ function cloneDate(d: Date): Date {
   return new Date(d.getTime())
 }
 
+/** Sunday-based start of the week containing `d` (matches the grid's `Su…Sa` header). */
+function startOfWeek(d: Date): Date {
+  const s = startOfDay(d)
+  s.setDate(s.getDate() - s.getDay())
+  return s
+}
+
+/** Sunday-based end of the week containing `d`. */
+function endOfWeek(d: Date): Date {
+  const e = startOfWeek(d)
+  e.setDate(e.getDate() + 6)
+  return e
+}
+
+/** Week-of-year number (Sunday-based), used for the `week` picker display. */
+function getWeekOfYear(d: Date): number {
+  const oneJan = new Date(d.getFullYear(), 0, 1)
+  const dayOfYear =
+    Math.floor((startOfDay(d).getTime() - startOfDay(oneJan).getTime()) / 86400000) + 1
+  return Math.ceil((dayOfYear + oneJan.getDay()) / 7)
+}
+
 /**
  * Coerce arbitrary input into a valid `Date` or `null`.
  *
@@ -702,6 +724,7 @@ export function DatePicker({
 
   const timeConfig: ShowTimeConfig = typeof showTime === 'object' ? showTime : {}
   const hasTime = !!showTime
+  const isWeek = picker === 'week'
   const fmt =
     formatProp ??
     (hasTime
@@ -884,7 +907,9 @@ export function DatePicker({
     if (e.key === 'Escape') closeDropdown()
   }
 
-  const displayText = isInputting ? inputText : currentValue ? formatDate(currentValue, fmt) : ''
+  const formatValue = (d: Date): string =>
+    isWeek ? `${d.getFullYear()}-W${String(getWeekOfYear(d)).padStart(2, '0')}` : formatDate(d, fmt)
+  const displayText = isInputting ? inputText : currentValue ? formatValue(currentValue) : ''
 
   const wrapperCls = unstyled
     ? (className ?? '')
@@ -970,7 +995,9 @@ export function DatePicker({
                 <CalendarPanel
                   viewYear={viewYear}
                   viewMonth={viewMonth}
-                  selectedDate={currentValue}
+                  selectedDate={isWeek ? null : currentValue}
+                  rangeStart={isWeek && currentValue ? startOfWeek(currentValue) : undefined}
+                  rangeEnd={isWeek && currentValue ? endOfWeek(currentValue) : undefined}
                   disabledDate={disabledDate}
                   onSelect={handleDateSelect}
                   onMonthChange={(d) => {
@@ -1115,8 +1142,16 @@ export function RangePicker({
   const [internalOpen, setInternalOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState<0 | 1>(0)
   const [hoverDate, setHoverDate] = useState<Date | null>(null)
+  // In-progress selection buffer. The range commits only after the
+  // second click (or OK with time), but the first-click start has to be
+  // visible immediately — and in controlled mode the parent prop hasn't
+  // updated yet (no onChange fired), so reading the committed value
+  // would lose the pending start. The draft drives the UI mid-selection;
+  // once committed (or the panel closes) it clears and the controlled
+  // prop takes over again.
+  const [draft, setDraft] = useState<[Date | null, Date | null] | null>(null)
 
-  const currentValue = normalizedValue ?? internalValue
+  const currentValue = draft ?? normalizedValue ?? internalValue
   const isOpen = openProp ?? internalOpen
 
   const now = new Date()
@@ -1137,6 +1172,10 @@ export function RangePicker({
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setInternalOpen(false)
         onOpenChange?.(false)
+        // Abandon an unfinished selection so a half-picked range doesn't
+        // linger and corrupt the next interaction.
+        setDraft(null)
+        setActiveIndex(0)
       }
     }
     document.addEventListener('mousedown', handle)
@@ -1163,7 +1202,10 @@ export function RangePicker({
 
   const handleDateSelect = (date: Date) => {
     if (activeIndex === 0) {
-      setInternalValue([date, null])
+      // First click: buffer the start locally and wait for the end.
+      // The committed value is intentionally left untouched until the
+      // range completes.
+      setDraft([date, null])
       setActiveIndex(1)
     } else {
       let start = currentValue[0]
@@ -1177,9 +1219,12 @@ export function RangePicker({
         s.setHours(tempTimes[0].getHours(), tempTimes[0].getMinutes(), tempTimes[0].getSeconds())
         const e = cloneDate(end)
         e.setHours(tempTimes[1].getHours(), tempTimes[1].getMinutes(), tempTimes[1].getSeconds())
-        setInternalValue([s, e])
+        // Keep the completed-but-uncommitted range in the draft so both
+        // time columns appear; OK commits it.
+        setDraft([s, e])
       } else {
         commitRange([start, end])
+        setDraft(null)
         setInternalOpen(false)
         onOpenChange?.(false)
         setActiveIndex(0)
@@ -1189,6 +1234,7 @@ export function RangePicker({
 
   const handleTimeOk = () => {
     commitRange(currentValue)
+    setDraft(null)
     setInternalOpen(false)
     onOpenChange?.(false)
     setActiveIndex(0)
@@ -1197,6 +1243,7 @@ export function RangePicker({
   const handleClear = (e: React.MouseEvent) => {
     e.stopPropagation()
     commitRange([null, null])
+    setDraft(null)
     setActiveIndex(0)
   }
 
@@ -1206,6 +1253,8 @@ export function RangePicker({
     } else {
       commitRange([val, val])
     }
+    setDraft(null)
+    setActiveIndex(0)
     setInternalOpen(false)
     onOpenChange?.(false)
   }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, toRef, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, ref, toRef, watch } from 'vue'
 import { useFocusTrap } from '../../composables/useFocusTrap'
 import { useConfig } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
@@ -61,6 +61,27 @@ const titleId = `${id}-title`
 const bodyId = `${id}-body`
 const trapRef = useFocusTrap(toRef(props, 'open'))
 
+// `<Teleport>` moves the panel to `<body>`, so CSS variables scoped on a
+// wrapping element no longer cascade into it. Mirror the React adapter: keep a
+// hidden marker at the natural (scoped) location, read its computed `--sg-*`
+// variables on open, and pin them onto the teleported root so per-instance
+// token overrides survive the portal.
+const scopeRef = ref<HTMLElement | null>(null)
+const scopedVars = ref<Record<string, string>>({})
+
+function getScopedCssVars(scope: HTMLElement | null): Record<string, string> {
+  if (!scope || typeof window === 'undefined') return {}
+  const computedStyle = window.getComputedStyle(scope)
+  const vars: Record<string, string> = {}
+  for (let i = 0; i < computedStyle.length; i += 1) {
+    const name = computedStyle.item(i)
+    if (name.startsWith('--sg-')) {
+      vars[name] = computedStyle.getPropertyValue(name)
+    }
+  }
+  return vars
+}
+
 const isHorizontal = computed(() => props.placement === 'left' || props.placement === 'right')
 
 const sizeStyle = computed(() => {
@@ -82,8 +103,12 @@ function handleKeyDown(e: KeyboardEvent) {
 watch(
   () => props.open,
   (open) => {
-    if (open) document.addEventListener('keydown', handleKeyDown)
-    else document.removeEventListener('keydown', handleKeyDown)
+    if (open) {
+      document.addEventListener('keydown', handleKeyDown)
+      scopedVars.value = getScopedCssVars(scopeRef.value)
+    } else {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   },
   { immediate: true },
 )
@@ -104,6 +129,7 @@ const closeAriaLabel = computed(() => cfg.value.locale?.drawer?.closeAriaLabel ?
 </script>
 
 <template>
+  <span ref="scopeRef" hidden />
   <Teleport to="body">
     <template v-if="unstyled">
       <div
@@ -126,7 +152,7 @@ const closeAriaLabel = computed(() => cfg.value.locale?.drawer?.closeAriaLabel ?
     </template>
     <template v-else>
       <SgTransition :visible="open" name="sg-fade" :duration="300">
-        <div class="sg-drawer-root">
+        <div class="sg-drawer-root" :style="scopedVars">
           <div v-if="mask" class="sg-drawer-mask" @click="maskClosable ? onClose() : undefined" />
           <SgTransition :visible="open" :name="transitionName" :duration="300">
             <div

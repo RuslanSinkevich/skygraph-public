@@ -11,6 +11,14 @@
   font-size: var(--sg-font-size-xl);
 }
 
+/* Dark theme: the tertiary text colour already carries a low alpha, and the
+ * extra 0.72 symbol opacity stacked on top made empty stars nearly invisible
+ * on a dark surface. Use an explicit visible grey at full opacity instead. */
+[data-sg-theme='dark'] .sg-rate {
+  --sg-rate-symbol-empty-color: rgba(255, 255, 255, 0.55);
+  --sg-rate-symbol-empty-opacity: 1;
+}
+
 .sg-rate-disabled {
   pointer-events: none;
   opacity: 0.5;

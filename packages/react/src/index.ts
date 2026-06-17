@@ -51,7 +51,7 @@ export type {
 } from './components/ConfigProvider'
 
 // Locale presets
-export { en_US, ru_RU, zh_CN, de_DE, fr_FR, es_ES } from './locales'
+export { en_US, ru_RU, zh_CN, de_DE, fr_FR, es_ES, ja_JP, ko_KR, pt_BR, it_IT } from './locales'
 
 // Hooks
 export { useField } from './hooks/useField'

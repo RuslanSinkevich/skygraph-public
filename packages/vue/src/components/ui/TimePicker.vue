@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface TimePickerProps {
   /** v-model binding (Vue idiom). */
@@ -65,7 +65,7 @@ const props = withDefaults(defineProps<TimePickerProps>(), {
   showNow: true,
   allowClear: true,
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   loading: false,
   open: undefined,
 })
@@ -75,6 +75,8 @@ const emit = defineEmits<{
   (e: 'change', value: string): void
   (e: 'openChange', open: boolean): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 function pad(n: number) {
   return String(n).padStart(2, '0')
@@ -228,7 +230,7 @@ function handleClear(e: MouseEvent) {
 }
 
 function openDropdown() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   setOpen(true)
 }
 
@@ -275,7 +277,7 @@ const wrapperCls = computed(() =>
         'sg-timepicker',
         `sg-timepicker-${props.size}`,
         isOpen.value ? 'sg-timepicker-open' : '',
-        props.disabled || props.loading ? 'sg-timepicker-disabled' : '',
+        resolvedDisabled.value || props.loading ? 'sg-timepicker-disabled' : '',
         props.loading ? 'sg-timepicker-loading' : '',
       ]
         .filter(Boolean)
@@ -305,7 +307,7 @@ function setPm() {
       role="combobox"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      :aria-disabled="disabled"
+      :aria-disabled="resolvedDisabled"
       :aria-label="ariaLabel"
       :aria-labelledby="ariaLabelledby"
       @click="openDropdown"

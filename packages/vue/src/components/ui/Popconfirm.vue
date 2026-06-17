@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { useFocusTrap } from '../../composables/useFocusTrap'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
 import SgTransition from './Transition.vue'
 
@@ -29,7 +29,7 @@ export interface PopconfirmProps {
 
 const props = withDefaults(defineProps<PopconfirmProps>(), {
   placement: 'top',
-  disabled: false,
+  disabled: undefined,
 })
 
 const emit = defineEmits<{
@@ -37,14 +37,14 @@ const emit = defineEmits<{
   (e: 'cancel'): void
 }>()
 
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
+
 defineSlots<{
   default(props: Record<string, never>): unknown
 }>()
 
 const cfg = useConfig()
-const okText = computed(
-  () => props.okText ?? cfg.value.locale?.popconfirm?.okText ?? 'Yes',
-)
+const okText = computed(() => props.okText ?? cfg.value.locale?.popconfirm?.okText ?? 'Yes')
 const cancelText = computed(
   () => props.cancelText ?? cfg.value.locale?.popconfirm?.cancelText ?? 'No',
 )
@@ -55,7 +55,7 @@ const trapRef = useFocusTrap(open)
 const popconfirmId = genId()
 
 function handleTrigger() {
-  if (!props.disabled) open.value = !open.value
+  if (!resolvedDisabled.value) open.value = !open.value
 }
 
 function handleConfirm() {
@@ -87,9 +87,7 @@ onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleDocumentClick)
 })
 
-const popoverClasses = computed(
-  () => `sg-popconfirm sg-popconfirm-${props.placement}`,
-)
+const popoverClasses = computed(() => `sg-popconfirm sg-popconfirm-${props.placement}`)
 </script>
 
 <template>
@@ -115,12 +113,7 @@ const popoverClasses = computed(
     </template>
     <template v-else>
       <SgTransition :visible="open" name="sg-fade">
-        <div
-          ref="trapRef"
-          :id="popconfirmId"
-          role="alertdialog"
-          :class="popoverClasses"
-        >
+        <div ref="trapRef" :id="popconfirmId" role="alertdialog" :class="popoverClasses">
           <div class="sg-popconfirm-arrow" />
           <div class="sg-popconfirm-inner">
             <div class="sg-popconfirm-title">

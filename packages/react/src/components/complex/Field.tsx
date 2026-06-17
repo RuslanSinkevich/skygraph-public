@@ -1,4 +1,4 @@
-import React, { useEffect, useId, useRef } from 'react'
+import React, { cloneElement, isValidElement, useEffect, useId, useRef } from 'react'
 import { useFormContext } from './FormContext'
 import { useField } from '../../hooks/useField'
 import { Input } from '../ui/Input'
@@ -126,6 +126,7 @@ export function Field({
   noStyle,
   normalize,
   getValueFromEvent: _getValueFromEvent,
+  valuePropName,
   validateFirst,
   validateStatus: manualStatus,
   hasFeedback,
@@ -172,6 +173,27 @@ export function Field({
         field.onChange(normalized)
       }
     : field.onChange
+
+  // Which prop carries the value on the controlled child. `value` for
+  // most controls; `checked` for boolean toggles (Switch / Checkbox).
+  const valueProp = valuePropName ?? 'value'
+
+  // Extracts the next value from a control's change callback. SkyGraph
+  // controls call `onChange(value)` with a bare value, but we also
+  // tolerate raw DOM change events (`e.target.value` / `.checked`) so a
+  // native `<input>` dropped into `<Field>` binds too. `getValueFromEvent`
+  // overrides everything when supplied.
+  const extractValue = (...args: unknown[]): unknown => {
+    if (_getValueFromEvent) return _getValueFromEvent(...args)
+    const first = args[0]
+    if (first !== null && typeof first === 'object' && 'target' in (first as object)) {
+      const target = (first as { target: HTMLInputElement | null }).target
+      if (target && typeof target === 'object' && 'value' in target) {
+        return valueProp === 'checked' ? target.checked : target.value
+      }
+    }
+    return first
+  }
 
   const effectiveStatus = manualStatus ?? field.status
   const hasErrors = field.errors.length > 0
@@ -256,6 +278,45 @@ export function Field({
     }
 
     if (children) {
+      // A single control element is wired to the form by injecting the
+      // value prop + a change handler. Without this the control keeps
+      // its own internal state and the form never sees the value — so
+      // required/validator rules never clear after a choice and submit
+      // reads stale defaults. Composed with the child's own handlers so
+      // user-supplied `onChange` / `onBlur` still fire.
+      if (isValidElement(children)) {
+        const childProps = children.props as Record<string, unknown>
+        const childOnChange = childProps.onChange as ((...a: unknown[]) => void) | undefined
+        const childOnBlur = childProps.onBlur as ((...a: unknown[]) => void) | undefined
+
+        const injected: Record<string, unknown> = {
+          [valueProp]: field.value,
+          onChange: (...args: unknown[]) => {
+            wrappedOnChange(extractValue(...args))
+            childOnChange?.(...args)
+          },
+          onBlur: (...args: unknown[]) => {
+            field.onBlur()
+            childOnBlur?.(...args)
+          },
+        }
+        if (childProps.id === undefined) injected.id = fieldId
+        if (childProps.disabled === undefined && disabled) injected.disabled = true
+        if (childProps['aria-describedby'] === undefined && describedBy) {
+          injected['aria-describedby'] = describedBy
+        }
+        if (childProps['aria-invalid'] === undefined && hasErrors) {
+          injected['aria-invalid'] = true
+        }
+
+        return (
+          <>
+            {cloneElement(children, injected)}
+            {feedbackIcon}
+          </>
+        )
+      }
+
       return (
         <>
           {children}

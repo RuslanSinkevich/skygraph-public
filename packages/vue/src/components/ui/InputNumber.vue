@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface InputNumberProps {
   /** v-model binding (Vue idiom). */
@@ -31,7 +32,7 @@ export interface InputNumberProps {
 const props = withDefaults(defineProps<InputNumberProps>(), {
   step: 1,
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   loading: false,
 })
 
@@ -40,6 +41,8 @@ const emit = defineEmits<{
   (e: 'change', value: number | null): void
   (e: 'blur'): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const initial: number | null = props.modelValue ?? props.value ?? props.defaultValue ?? null
 const internalValue = ref<number | null>(initial)
@@ -95,12 +98,12 @@ function onInput(e: Event) {
 }
 
 function increment() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   update((currentValue.value ?? 0) + props.step)
 }
 
 function decrement() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   update((currentValue.value ?? 0) - props.step)
 }
 
@@ -116,7 +119,7 @@ const maxDisabled = computed(
   <span :class="wrapperClass">
     <button
       :class="unstyled ? '' : 'sg-input-number-btn sg-input-number-minus'"
-      :disabled="disabled || loading || minDisabled"
+      :disabled="resolvedDisabled || loading || minDisabled"
       tabindex="-1"
       @click="decrement"
     >
@@ -132,13 +135,13 @@ const maxDisabled = computed(
       :class="unstyled ? '' : 'sg-input-number-input'"
       :value="currentValue ?? ''"
       :placeholder="placeholder"
-      :disabled="disabled || loading"
+      :disabled="resolvedDisabled || loading"
       @input="onInput"
       @blur="emit('blur')"
     />
     <button
       :class="unstyled ? '' : 'sg-input-number-btn sg-input-number-plus'"
-      :disabled="disabled || loading || maxDisabled"
+      :disabled="resolvedDisabled || loading || maxDisabled"
       tabindex="-1"
       @click="increment"
     >

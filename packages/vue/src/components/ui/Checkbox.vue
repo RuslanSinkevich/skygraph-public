@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, useSlots, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface CheckboxProps {
   /** v-model binding (Vue idiom). */
@@ -29,7 +30,7 @@ const props = withDefaults(defineProps<CheckboxProps>(), {
   checked: undefined,
   defaultChecked: undefined,
   indeterminate: undefined,
-  disabled: false,
+  disabled: undefined,
   loading: false,
   unstyled: false,
 })
@@ -42,6 +43,8 @@ const emit = defineEmits<{
 defineSlots<{
   default(props: Record<string, never>): unknown
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults(props, {})
 
 const internal = ref<boolean>(props.modelValue ?? props.checked ?? props.defaultChecked ?? false)
 
@@ -87,7 +90,7 @@ const wrapperClass = computed(() =>
     ? ''
     : [
         'sg-checkbox',
-        props.disabled || props.loading ? 'sg-checkbox-disabled' : '',
+        resolvedDisabled.value || props.loading ? 'sg-checkbox-disabled' : '',
         props.loading ? 'sg-checkbox-loading' : '',
       ]
         .filter(Boolean)
@@ -106,7 +109,7 @@ const hasDefaultSlot = computed(() => slots.default !== undefined)
       :class="unstyled ? '' : 'sg-checkbox-input'"
       :aria-checked="current"
       :checked="current"
-      :disabled="disabled || loading"
+      :disabled="resolvedDisabled || loading"
       @change="onChange"
     />
     <span v-if="!unstyled" class="sg-checkbox-box" aria-hidden="true" />

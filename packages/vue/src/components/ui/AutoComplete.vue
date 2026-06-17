@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface AutoCompleteOption {
   /** Optional display text — falls back to `value`. */
@@ -30,12 +31,14 @@ export interface AutoCompleteProps {
 }
 
 const props = withDefaults(defineProps<AutoCompleteProps>(), {
-  disabled: false,
+  disabled: undefined,
   loading: false,
   size: 'middle',
 })
 
-const isDisabled = computed(() => props.disabled || props.loading)
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
+
+const isDisabled = computed(() => resolvedDisabled.value || props.loading)
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: string): void

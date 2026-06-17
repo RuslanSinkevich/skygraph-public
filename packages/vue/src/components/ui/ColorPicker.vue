@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 
 export interface ColorPickerProps {
   /** v-model binding (Vue idiom). */
@@ -40,7 +40,7 @@ const props = withDefaults(defineProps<ColorPickerProps>(), {
   format: 'hex',
   trigger: 'click',
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   open: undefined,
 })
 
@@ -49,6 +49,8 @@ const emit = defineEmits<{
   (e: 'change', value: string): void
   (e: 'openChange', open: boolean): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const cfg = useConfig()
 const pickColorLabel = computed(() => cfg.value.locale?.colorPicker?.pickColor ?? 'Pick color')
@@ -232,12 +234,12 @@ function emitChange(hex: string) {
 }
 
 function handleTriggerClick() {
-  if (props.disabled || props.trigger !== 'click') return
+  if (resolvedDisabled.value || props.trigger !== 'click') return
   setOpenState(!isOpen.value)
 }
 
 function handleMouseEnter() {
-  if (props.disabled || props.trigger !== 'hover') return
+  if (resolvedDisabled.value || props.trigger !== 'hover') return
   if (hoverTimer) clearTimeout(hoverTimer)
   setOpenState(true)
 }
@@ -344,7 +346,7 @@ const wrapperClass = computed(() =>
     : [
         'sg-colorpicker-wrapper',
         `sg-colorpicker-${props.size}`,
-        props.disabled ? 'sg-colorpicker-disabled' : '',
+        resolvedDisabled.value ? 'sg-colorpicker-disabled' : '',
       ]
         .filter(Boolean)
         .join(' '),
@@ -368,7 +370,7 @@ const satBackground = computed(
     <button
       type="button"
       :class="unstyled ? undefined : 'sg-colorpicker-trigger'"
-      :disabled="disabled"
+      :disabled="resolvedDisabled"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
       :aria-label="ariaLabel ?? pickColorLabel"

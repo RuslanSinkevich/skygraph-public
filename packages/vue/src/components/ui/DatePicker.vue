@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 
 export type DatePickerMode = 'date' | 'month' | 'year'
 
@@ -75,7 +75,7 @@ const props = withDefaults(defineProps<DatePickerProps>(), {
   placement: 'bottomLeft',
   inputReadOnly: false,
   size: 'middle',
-  disabled: false,
+  disabled: undefined,
   loading: false,
   open: undefined,
 })
@@ -105,6 +105,7 @@ const DEFAULT_MONTH_NAMES = [
 const DEFAULT_DAY_NAMES = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
 const config = useConfig()
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 const monthNames = computed(() => config.value.locale?.calendar?.monthNames ?? DEFAULT_MONTH_NAMES)
 const dayNames = computed(() => config.value.locale?.calendar?.dayNames ?? DEFAULT_DAY_NAMES)
 const todayBtnLabel = computed(() => config.value.locale?.calendar?.today ?? 'Today')
@@ -252,7 +253,7 @@ function commit(d: Date | null) {
 }
 
 function openDropdown() {
-  if (props.disabled || props.loading) return
+  if (resolvedDisabled.value || props.loading) return
   setOpen(true)
   pickerLevel.value = props.picker === 'year' ? 'year' : props.picker === 'month' ? 'month' : 'date'
   if (current.value) {
@@ -464,7 +465,7 @@ const wrapperCls = computed(() =>
         'sg-datepicker',
         `sg-datepicker-${props.size}`,
         isOpen.value ? 'sg-datepicker-open' : '',
-        props.disabled || props.loading ? 'sg-datepicker-disabled' : '',
+        resolvedDisabled.value || props.loading ? 'sg-datepicker-disabled' : '',
         props.loading ? 'sg-datepicker-loading' : '',
       ]
         .filter(Boolean)
@@ -536,7 +537,7 @@ watch([isOpen, () => tempTime.value], async () => {
       role="combobox"
       aria-haspopup="dialog"
       :aria-expanded="isOpen"
-      :aria-disabled="disabled"
+      :aria-disabled="resolvedDisabled"
       @click="openDropdown"
     >
       <span
@@ -555,7 +556,7 @@ watch([isOpen, () => tempTime.value], async () => {
         class="sg-datepicker-input-text"
         :value="displayText"
         :placeholder="placeholder"
-        :readonly="disabled"
+        :readonly="resolvedDisabled"
         @input="handleInputChange"
         @keydown="handleInputKeyDown"
         @focus="openDropdown"

@@ -93,6 +93,15 @@
   min-width: 0;
 }
 
+/* Horizontal: let the content row span the full width of its (flex:1) item
+ * so the connector tail inside the title — which is `flex:1` — can stretch
+ * across the gap to the next step. Without this the content shrinks to its
+ * text width, the tail collapses to its `min-width`, and the steps read as
+ * disconnected blobs separated by huge empty gaps. */
+.sg-steps-horizontal .sg-steps-item-content {
+  flex: 1;
+}
+
 .sg-steps-item-title {
   display: flex;
   align-items: center;

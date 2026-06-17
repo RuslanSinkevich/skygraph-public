@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process'
-import { mkdirSync, cpSync, rmSync, existsSync, copyFileSync } from 'node:fs'
+import { mkdirSync, cpSync, rmSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -31,8 +31,8 @@ mkdirSync(output, { recursive: true })
 console.log('\n[1/8] Building workspace packages...')
 run('pnpm -r --filter "./packages/*" build')
 
-console.log('\n[2/8] Building landing page...')
-copyFileSync(join(repoRoot, 'landing/index.html'), join(output, 'index.html'))
+console.log('\n[2/8] Copying landing page and SEO assets...')
+copyDir(join(repoRoot, 'landing'), output)
 
 console.log('\n[3/8] Type-checking React demo...')
 run('pnpm --filter demo exec tsc -b')

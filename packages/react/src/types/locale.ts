@@ -363,6 +363,40 @@ export interface TreeSelectLocale {
   noMatches?: string
 }
 
+/** Locale strings for the Tree component (consumed from `ConfigProvider`). */
+export interface TreeLocale {
+  /** Empty tree placeholder. */
+  emptyText?: string
+  /** Search field placeholder. */
+  searchPlaceholder?: string
+  /** Accessible label for the clear-search (×) button. */
+  clearSearch?: string
+}
+
+/** Locale strings for the List component. */
+export interface ListLocale {
+  /** Accessible label announced while the list is loading. */
+  loading?: string
+}
+
+/** Locale strings for the Diagram component. */
+export interface DiagramLocale {
+  /** Accessible label for the diagram root. */
+  ariaLabel?: string
+}
+
+/** Locale strings for the ColorPicker component. */
+export interface ColorPickerLocale {
+  /** Accessible label for the trigger swatch button. */
+  pickColor?: string
+}
+
+/** Locale strings for the PinInput component. */
+export interface PinInputLocale {
+  /** Accessible label for the PIN input group. */
+  ariaLabel?: string
+}
+
 /** Locale strings for the Dashboard / DashboardEditor components. */
 export interface DashboardLocale {
   /** Accessible label for the dashboard root. */
@@ -485,6 +519,16 @@ export interface SgLocale {
   cascader?: CascaderLocale
   /** TreeSelect locale overrides. */
   treeSelect?: TreeSelectLocale
+  /** Tree locale overrides. */
+  tree?: TreeLocale
+  /** List locale overrides. */
+  list?: ListLocale
+  /** Diagram locale overrides. */
+  diagram?: DiagramLocale
+  /** ColorPicker locale overrides. */
+  colorPicker?: ColorPickerLocale
+  /** PinInput locale overrides. */
+  pinInput?: PinInputLocale
   /** Dashboard / DashboardEditor locale overrides. */
   dashboard?: DashboardLocale
   /** Gantt locale overrides. */

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, onBeforeUnmount, toRef, watch } from 'vue'
+import { computed, getCurrentInstance, onBeforeUnmount, ref, toRef, watch } from 'vue'
 import { useFocusTrap } from '../../composables/useFocusTrap'
 import { useConfig } from './ConfigProvider.vue'
 import SgButton from './Button.vue'
@@ -66,6 +66,27 @@ const bodyId = `${id}-body`
 
 const trapRef = useFocusTrap(toRef(props, 'open'))
 
+// `<Teleport>` moves the dialog to `<body>`, so CSS variables scoped on a
+// wrapping element no longer cascade into it (React renders the modal inline,
+// so it gets them for free). Keep a hidden marker at the natural (scoped)
+// location, read its computed `--sg-*` variables on open and pin them onto the
+// teleported mask so per-instance token overrides survive the portal.
+const scopeRef = ref<HTMLElement | null>(null)
+const scopedVars = ref<Record<string, string>>({})
+
+function getScopedCssVars(scope: HTMLElement | null): Record<string, string> {
+  if (!scope || typeof window === 'undefined') return {}
+  const computedStyle = window.getComputedStyle(scope)
+  const vars: Record<string, string> = {}
+  for (let i = 0; i < computedStyle.length; i += 1) {
+    const name = computedStyle.item(i)
+    if (name.startsWith('--sg-')) {
+      vars[name] = computedStyle.getPropertyValue(name)
+    }
+  }
+  return vars
+}
+
 // Width is forwarded through the `--sg-modal-width` CSS variable (read by
 // `.sg-modal` in modal.css) instead of an inline `width`, so it matches the
 // React adapter and stays overridable via the same token.
@@ -91,6 +112,7 @@ watch(
   (open) => {
     if (open) {
       document.addEventListener('keydown', handleKeyDown)
+      scopedVars.value = getScopedCssVars(scopeRef.value)
     } else {
       document.removeEventListener('keydown', handleKeyDown)
     }
@@ -109,6 +131,7 @@ const hasCustomFooter = computed<boolean>(() => hasFooterSlot.value && props.foo
 </script>
 
 <template>
+  <span ref="scopeRef" hidden />
   <Teleport to="body">
     <template v-if="unstyled">
       <div
@@ -133,7 +156,7 @@ const hasCustomFooter = computed<boolean>(() => hasFooterSlot.value && props.foo
     </template>
     <template v-else>
       <SgTransition :visible="open" name="sg-fade" :unmount-on-exit="true">
-        <div class="sg-modal-mask" @click="onClose">
+        <div class="sg-modal-mask" :style="scopedVars" @click="onClose">
           <SgTransition :visible="open" name="sg-zoom" :unmount-on-exit="true">
             <div
               ref="trapRef"

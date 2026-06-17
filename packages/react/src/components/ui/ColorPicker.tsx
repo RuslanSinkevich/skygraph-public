@@ -1,10 +1,4 @@
-import React, {
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-  type ReactNode,
-} from 'react'
+import React, { useState, useRef, useEffect, useCallback, type ReactNode } from 'react'
 import { useConfig } from '../ConfigProvider'
 import type { BaseComponentProps, InteractiveProps, SizableProps } from '../../types'
 
@@ -50,18 +44,13 @@ interface HSV {
 function hexToRgb(hex: string): [number, number, number] {
   const clean = hex.replace('#', '')
   const full =
-    clean.length === 3
-      ? clean[0] + clean[0] + clean[1] + clean[1] + clean[2] + clean[2]
-      : clean
+    clean.length === 3 ? clean[0] + clean[0] + clean[1] + clean[1] + clean[2] + clean[2] : clean
   const num = parseInt(full, 16)
   return [(num >> 16) & 255, (num >> 8) & 255, num & 255]
 }
 
 function rgbToHex(r: number, g: number, b: number): string {
-  return (
-    '#' +
-    [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
-  )
+  return '#' + [r, g, b].map((v) => Math.round(v).toString(16).padStart(2, '0')).join('')
 }
 
 function rgbToHsv(r: number, g: number, b: number): HSV {
@@ -101,22 +90,34 @@ function hsvToRgb(h: number, s: number, v: number): [number, number, number] {
   const t = v * (1 - (1 - f) * s)
   switch (i % 6) {
     case 0:
-      r = v; g = t; b = p
+      r = v
+      g = t
+      b = p
       break
     case 1:
-      r = q; g = v; b = p
+      r = q
+      g = v
+      b = p
       break
     case 2:
-      r = p; g = v; b = t
+      r = p
+      g = v
+      b = t
       break
     case 3:
-      r = p; g = q; b = v
+      r = p
+      g = q
+      b = v
       break
     case 4:
-      r = t; g = p; b = v
+      r = t
+      g = p
+      b = v
       break
     case 5:
-      r = v; g = p; b = q
+      r = v
+      g = p
+      b = q
       break
   }
   return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)]
@@ -145,9 +146,7 @@ function parseColor(input: string): string | null {
         : trimmed
     return full.toLowerCase()
   }
-  const rgbMatch = trimmed.match(
-    /^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i
-  )
+  const rgbMatch = trimmed.match(/^rgb\(\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*\)$/i)
   if (rgbMatch) {
     const [, rs, gs, bs] = rgbMatch
     const r = Math.min(255, parseInt(rs))
@@ -190,10 +189,9 @@ export function ColorPicker({
   const config = useConfig()
   const size = sizeProp ?? config.size ?? 'middle'
   const disabled = disabledProp ?? config.disabled ?? false
+  const pickColorLabel = config.locale?.colorPicker?.pickColor ?? 'Pick color'
 
-  const [internalColor, setInternalColor] = useState(
-    value ?? defaultValue ?? DEFAULT_COLOR
-  )
+  const [internalColor, setInternalColor] = useState(value ?? defaultValue ?? DEFAULT_COLOR)
   const currentHex = (value ?? internalColor).toLowerCase()
 
   const [hsv, setHsv] = useState<HSV>(() => {
@@ -225,7 +223,7 @@ export function ColorPicker({
       setTextInput(formatColor(hex, format))
       onChange?.(formatColor(hex, format))
     },
-    [format, onChange]
+    [format, onChange],
   )
 
   const setOpenState = (v: boolean) => {
@@ -243,7 +241,7 @@ export function ColorPicker({
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen])
 
   /* Trigger handlers */
@@ -341,40 +339,60 @@ export function ColorPicker({
   const renderText = () => {
     if (!showText) return null
     if (typeof showText === 'function') return showText(formatColor(currentHex, format))
-    return <span className={unstyled ? undefined : 'sg-colorpicker-text'}>{formatColor(currentHex, format)}</span>
+    return (
+      <span className={unstyled ? undefined : 'sg-colorpicker-text'}>
+        {formatColor(currentHex, format)}
+      </span>
+    )
   }
 
   const hueColor = hsvToHex(hsv.h, 1, 1)
 
   if (unstyled) {
     return (
-      <div ref={wrapperRef} className={className} style={{ ...style, position: 'relative', display: 'inline-block' }}>
+      <div
+        ref={wrapperRef}
+        className={className}
+        style={{ ...style, position: 'relative', display: 'inline-block' }}
+      >
         <button
           type="button"
           disabled={disabled}
           aria-haspopup="dialog"
           aria-expanded={isOpen}
-          aria-label={ariaLabel}
+          aria-label={ariaLabel ?? pickColorLabel}
           aria-labelledby={ariaLabelledBy}
           onClick={handleTriggerClick}
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <span style={{ display: 'inline-block', width: 16, height: 16, background: currentHex }} />
+          <span
+            style={{ display: 'inline-block', width: 16, height: 16, background: currentHex }}
+          />
           {renderText()}
         </button>
         {isOpen && (
           <div onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
             <div
               ref={satPanelRef}
-              style={{ width: 200, height: 150, position: 'relative', background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})` }}
+              style={{
+                width: 200,
+                height: 150,
+                position: 'relative',
+                background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})`,
+              }}
               onPointerDown={handleSatPointerDown}
               onPointerMove={handleSatPointerMove}
               onPointerUp={handleSatPointerUp}
             />
             <div
               ref={hueBarRef}
-              style={{ width: 200, height: 12, background: 'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)' }}
+              style={{
+                width: 200,
+                height: 12,
+                background:
+                  'linear-gradient(to right, #f00 0%, #ff0 17%, #0f0 33%, #0ff 50%, #00f 67%, #f0f 83%, #f00 100%)',
+              }}
               onPointerDown={handleHuePointerDown}
               onPointerMove={handleHuePointerMove}
               onPointerUp={handleHuePointerUp}
@@ -405,7 +423,12 @@ export function ColorPicker({
   return (
     <div
       ref={wrapperRef}
-      className={['sg-colorpicker-wrapper', sizeClass, disabled ? 'sg-colorpicker-disabled' : '', className]
+      className={[
+        'sg-colorpicker-wrapper',
+        sizeClass,
+        disabled ? 'sg-colorpicker-disabled' : '',
+        className,
+      ]
         .filter(Boolean)
         .join(' ')}
       style={style}
@@ -420,7 +443,7 @@ export function ColorPicker({
         disabled={disabled}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
-        aria-label={ariaLabel}
+        aria-label={ariaLabel ?? pickColorLabel}
         aria-labelledby={ariaLabelledBy}
       >
         <span className="sg-colorpicker-swatch" style={{ background: currentHex }} />
@@ -438,7 +461,9 @@ export function ColorPicker({
           <div
             ref={satPanelRef}
             className="sg-colorpicker-saturation"
-            style={{ background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})` }}
+            style={{
+              background: `linear-gradient(to top, #000, transparent), linear-gradient(to right, #fff, ${hueColor})`,
+            }}
             onPointerDown={handleSatPointerDown}
             onPointerMove={handleSatPointerMove}
             onPointerUp={handleSatPointerUp}
@@ -461,18 +486,12 @@ export function ColorPicker({
             onPointerMove={handleHuePointerMove}
             onPointerUp={handleHuePointerUp}
           >
-            <div
-              className="sg-colorpicker-hue-cursor"
-              style={{ left: `${hsv.h * 100}%` }}
-            />
+            <div className="sg-colorpicker-hue-cursor" style={{ left: `${hsv.h * 100}%` }} />
           </div>
 
           {/* Color preview + text input */}
           <div className="sg-colorpicker-input-row">
-            <span
-              className="sg-colorpicker-preview"
-              style={{ background: currentHex }}
-            />
+            <span className="sg-colorpicker-preview" style={{ background: currentHex }} />
             <input
               className="sg-colorpicker-input"
               value={textInput}

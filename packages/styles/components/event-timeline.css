@@ -15,6 +15,11 @@
   align-items: flex-start;
   overflow-x: auto;
   padding-bottom: var(--sg-padding-md);
+  /* Drop the flex gap horizontally: it broke the marker rail into disjoint
+   * segments (one per card) which read as a dashed, glitchy line. Items carry
+   * their own horizontal padding for spacing instead, and the rail below is
+   * extended to bridge that padding so it renders as one continuous track. */
+  gap: 0;
 }
 
 .sg-event-timeline-group {
@@ -49,14 +54,43 @@
   /* Slightly larger dot + brighter halo when the parent item is hovered.
    * Both are driven by the new `--sg-event-timeline-dot-shadow-hover`
    * token so the affordance remains theme-correct. */
-  transform: scale(1.20);
+  transform: scale(1.2);
   box-shadow: var(--sg-event-timeline-dot-shadow-hover);
 }
 
 .sg-event-timeline-horizontal .sg-event-timeline-item {
   flex-direction: column;
+  align-items: flex-start;
   min-width: 160px;
   padding: 0 var(--sg-padding-md);
+  position: relative;
+}
+
+/* Horizontal mode: lay the marker out as a full-width rail so the dots line up
+ * on a single track instead of floating above each card. */
+.sg-event-timeline-horizontal .sg-event-timeline-marker {
+  width: 100%;
+  justify-content: flex-start;
+  margin-bottom: var(--sg-margin-sm);
+  position: relative;
+}
+
+.sg-event-timeline-horizontal .sg-event-timeline-marker::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  /* Extend across the item's own horizontal padding so adjacent items'
+   * rails meet edge-to-edge into one continuous line. */
+  left: calc(-1 * var(--sg-padding-md));
+  right: calc(-1 * var(--sg-padding-md));
+  height: 2px;
+  background: var(--sg-color-border-secondary);
+  transform: translateY(-50%);
+}
+
+.sg-event-timeline-horizontal .sg-event-timeline-dot {
+  position: relative;
+  z-index: var(--sg-z-base);
 }
 
 .sg-event-timeline-marker {

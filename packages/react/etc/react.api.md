@@ -1557,6 +1557,12 @@ export interface InteractiveProps {
     loading?: boolean;
 }
 
+// @public
+export const it_IT: SgLocale;
+
+// @public
+export const ja_JP: SgLocale;
+
 // @public (undocumented)
 export interface JSONSchema extends JSONSchemaProperty {
     // (undocumented)
@@ -1613,6 +1619,9 @@ export function jsonSchemaToFields(schema: JSONSchema): AutoFieldConfig[];
 
 // @public (undocumented)
 export function jsonSchemaToRules(schema: JSONSchema): Record<string, Rule[]>;
+
+// @public
+export const ko_KR: SgLocale;
 
 // @public (undocumented)
 export const LineChart: React$1.ForwardRefExoticComponent<LineChartProps & React$1.RefAttributes<ChartRef>>;
@@ -1809,12 +1818,14 @@ export const notification: {
 
 // @public
 export interface NotificationConfig {
+    className?: string;
     description?: React__default.ReactNode;
     duration?: number;
     key?: string;
     message: React__default.ReactNode;
     onClose?: () => void;
     placement?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft';
+    style?: React__default.CSSProperties;
     // Warning: (ae-forgotten-export) The symbol "NotificationType" needs to be exported by the entry point index.d.ts
     type?: NotificationType;
 }
@@ -1992,6 +2003,9 @@ export interface ProgressProps extends BaseComponentProps, SizableProps {
     type?: 'line' | 'circle';
     width?: number;
 }
+
+// @public
+export const pt_BR: SgLocale;
 
 // @public
 export function RadioGroup(input: RadioGroupProps): react_jsx_runtime.JSX.Element;
@@ -2374,10 +2388,14 @@ export interface SgLocale {
     carousel?: CarouselLocale;
     cascader?: CascaderLocale;
     charts?: ChartsLocale;
+    // Warning: (ae-forgotten-export) The symbol "ColorPickerLocale" needs to be exported by the entry point index.d.ts
+    colorPicker?: ColorPickerLocale;
     dashboard?: DashboardLocale;
     // Warning: (ae-forgotten-export) The symbol "DataGridLocale_2" needs to be exported by the entry point index.d.ts
     dataGrid?: DataGridLocale_2;
     datePicker?: DatePickerLocale;
+    // Warning: (ae-forgotten-export) The symbol "DiagramLocale" needs to be exported by the entry point index.d.ts
+    diagram?: DiagramLocale;
     drawer?: DrawerLocale;
     empty?: EmptyLocale;
     form?: FormLocale;
@@ -2385,9 +2403,13 @@ export interface SgLocale {
     inlineEdit?: InlineEditLocale;
     input?: InputLocale;
     inputPassword?: InputPasswordLocale;
+    // Warning: (ae-forgotten-export) The symbol "ListLocale" needs to be exported by the entry point index.d.ts
+    list?: ListLocale;
     modal?: ModalLocale;
     notification?: NotificationLocale;
     pagination?: PaginationLocale;
+    // Warning: (ae-forgotten-export) The symbol "PinInputLocale" needs to be exported by the entry point index.d.ts
+    pinInput?: PinInputLocale;
     popconfirm?: PopconfirmLocale;
     rate?: RateLocale;
     resourceCalendar?: ResourceCalendarLocale;
@@ -2400,6 +2422,8 @@ export interface SgLocale {
     tagInput?: TagInputLocale;
     timeline?: TimelineLocale;
     transfer?: TransferLocale;
+    // Warning: (ae-forgotten-export) The symbol "TreeLocale_2" needs to be exported by the entry point index.d.ts
+    tree?: TreeLocale_2;
     treeSelect?: TreeSelectLocale;
     upload?: UploadLocale;
 }
@@ -3220,8 +3244,11 @@ export function Upload(input: UploadProps): react_jsx_runtime.JSX.Element;
 // @public
 export interface UploadFile {
     name: string;
+    percent?: number;
+    raw?: File;
     size: number;
     status: 'uploading' | 'done' | 'error';
+    type?: string;
     uid: string;
 }
 
@@ -3237,12 +3264,19 @@ export interface UploadLocale {
 // @public
 export interface UploadProps extends BaseComponentProps, InteractiveProps {
     accept?: string;
+    beforeUpload?: (file: File, fileList: File[]) => boolean | Promise<boolean>;
     children?: React__default.ReactNode;
+    // Warning: (ae-forgotten-export) The symbol "UploadCustomRequestOptions" needs to be exported by the entry point index.d.ts
+    customRequest?: (options: UploadCustomRequestOptions) => void;
+    drag?: boolean;
     fileList?: UploadFile[];
+    listType?: 'text' | 'picture' | 'picture-card';
     maxCount?: number;
+    maxSize?: number;
     multiple?: boolean;
     onRemove?: (file: UploadFile) => void;
     onUpload?: (files: File[]) => void;
+    showUploadList?: boolean;
 }
 
 // @public

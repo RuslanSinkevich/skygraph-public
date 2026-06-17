@@ -495,7 +495,7 @@ export type {
 } from './types'
 
 // Locale presets (ConfigProvider)
-export { en_US, ru_RU, zh_CN, de_DE, fr_FR, es_ES } from './locales'
+export { en_US, ru_RU, zh_CN, de_DE, fr_FR, es_ES, ja_JP, ko_KR, pt_BR, it_IT } from './locales'
 
 // Re-export key types from core (mirrors what @skygraph/react does)
 export type {

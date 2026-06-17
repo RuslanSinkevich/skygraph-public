@@ -1,5 +1,14 @@
 <script lang="ts">
-import { computed, defineComponent, onBeforeUnmount, onMounted, ref, h, type PropType } from 'vue'
+import {
+  computed,
+  defineComponent,
+  onBeforeUnmount,
+  onMounted,
+  ref,
+  h,
+  type CSSProperties,
+  type PropType,
+} from 'vue'
 import SgTransition from './Transition.vue'
 import { useConfig } from './ConfigProvider.vue'
 
@@ -15,6 +24,12 @@ export interface NotificationConfig {
   key?: string
   onClose?: () => void
   placement?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft'
+  /**
+   * Inline styles applied to the toast card — chiefly per-toast CSS variable
+   * overrides so callers can re-theme a single notification (parity with the
+   * React `notification.open({ style })` option).
+   */
+  style?: CSSProperties
 }
 
 interface NotificationItem extends NotificationConfig {
@@ -138,7 +153,7 @@ const NotificationContainer = defineComponent({
             : 'sg-slide-left'
 
           const card = props.unstyled
-            ? h('div', { role: 'alert' }, [
+            ? h('div', { role: 'alert', style: item.style }, [
                 h('span', TYPE_ICONS[type]),
                 h('span', item.message),
                 item.description ? h('div', item.description) : null,
@@ -157,6 +172,7 @@ const NotificationContainer = defineComponent({
                 {
                   class: `sg-notification sg-notification-${type}`,
                   role: 'alert',
+                  style: item.style,
                 },
                 [
                   h('div', { class: 'sg-notification-icon' }, TYPE_ICONS[type]),

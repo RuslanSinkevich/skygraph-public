@@ -1,6 +1,7 @@
 <script setup lang="ts" generic="T">
 import { computed, ref, useSlots } from 'vue'
 import { useConfig } from '../../ui/ConfigProvider.vue'
+import SgPagination from '../../ui/Pagination.vue'
 import type { ListProps, ListClassNames, ListStyles } from './types'
 
 const props = withDefaults(defineProps<ListProps<T>>(), {
@@ -30,9 +31,9 @@ const emit = defineEmits<{
 
 defineSlots<{
   default(props: { item: T; index: number }): unknown
-  header(props: Record<string, never>): unknown
-  footer(props: Record<string, never>): unknown
-  loadMore(props: Record<string, never>): unknown
+  header?(props: Record<string, never>): unknown
+  footer?(props: Record<string, never>): unknown
+  loadMore?(props: Record<string, never>): unknown
 }>()
 
 const slots = useSlots()
@@ -103,12 +104,22 @@ function handleItemClick(item: T, index: number, e: MouseEvent) {
 function handleDragStart(e: DragEvent, index: number) {
   if (!props.draggable) return
   dragIndex.value = index
-  if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    // Without a payload Firefox never starts the drag; also keeps the cursor sane.
+    try {
+      e.dataTransfer.setData('text/plain', String(index))
+    } catch {
+      // non-fatal in restrictive environments
+    }
+  }
 }
 
 function handleDragOver(e: DragEvent, index: number) {
   if (!props.draggable || dragIndex.value === null) return
   e.preventDefault()
+  // Pin the drop effect to "move" so the browser stops flashing the no-drop (🚫) cursor.
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
   dropIndex.value = index
 }
 
@@ -127,6 +138,27 @@ function handleDrop(e: DragEvent, index: number) {
 function handleDragEnd() {
   dragIndex.value = null
   dropIndex.value = null
+}
+
+// `dragleave` also fires when the cursor crosses onto a child node of the
+// same row (the drag handle / slot content). Clearing `dropIndex` there made
+// the drop-target highlight strobe on/off ("jitter") as the pointer moved
+// across a row. Only clear when the cursor genuinely leaves the row.
+function handleDragLeave(e: DragEvent) {
+  const row = e.currentTarget as HTMLElement | null
+  const next = e.relatedTarget as Node | null
+  if (row && next && row.contains(next)) return
+  dropIndex.value = null
+}
+
+// Slivers between rows (container padding / borders) aren't covered by a row's
+// own `dragover`, so the browser briefly reverts to the no-drop (🚫) cursor as
+// the pointer crosses them. Pinning the drop effect on the container keeps the
+// move cursor stable across the whole list while a drag is in flight.
+function handleContainerDragOver(e: DragEvent) {
+  if (!props.draggable || dragIndex.value === null) return
+  e.preventDefault()
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'move'
 }
 
 let listScrollRafId: number | null = null
@@ -279,7 +311,7 @@ defineExpose({
             @dragover="(e: DragEvent) => handleDragOver(e, virtualSlice!.startIndex + i)"
             @drop="(e: DragEvent) => handleDrop(e, virtualSlice!.startIndex + i)"
             @dragend="handleDragEnd"
-            @dragleave="dropIndex = null"
+            @dragleave="handleDragLeave"
           >
             <span v-if="draggable" class="sg-list-drag-handle">⠿</span>
             <slot :item="item" :index="virtualSlice.startIndex + i" />
@@ -292,6 +324,7 @@ defineExpose({
       v-else
       :class="grid || sCls.items ? itemsContainerClass : undefined"
       :style="grid ? { ...gridStyle, ...sSty.items } : sSty.items"
+      @dragover="handleContainerDragOver"
     >
       <div
         v-for="(item, i) in paginatedData"
@@ -304,7 +337,7 @@ defineExpose({
         @dragover="(e: DragEvent) => handleDragOver(e, i)"
         @drop="(e: DragEvent) => handleDrop(e, i)"
         @dragend="handleDragEnd"
-        @dragleave="dropIndex = null"
+        @dragleave="handleDragLeave"
       >
         <span v-if="draggable" class="sg-list-drag-handle">⠿</span>
         <slot :item="item" :index="i" />
@@ -320,23 +353,13 @@ defineExpose({
       :class="['sg-list-pagination', sCls.pagination].filter(Boolean).join(' ') || undefined"
       :style="sSty.pagination"
     >
-      <button
-        type="button"
-        class="sg-list-pagination-prev"
-        :disabled="currentPage <= 1"
-        @click="changePage(currentPage - 1)"
-      >
-        ‹
-      </button>
-      <span class="sg-list-pagination-info">{{ currentPage }} / {{ pageCount }}</span>
-      <button
-        type="button"
-        class="sg-list-pagination-next"
-        :disabled="currentPage >= pageCount"
-        @click="changePage(currentPage + 1)"
-      >
-        ›
-      </button>
+      <SgPagination
+        :current="currentPage"
+        :total="total"
+        :page-size="pageSize"
+        :unstyled="unstyled"
+        @change="changePage"
+      />
     </div>
 
     <div

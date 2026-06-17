@@ -233,7 +233,19 @@ const StyledMenuItem: Component = defineComponent({
                   // works for components.
                   p.item.icon as VNode | VNode[] | string,
                 )
-              : null,
+              : // When collapsed to the icon rail an item without an icon would
+                // otherwise render blank — fall back to the first letter of the
+                // (string) label so the rail stays scannable.
+                p.inlineCollapsed && p.depth === 0 && typeof p.item.label === 'string'
+                ? h(
+                    'span',
+                    {
+                      class: 'sg-menu-item-icon sg-menu-item-icon-fallback',
+                      'aria-hidden': 'true',
+                    },
+                    (p.item.label as string).trim().charAt(0).toUpperCase(),
+                  )
+                : null,
             !(p.inlineCollapsed && p.depth === 0)
               ? h('span', { class: 'sg-menu-item-label' }, p.item.label as VNode | VNode[] | string)
               : null,

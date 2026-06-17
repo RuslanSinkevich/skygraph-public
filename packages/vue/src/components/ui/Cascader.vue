@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch, type CSSProperties } from 'vue'
-import { useConfig } from './ConfigProvider.vue'
+import { useConfig, useConfigWithDefaults } from './ConfigProvider.vue'
 
 /** One node in a cascader tree; children define the next column. */
 export interface CascaderOption {
@@ -57,7 +57,7 @@ export interface CascaderProps {
 
 const props = withDefaults(defineProps<CascaderProps>(), {
   placeholder: 'Please select',
-  disabled: false,
+  disabled: undefined,
   allowClear: true,
   showSearch: false,
   expandTrigger: 'click',
@@ -70,6 +70,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: (string | number)[]): void
   (e: 'change', value: (string | number)[], selectedOptions: CascaderOption[]): void
 }>()
+
+const { resolvedDisabled } = useConfigWithDefaults({ disabled: props.disabled }, {})
 
 const cfg = useConfig()
 const clearLabel = computed(() => cfg.value.locale?.cascader?.clear ?? 'Clear')
@@ -243,7 +245,7 @@ function handleHover(opt: CascaderOption, colIndex: number) {
 
 function handleClear(e: MouseEvent) {
   e.stopPropagation()
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   if (props.multiple) multiValues.value = []
   commit([])
   searchText.value = ''
@@ -251,12 +253,12 @@ function handleClear(e: MouseEvent) {
 
 function handleRemoveTag(index: number, e: MouseEvent) {
   e.stopPropagation()
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   multiValues.value = multiValues.value.filter((_, i) => i !== index)
 }
 
 function handleTriggerClick() {
-  if (props.disabled) return
+  if (resolvedDisabled.value) return
   isOpen.value = !isOpen.value
 }
 
@@ -333,7 +335,7 @@ const wrapperCls = computed(() =>
         'sg-cascader',
         `sg-cascader-${props.size}`,
         isOpen.value ? 'sg-cascader-open' : '',
-        props.disabled ? 'sg-cascader-disabled' : '',
+        resolvedDisabled.value ? 'sg-cascader-disabled' : '',
         props.multiple ? 'sg-cascader-multiple' : '',
       ]
         .filter(Boolean)
@@ -353,19 +355,22 @@ function pathLabel(values: (string | number)[]) {
       class="sg-cascader-selector"
       role="combobox"
       :aria-expanded="isOpen"
-      :aria-disabled="disabled"
+      :aria-disabled="resolvedDisabled"
       tabindex="0"
       @click="handleTriggerClick"
     >
       <div class="sg-cascader-selection-wrap">
-        <span v-if="!multiple && !displayLabel && !searchText" class="sg-cascader-placeholder">
+        <span
+          v-if="!multiple && !displayLabel && !searchText && !(showSearch && isOpen)"
+          class="sg-cascader-placeholder"
+        >
           {{ placeholder }}
         </span>
         <span v-if="!multiple && displayLabel && !searchText" class="sg-cascader-selection-item">
           {{ displayLabel }}
         </span>
         <span
-          v-if="multiple && multiValues.length === 0 && !searchText"
+          v-if="multiple && multiValues.length === 0 && !searchText && !(showSearch && isOpen)"
           class="sg-cascader-placeholder"
         >
           {{ placeholder }}

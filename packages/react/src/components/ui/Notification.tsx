@@ -22,6 +22,10 @@ export interface NotificationConfig {
   onClose?: () => void
   /** Corner stack this toast belongs to; must match a mounted container. */
   placement?: 'topRight' | 'topLeft' | 'bottomRight' | 'bottomLeft'
+  /** Extra class on the toast root — useful for scoped theming. */
+  className?: string
+  /** Inline style on the toast root; accepts CSS custom properties for per-toast token overrides. */
+  style?: React.CSSProperties
 }
 
 interface NotificationItem extends NotificationConfig {
@@ -151,7 +155,7 @@ function NotificationCard({
 
   if (unstyled) {
     return (
-      <div role="alert">
+      <div role="alert" className={item.className} style={item.style}>
         <span>{typeIcons[type]}</span>
         <span>{item.message}</span>
         {item.description && <div>{item.description}</div>}
@@ -163,7 +167,13 @@ function NotificationCard({
   }
 
   return (
-    <div className={`sg-notification sg-notification-${type}`} role="alert">
+    <div
+      className={['sg-notification', `sg-notification-${type}`, item.className]
+        .filter(Boolean)
+        .join(' ')}
+      style={item.style}
+      role="alert"
+    >
       <div className="sg-notification-icon">{typeIcons[type]}</div>
       <div className="sg-notification-content">
         <div className="sg-notification-message">{item.message}</div>

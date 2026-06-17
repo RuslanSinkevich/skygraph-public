@@ -61,7 +61,9 @@ describe('SgTree', () => {
       },
     })
     const wrapper = mount(Wrapper)
-    const sw = wrapper.findAll('.sg-tree-switcher').filter((n) => !n.classes('sg-tree-switcher-noop'))[0]
+    const sw = wrapper
+      .findAll('.sg-tree-switcher')
+      .filter((n) => !n.classes('sg-tree-switcher-noop'))[0]
     await sw.trigger('click')
     expect(wrapper.findAll('.sg-tree-node').length).toBe(4)
     expect(Array.isArray(lastEvent[0])).toBe(true)
@@ -83,8 +85,12 @@ describe('SgTree', () => {
     const wrapper = mount(Wrapper)
     const checkboxes = wrapper.findAll('.sg-tree-checkbox')
     expect(checkboxes.length).toBeGreaterThan(0)
-    await checkboxes[0].trigger('change')
-    expect((wrapper.vm as unknown as { lastChecked: string[] }).lastChecked.length).toBeGreaterThan(0)
+    // The visible checkbox is the SgCheckbox component (label + box); the
+    // native <input> lives inside it. Trigger change on the input.
+    await checkboxes[0].find('input[type="checkbox"]').trigger('change')
+    expect((wrapper.vm as unknown as { lastChecked: string[] }).lastChecked.length).toBeGreaterThan(
+      0,
+    )
   })
 
   it('selectable click selects a node', async () => {
@@ -147,6 +153,59 @@ describe('SgTree', () => {
     await root.trigger('keydown', { key: 'ArrowDown' })
     await nextTick()
     expect(wrapper.find('.sg-tree-node-focused').exists()).toBe(true)
+    wrapper.unmount()
+  })
+
+  // Regression: the drop position used to be derived downstream from the
+  // re-emitted event's `currentTarget`, which is fragile — every drop reported
+  // `0` (inside). It is now computed against the row element, so the cursor's
+  // vertical position within the row maps to before (-1) / inside (0) / after (1).
+  function mockRowRect(el: HTMLElement, top: number, height: number) {
+    el.getBoundingClientRect = () =>
+      ({
+        top,
+        bottom: top + height,
+        height,
+        left: 0,
+        right: 0,
+        width: 0,
+        x: 0,
+        y: top,
+        toJSON() {},
+      }) as DOMRect
+  }
+
+  it.each([
+    { clientY: 2, expected: -1, label: 'top quarter → before' },
+    { clientY: 20, expected: 0, label: 'middle → inside' },
+    { clientY: 38, expected: 1, label: 'bottom quarter → after' },
+  ])('reports drop position ($label)', async ({ clientY, expected }) => {
+    let dropInfo: { dropPosition?: number } | null = null
+    const Wrapper = defineComponent({
+      components: { SgTree },
+      template: `<SgTree :tree-data="data" draggable default-expand-all @drop="onDrop" />`,
+      data() {
+        return { data: sampleData }
+      },
+      methods: {
+        onDrop(info: { dropPosition?: number }) {
+          dropInfo = info
+        },
+      },
+    })
+    const wrapper = mount(Wrapper, { attachTo: document.body })
+    const rows = wrapper.findAll('.sg-tree-node')
+    // Order: a, a-1, a-2, b, b-1 — drag 'a-1' onto 'b' (different subtree).
+    const dragRow = rows[1]
+    const dropRow = rows[3]
+    mockRowRect(dropRow.element as HTMLElement, 0, 40)
+
+    await dragRow.trigger('dragstart')
+    await dropRow.trigger('dragover', { clientY })
+    await dropRow.trigger('drop', { clientY })
+
+    expect(dropInfo).toBeTruthy()
+    expect(dropInfo!.dropPosition).toBe(expected)
     wrapper.unmount()
   })
 })

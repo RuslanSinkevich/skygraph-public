@@ -170,4 +170,29 @@ export const zh_CN: SgLocale = {
     duplicateField: '复制字段',
     deleteField: '删除字段',
   },
+  table: {
+    emptyText: '暂无数据',
+    searchPlaceholder: '搜索...',
+  },
+  dataGrid: {
+    noData: '暂无数据',
+    selectAll: '全选',
+  },
+  tree: {
+    emptyText: '暂无数据',
+    searchPlaceholder: '搜索...',
+    clearSearch: '清除搜索',
+  },
+  list: {
+    loading: '加载中',
+  },
+  diagram: {
+    ariaLabel: '图表',
+  },
+  colorPicker: {
+    pickColor: '选择颜色',
+  },
+  pinInput: {
+    ariaLabel: 'PIN 输入',
+  },
 }

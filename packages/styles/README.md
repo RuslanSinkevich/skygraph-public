@@ -1,7 +1,7 @@
 # @skygraph/styles
 
 Framework-agnostic CSS for SkyGraph — design tokens, themes, transitions, print
-layer and 60+ component stylesheets. Zero JS, no runtime, just CSS Variables.
+layer and per-component stylesheets. Zero JS, no runtime, just CSS Variables.
 
 This package is the styling foundation shared by **all** SkyGraph adapters
 (`@skygraph/react`, future `@skygraph/vue`, `@skygraph/angular`, …). The CSS

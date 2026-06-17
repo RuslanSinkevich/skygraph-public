@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useTree } from '../../../hooks/useTree'
+import { useConfig } from '../../ConfigProvider'
 import { TreeNodeRow } from './TreeNodeRow'
 import type { TreeProps, TreeKey, TreeNodeData } from './types'
 import { DEFAULT_TREE_LOCALE, DEFAULT_INDENT, NODE_HEIGHT } from './types'
@@ -82,7 +83,11 @@ export function Tree(props: TreeProps) {
     unstyled,
   } = props
 
-  const t = useMemo(() => ({ ...DEFAULT_TREE_LOCALE, ...locale }), [locale])
+  const config = useConfig()
+  const t = useMemo(
+    () => ({ ...DEFAULT_TREE_LOCALE, ...config.locale?.tree, ...locale }),
+    [config.locale?.tree, locale],
+  )
 
   const showLineConfig = typeof showLine === 'object' ? showLine : { showLeafIcon: false }
   const isShowLine = !!showLine

@@ -20,8 +20,8 @@
   justify-content: space-between;
   /* Shares the `--sg-input-*` family with `Input` so scoped overrides
    * (height / radius / bg / border) re-skin the trigger. */
-  min-height: var(--sg-input-height, var(--sg-height-md));
-  padding: var(--sg-padding-xs) var(--sg-padding-md);
+  height: var(--sg-input-height, var(--sg-height-md));
+  padding: 0 var(--sg-padding-md);
   color: var(--sg-input-color, var(--sg-color-text));
   background: var(--sg-input-bg, var(--sg-color-bg-container));
   border: 1px solid var(--sg-input-border, var(--sg-color-border));
@@ -32,13 +32,27 @@
 }
 
 .sg-cascader-small .sg-cascader-selector {
-  min-height: var(--sg-height-sm);
+  height: var(--sg-height-sm);
   font-size: var(--sg-font-size-sm);
 }
 
 .sg-cascader-large .sg-cascader-selector {
-  min-height: var(--sg-height-lg);
+  height: var(--sg-height-lg);
   font-size: var(--sg-font-size-lg);
+}
+
+.sg-cascader-multiple .sg-cascader-selector {
+  height: auto;
+  min-height: var(--sg-input-height, var(--sg-height-md));
+  padding: 2px var(--sg-padding-sm) 2px 4px;
+}
+
+.sg-cascader-multiple.sg-cascader-small .sg-cascader-selector {
+  min-height: var(--sg-height-sm);
+}
+
+.sg-cascader-multiple.sg-cascader-large .sg-cascader-selector {
+  min-height: var(--sg-height-lg);
 }
 
 .sg-cascader-open .sg-cascader-selector {
@@ -177,7 +191,7 @@
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 100;
+  z-index: var(--sg-z-dropdown);
   margin-top: 4px;
   background: var(--sg-color-bg-elevated);
   border-radius: var(--sg-border-radius);

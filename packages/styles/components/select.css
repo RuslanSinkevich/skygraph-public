@@ -64,7 +64,7 @@
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: var(--sg-z-dropdown);
   margin-top: 4px;
   padding: var(--sg-padding-xs) 0;
   background: var(--sg-color-bg-elevated);

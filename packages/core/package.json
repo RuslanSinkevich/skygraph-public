@@ -1,6 +1,6 @@
 {
   "name": "@skygraph/core",
-  "version": "0.5.2",
+  "version": "0.6.4",
   "description": "SkyGraph reactive runtime вЂ” state graph engine for UI",
   "license": "MIT",
   "type": "module",

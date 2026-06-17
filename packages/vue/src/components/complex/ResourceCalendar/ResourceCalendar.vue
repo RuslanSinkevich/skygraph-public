@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useConfig } from '../../ui/ConfigProvider.vue'
 import type { Assignment, CalendarScale, ResourceCalendarProps } from './types'
 
@@ -141,8 +141,10 @@ const rowIndexById = computed(() => {
   return m
 })
 
-const conflictingIds = computed(() => {
-  const ids = new Set<string>()
+// Naive per-resource overlap detection (documented simplification vs the
+// React engine). Produces the `{ a, b }` pairs the `conflict` event carries.
+const conflictPairs = computed<Array<{ a: Assignment; b: Assignment }>>(() => {
+  const pairs: Array<{ a: Assignment; b: Assignment }> = []
   const byResource = new Map<string, Assignment[]>()
   for (const a of props.assignments) {
     const list = byResource.get(a.resourceId) ?? []
@@ -157,14 +159,41 @@ const conflictingIds = computed(() => {
         const bS = toMs(list[j].start)
         const bE = toMs(list[j].end)
         if (aS < bE && bS < aE) {
-          ids.add(list[i].id)
-          ids.add(list[j].id)
+          pairs.push({ a: list[i], b: list[j] })
         }
       }
     }
   }
+  return pairs
+})
+
+const conflictingIds = computed(() => {
+  const ids = new Set<string>()
+  for (const { a, b } of conflictPairs.value) {
+    ids.add(a.id)
+    ids.add(b.id)
+  }
   return ids
 })
+
+// Fire `conflict` whenever the detected set actually changes. A stable key
+// (sorted id-pairs) avoids spurious emits when detection re-runs with the
+// same result mid-drag. Runs immediately so consumers see the initial set
+// without waiting for an interaction.
+const conflictKey = computed(() =>
+  conflictPairs.value
+    .map((p) => [p.a.id, p.b.id].sort().join('~'))
+    .sort()
+    .join('|'),
+)
+
+watch(
+  conflictKey,
+  () => {
+    emit('conflict', conflictPairs.value)
+  },
+  { immediate: true },
+)
 
 const assignmentRects = computed(() => {
   return props.assignments

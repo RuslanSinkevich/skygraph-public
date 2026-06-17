@@ -19,10 +19,7 @@ function formatTime(h: number, m: number, s: number, fmt: string, use12h: boolea
       .replace('ss', pad(s))
       .replace('A', period)
   }
-  return fmt
-    .replace('HH', pad(h))
-    .replace('mm', pad(m))
-    .replace('ss', pad(s))
+  return fmt.replace('HH', pad(h)).replace('mm', pad(m)).replace('ss', pad(s))
 }
 
 function parseTime(str: string): { h: number; m: number; s: number } | null {
@@ -74,11 +71,15 @@ function ScrollColumn({
       {items.map((n) => {
         const isDisabled = disabledItems?.has(n) ?? false
         const isActive = n === value
-        const cls = unstyled ? '' : [
-          'sg-tp-cell',
-          isActive ? 'sg-tp-cell-active' : '',
-          isDisabled ? 'sg-tp-cell-disabled' : '',
-        ].filter(Boolean).join(' ')
+        const cls = unstyled
+          ? ''
+          : [
+              'sg-tp-cell',
+              isActive ? 'sg-tp-cell-active' : '',
+              isDisabled ? 'sg-tp-cell-disabled' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')
         return (
           <div
             key={n}
@@ -226,8 +227,10 @@ export function TimePicker({
   const config = useConfig()
   const size = sizeProp ?? config.size ?? 'middle'
   const disabled = disabledProp ?? config.disabled ?? false
+  const nowLabel = config.locale?.calendar?.now ?? 'Now'
+  const clearLabel = config.locale?.input?.clear ?? 'Clear'
 
-  const fmt = formatProp ?? (use12Hours ? 'hh:mm:ss A' : (showSecond ? 'HH:mm:ss' : 'HH:mm'))
+  const fmt = formatProp ?? (use12Hours ? 'hh:mm:ss A' : showSecond ? 'HH:mm:ss' : 'HH:mm')
 
   const [internalValue, setInternalValue] = useState(value ?? defaultValue ?? '')
   const [internalOpen, setInternalOpen] = useState(false)
@@ -285,16 +288,22 @@ export function TimePicker({
 
   const disHours = useMemo(() => new Set(disabledHours?.() ?? []), [disabledHours])
   const disMinutes = useMemo(() => new Set(disabledMinutes?.(hour) ?? []), [disabledMinutes, hour])
-  const disSecs = useMemo(() => new Set(disabledSeconds?.(hour, minute) ?? []), [disabledSeconds, hour, minute])
+  const disSecs = useMemo(
+    () => new Set(disabledSeconds?.(hour, minute) ?? []),
+    [disabledSeconds, hour, minute],
+  )
 
-  const commitTime = useCallback((h: number, m: number, s: number) => {
-    const str = formatTime(h, m, s, fmt, use12Hours)
-    setInternalValue(str)
-    onChange?.(str)
-  }, [fmt, use12Hours, onChange])
+  const commitTime = useCallback(
+    (h: number, m: number, s: number) => {
+      const str = formatTime(h, m, s, fmt, use12Hours)
+      setInternalValue(str)
+      onChange?.(str)
+    },
+    [fmt, use12Hours, onChange],
+  )
 
   const handleHourChange = (h: number) => {
-    const realH = use12Hours ? (h === 12 ? (hour >= 12 ? 12 : 0) : (hour >= 12 ? h + 12 : h)) : h
+    const realH = use12Hours ? (h === 12 ? (hour >= 12 ? 12 : 0) : hour >= 12 ? h + 12 : h) : h
     setHour(realH)
     commitTime(realH, minute, second)
   }
@@ -311,7 +320,9 @@ export function TimePicker({
 
   const handleNow = () => {
     const now = new Date()
-    const h = now.getHours(), m = now.getMinutes(), s = now.getSeconds()
+    const h = now.getHours(),
+      m = now.getMinutes(),
+      s = now.getSeconds()
     setHour(h)
     setMinute(m)
     setSecond(s)
@@ -332,15 +343,19 @@ export function TimePicker({
     onOpenChange?.(true)
   }
 
-  const displayHour = use12Hours ? (hour % 12 || 12) : hour
+  const displayHour = use12Hours ? hour % 12 || 12 : hour
 
-  const wrapperCls = unstyled ? className ?? '' : [
-    'sg-timepicker',
-    `sg-timepicker-${size}`,
-    isOpen ? 'sg-timepicker-open' : '',
-    disabled ? 'sg-timepicker-disabled' : '',
-    className,
-  ].filter(Boolean).join(' ')
+  const wrapperCls = unstyled
+    ? (className ?? '')
+    : [
+        'sg-timepicker',
+        `sg-timepicker-${size}`,
+        isOpen ? 'sg-timepicker-open' : '',
+        disabled ? 'sg-timepicker-disabled' : '',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')
 
   return (
     <div className={wrapperCls} ref={ref} style={style}>
@@ -354,7 +369,11 @@ export function TimePicker({
         aria-label={ariaLabel}
         aria-labelledby={ariaLabelledBy}
       >
-        <span className={currentValue ? '' : (unstyled ? '' : 'sg-timepicker-placeholder')}>
+        <span
+          className={
+            unstyled ? '' : currentValue ? 'sg-timepicker-value' : 'sg-timepicker-placeholder'
+          }
+        >
           {currentValue || placeholder}
         </span>
         <span className={unstyled ? '' : 'sg-timepicker-suffix'}>
@@ -363,10 +382,23 @@ export function TimePicker({
           ) : (
             <>
               {allowClear && currentValue && (
-                <span className={unstyled ? '' : 'sg-timepicker-clear'} onClick={handleClear}>&times;</span>
+                <span
+                  className={unstyled ? '' : 'sg-timepicker-clear'}
+                  role="button"
+                  aria-label={clearLabel}
+                  onClick={handleClear}
+                >
+                  &times;
+                </span>
               )}
-              <svg className={unstyled ? '' : 'sg-timepicker-icon-svg'} viewBox="0 0 16 16" width="14" height="14" fill="currentColor">
-                <path d="M8 0a8 8 0 110 16A8 8 0 018 0zm0 1a7 7 0 100 14A7 7 0 008 1zm.5 3v4.5l3 1.5-.5 1-3.5-1.75V4h1z"/>
+              <svg
+                className={unstyled ? '' : 'sg-timepicker-icon-svg'}
+                viewBox="0 0 16 16"
+                width="14"
+                height="14"
+                fill="currentColor"
+              >
+                <path d="M8 0a8 8 0 110 16A8 8 0 018 0zm0 1a7 7 0 100 14A7 7 0 008 1zm.5 3v4.5l3 1.5-.5 1-3.5-1.75V4h1z" />
               </svg>
             </>
           )}
@@ -403,13 +435,25 @@ export function TimePicker({
               <div className={unstyled ? '' : 'sg-tp-col sg-tp-col-ampm'}>
                 <div
                   className={unstyled ? '' : `sg-tp-cell${hour < 12 ? ' sg-tp-cell-active' : ''}`}
-                  onClick={() => { if (hour >= 12) { const h = hour - 12; setHour(h); commitTime(h, minute, second) } }}
+                  onClick={() => {
+                    if (hour >= 12) {
+                      const h = hour - 12
+                      setHour(h)
+                      commitTime(h, minute, second)
+                    }
+                  }}
                 >
                   AM
                 </div>
                 <div
                   className={unstyled ? '' : `sg-tp-cell${hour >= 12 ? ' sg-tp-cell-active' : ''}`}
-                  onClick={() => { if (hour < 12) { const h = hour + 12; setHour(h); commitTime(h, minute, second) } }}
+                  onClick={() => {
+                    if (hour < 12) {
+                      const h = hour + 12
+                      setHour(h)
+                      commitTime(h, minute, second)
+                    }
+                  }}
                 >
                   PM
                 </div>
@@ -418,7 +462,9 @@ export function TimePicker({
           </div>
           {showNow && (
             <div className={unstyled ? '' : 'sg-tp-footer'}>
-              <button className={unstyled ? '' : 'sg-tp-now-btn'} onClick={handleNow}>Now</button>
+              <button className={unstyled ? '' : 'sg-tp-now-btn'} onClick={handleNow}>
+                {nowLabel}
+              </button>
             </div>
           )}
         </div>
@@ -466,10 +512,13 @@ export function TimeRangePicker({
   const config = useConfig()
   const size = sizeProp ?? config.size ?? 'middle'
   const disabled = disabledProp ?? config.disabled ?? false
+  const clearLabel = config.locale?.input?.clear ?? 'Clear'
 
-  const fmt = formatProp ?? (use12Hours ? 'hh:mm:ss A' : (showSecond ? 'HH:mm:ss' : 'HH:mm'))
+  const fmt = formatProp ?? (use12Hours ? 'hh:mm:ss A' : showSecond ? 'HH:mm:ss' : 'HH:mm')
 
-  const [internalValue, setInternalValue] = useState<[string, string]>(value ?? defaultValue ?? ['', ''])
+  const [internalValue, setInternalValue] = useState<[string, string]>(
+    value ?? defaultValue ?? ['', ''],
+  )
   const [internalOpen, setInternalOpen] = useState(false)
   const currentValue = value ?? internalValue
   const isOpen = openProp ?? internalOpen
@@ -512,23 +561,38 @@ export function TimeRangePicker({
     onOpenChange?.(true)
   }
 
-  const wrapperCls = unstyled ? className ?? '' : [
-    'sg-timepicker', 'sg-timepicker-range',
-    `sg-timepicker-${size}`,
-    isOpen ? 'sg-timepicker-open' : '',
-    disabled ? 'sg-timepicker-disabled' : '',
-    className,
-  ].filter(Boolean).join(' ')
+  const wrapperCls = unstyled
+    ? (className ?? '')
+    : [
+        'sg-timepicker',
+        'sg-timepicker-range',
+        `sg-timepicker-${size}`,
+        isOpen ? 'sg-timepicker-open' : '',
+        disabled ? 'sg-timepicker-disabled' : '',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')
 
   return (
     <div className={wrapperCls} ref={ref} style={style}>
-      <div className={unstyled ? '' : 'sg-timepicker-input sg-timepicker-range-input'} onClick={openDropdown}>
+      <div
+        className={unstyled ? '' : 'sg-timepicker-input sg-timepicker-range-input'}
+        onClick={openDropdown}
+      >
         <span>{currentValue[0] || placeholder[0]}</span>
         <span className={unstyled ? '' : 'sg-timepicker-separator'}>{separator}</span>
         <span>{currentValue[1] || placeholder[1]}</span>
         <span className={unstyled ? '' : 'sg-timepicker-suffix'}>
           {allowClear && (currentValue[0] || currentValue[1]) && (
-            <span className={unstyled ? '' : 'sg-timepicker-clear'} onClick={handleClear}>&times;</span>
+            <span
+              className={unstyled ? '' : 'sg-timepicker-clear'}
+              role="button"
+              aria-label={clearLabel}
+              onClick={handleClear}
+            >
+              &times;
+            </span>
           )}
         </span>
       </div>

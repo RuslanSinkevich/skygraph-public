@@ -166,4 +166,29 @@ export const ru_RU: SgLocale = {
     duplicateField: 'Дублировать поле',
     deleteField: 'Удалить поле',
   },
+  table: {
+    emptyText: 'Нет данных',
+    searchPlaceholder: 'Поиск...',
+  },
+  dataGrid: {
+    noData: 'Нет данных',
+    selectAll: 'Выбрать все',
+  },
+  tree: {
+    emptyText: 'Нет данных',
+    searchPlaceholder: 'Поиск...',
+    clearSearch: 'Очистить поиск',
+  },
+  list: {
+    loading: 'Загрузка',
+  },
+  diagram: {
+    ariaLabel: 'Диаграмма',
+  },
+  colorPicker: {
+    pickColor: 'Выбрать цвет',
+  },
+  pinInput: {
+    ariaLabel: 'Ввод PIN',
+  },
 }
