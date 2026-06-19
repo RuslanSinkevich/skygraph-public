@@ -4,7 +4,7 @@
 
 **UI-компоненты для React и Vue на общем движке. Одна установка, один CSS, одинаковый внешний вид.**
 
-78+ готовых компонентов — формы, таблицы, деревья, графики, календари,
+Готовые компоненты — формы, таблицы, деревья, графики, календари,
 диаграммы, дашборды. Одинаковый DOM, одинаковые `.sg-*` классы, одинаковое
 поведение в обоих адаптерах. Бесплатно, MIT.
 
@@ -70,7 +70,7 @@ async function onSubmit(values: Record<string, unknown>) {
 
 ## Возможности
 
-- **78+ React-компонентов / 66+ Vue-компонентов** — Button, Input, Select,
+- **Компоненты для React и Vue** — Button, Input, Select,
   DatePicker, Table, DataGrid, Tree, Transfer, TreeSelect, Cascader,
   Diagram, Charts (Line / Bar / Area / Pie), Dashboard, Gantt,
   EventTimeline, ResourceCalendar, SchemaFormEditor и весь остальной
@@ -119,21 +119,21 @@ async function onSubmit(values: Record<string, unknown>) {
 - [`styling-contract.md`](./styling-contract.md) — стабильные токены, корневые классы, слоты, API `classNames` / `styles`, политика версий.
 - [`styling-recipes.md`](./styling-recipes.md) — практические рецепты: свой бренд, тёмная тема, переопределения по компоненту, условные стили строк/ячеек, полный `unstyled`.
 
-## Список компонентов (React-адаптер — 78+ компонентов)
+## Список компонентов
 
-**Data Entry (18):** Button, Input, InputNumber, Textarea, Select, Checkbox, Radio, Switch, Slider, DatePicker, TimePicker, AutoComplete, Rate, Upload, ColorPicker, Cascader, TreeSelect, Mentions
+**Data Entry:** Button, Input, InputNumber, Textarea, Select, Checkbox, Radio, Switch, Slider, DatePicker, TimePicker, AutoComplete, Rate, Upload, ColorPicker, Cascader, TreeSelect, Mentions
 
-**Data Display (17):** Table, DataGrid, Tree, List, Tabs, Collapse, Descriptions, Badge, Tag, Avatar, Calendar, Carousel, Timeline, Steps, Segmented, Skeleton, Diagram
+**Data Display:** Table, DataGrid, Tree, List, Tabs, Collapse, Descriptions, Badge, Tag, Avatar, Calendar, Carousel, Timeline, Steps, Segmented, Skeleton, Diagram
 
-**Visualization (9):** LineChart, BarChart, AreaChart, PieChart, Dashboard, DashboardEditor, Gantt, EventTimeline, ResourceCalendar
+**Visualization:** LineChart, BarChart, AreaChart, PieChart, Dashboard, DashboardEditor, Gantt, EventTimeline, ResourceCalendar
 
-**Feedback (9):** Modal, Drawer, Notification, Popconfirm, Tooltip, Progress, Spin, Result, Empty
+**Feedback:** Modal, Drawer, Notification, Popconfirm, Tooltip, Progress, Spin, Result, Empty
 
-**Navigation (5):** Menu, Breadcrumb, Dropdown, Pagination, Transfer
+**Navigation:** Menu, Breadcrumb, Dropdown, Pagination, Transfer
 
-**Form (8):** Form, Field, FormList, FormProvider, SchemaForm, SchemaFormEditor, AutoField, SubmitButton
+**Form:** Form, Field, FormList, FormProvider, SchemaForm, SchemaFormEditor, AutoField, SubmitButton
 
-**Utility (1):** Transition (анимации через CSS-классы)
+**Utility:** Transition (анимации через CSS-классы)
 
 Vue-адаптер предоставляет тот же набор с префиксом `Sg*` — `SgButton`,
 `SgInput`, `SgForm`, `SgTable`, `SgDiagram`, `SgDashboard`,
@@ -147,7 +147,7 @@ Vue-адаптер предоставляет тот же набор с преф
 
 ```
 @skygraph/core         — чистый TS-runtime + движки (формы, таблицы, ...)
-@skygraph/styles       — фреймворк-агностичный CSS (токены, темы, ~64 файла стилей)
+@skygraph/styles       — фреймворк-агностичный CSS (токены, темы, файлы стилей по компонентам)
 @skygraph/react        — React-хуки + компоненты (peer: core + react)
 @skygraph/vue          — Vue 3 composables + компоненты (peer: core + vue)
 skygraph-react         — мета-пакет: react-адаптер + core + styles

@@ -31,7 +31,7 @@
   directly: hooks / composables / services in adapters are thin wrappers
   that subscribe to the engine's stores.
 - `@skygraph/styles` — CSS-only package (extracted in round 12). Tokens,
-  reset, themes, transitions, print layer and 60+ component stylesheets.
+  reset, themes, transitions, print layer and per-component stylesheets.
   Selectors target `.sg-*` class names; theming via `data-sg-theme`.
   No JS, no runtime, just CSS Variables. Imported by every adapter as
   `import '@skygraph/styles'`.
@@ -74,10 +74,10 @@ Every adapter:
    | Roving tabindex  | `useRovingTabIndex`| `useRovingTabIndex` ✅    | (TBD)                    |
    | List navigation  | `useListNavigation`| `useListNavigation` ✅    | (TBD)                    |
 
-   Component surface paritet (Vue vs React, all `Sg*`-prefixed): all 17
-   complex (Form/Table/Tree/Diagram/Charts/Dashboard/Gantt/Timeline/
-   ResourceCalendar/SchemaForm/SchemaFormEditor/…) and all 47 ui primitives
-   are ported (Vue ships 52 ui SFCs because `Input` is split into
+   Component surface parity (Vue vs React, all `Sg*`-prefixed): the
+   complex components (Form/Table/Tree/Diagram/Charts/Dashboard/Gantt/
+   Timeline/ResourceCalendar/SchemaForm/SchemaFormEditor/…) and the ui
+   primitives are ported (Vue splits `Input` into
    `Input/InputNumber/InputPassword/InputGroup/SearchInput/PinInput/TagInput/InlineEdit`
    variants which are all shapes of the same engine).
 
@@ -98,11 +98,11 @@ remains framework-free forever.
 ## Demo strategy
 
 - **`examples/demo`** stays React. It is the canonical demo package
-  (Ant-style live docs + 50+ component pages + benchmarks page comparing
+  (Ant-style live docs + component pages + benchmarks page comparing
   SkyGraph vs `react-hook-form` / AntD `Table` / Recharts).
 - **`examples/demo-vue`** ✅ exists today as a separate workspace
   package, also Vite-powered, mounting showcases against
-  `@skygraph/vue`. Currently ships an Ant-style shell + 23 component
+  `@skygraph/vue`. Ships an Ant-style shell + component
   pages; URL paths and component slugs are kept identical to the React
   demo so cross-linking works (e.g. `/components/form` exists in both).
 - **`examples/demo-angular`** (later) follows the same pattern.

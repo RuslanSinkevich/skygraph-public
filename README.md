@@ -4,7 +4,7 @@
 
 **UI components for React and Vue on a shared engine. One install, one CSS, the same look.**
 
-78+ ready-made components — forms, tables, trees, charts, calendars,
+Ready-made components — forms, tables, trees, charts, calendars,
 diagrams, dashboards. Same DOM, same `.sg-*` classes, same behaviour on
 both adapters. Free, MIT.
 
@@ -70,7 +70,7 @@ the look. See [`docs/multi-framework.md`](./docs/multi-framework.md).
 
 ## Features
 
-- **78+ React components / 66+ Vue components** — Button, Input, Select,
+- **Components for React and Vue** — Button, Input, Select,
   DatePicker, Table, DataGrid, Tree, Transfer, TreeSelect, Cascader,
   Diagram, Charts (Line / Bar / Area / Pie), Dashboard, Gantt,
   EventTimeline, ResourceCalendar, SchemaFormEditor and the rest of an
@@ -120,21 +120,21 @@ Reference:
 - [`docs/styling-contract.md`](./docs/styling-contract.md) — stable tokens, root classes, slots, `classNames` / `styles` API, versioning policy.
 - [`docs/styling-recipes.md`](./docs/styling-recipes.md) — practical recipes: custom brand, dark mode, per-component overrides, conditional row/cell styling, full `unstyled` mode.
 
-## Component List (React adapter — 78+ components)
+## Component List
 
-**Data Entry (18):** Button, Input, InputNumber, Textarea, Select, Checkbox, Radio, Switch, Slider, DatePicker, TimePicker, AutoComplete, Rate, Upload, ColorPicker, Cascader, TreeSelect, Mentions
+**Data Entry:** Button, Input, InputNumber, Textarea, Select, Checkbox, Radio, Switch, Slider, DatePicker, TimePicker, AutoComplete, Rate, Upload, ColorPicker, Cascader, TreeSelect, Mentions
 
-**Data Display (17):** Table, DataGrid, Tree, List, Tabs, Collapse, Descriptions, Badge, Tag, Avatar, Calendar, Carousel, Timeline, Steps, Segmented, Skeleton, Diagram
+**Data Display:** Table, DataGrid, Tree, List, Tabs, Collapse, Descriptions, Badge, Tag, Avatar, Calendar, Carousel, Timeline, Steps, Segmented, Skeleton, Diagram
 
-**Visualization (9):** LineChart, BarChart, AreaChart, PieChart, Dashboard, DashboardEditor, Gantt, EventTimeline, ResourceCalendar
+**Visualization:** LineChart, BarChart, AreaChart, PieChart, Dashboard, DashboardEditor, Gantt, EventTimeline, ResourceCalendar
 
-**Feedback (9):** Modal, Drawer, Notification, Popconfirm, Tooltip, Progress, Spin, Result, Empty
+**Feedback:** Modal, Drawer, Notification, Popconfirm, Tooltip, Progress, Spin, Result, Empty
 
-**Navigation (5):** Menu, Breadcrumb, Dropdown, Pagination, Transfer
+**Navigation:** Menu, Breadcrumb, Dropdown, Pagination, Transfer
 
-**Form (8):** Form, Field, FormList, FormProvider, SchemaForm, SchemaFormEditor, AutoField, SubmitButton
+**Form:** Form, Field, FormList, FormProvider, SchemaForm, SchemaFormEditor, AutoField, SubmitButton
 
-**Utility (1):** Transition (CSS-class-based animations)
+**Utility:** Transition (CSS-class-based animations)
 
 The Vue adapter ships the same surface with the `Sg*` prefix — `SgButton`,
 `SgInput`, `SgForm`, `SgTable`, `SgDiagram`, `SgDashboard`,
@@ -148,7 +148,7 @@ underlying split looks like this:
 
 ```
 @skygraph/core         — pure-TS runtime + engines (forms, tables, ...)
-@skygraph/styles       — framework-agnostic CSS (tokens, themes, ~64 component sheets)
+@skygraph/styles       — framework-agnostic CSS (tokens, themes, per-component sheets)
 @skygraph/react        — React hooks + components (peer: core + react)
 @skygraph/vue          — Vue 3 composables + components (peer: core + vue)
 skygraph-react         — meta-package: react adapter + core + styles

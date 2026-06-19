@@ -17,7 +17,7 @@ above.
   engines/            form, table, tree, virtual, graph, calendar
         ↑ public API only
 @skygraph/styles      (CSS-only, no JS)
-  tokens.css, reset.css, themes/, components/ (~64 sheets)
+  tokens.css, reset.css, themes/, components/ (per-component sheets)
 
 @skygraph/react       (peer: core + react)         — canonical adapter
 @skygraph/vue         (peer: core + vue ^3.4)      — full parity, alpha → 1.0
